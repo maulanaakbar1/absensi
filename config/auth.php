@@ -36,9 +36,20 @@ return [
     */
 
     'guards' => [
-        'web' => [
+
+        'admin' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'admins',
+        ],
+
+        'pembina' => [
+            'driver' => 'session',
+            'provider' => 'pembina',
+        ],
+
+        'siswa' => [
+            'driver' => 'session',
+            'provider' => 'siswa',
         ],
     ],
 
@@ -60,17 +71,22 @@ return [
     */
 
     'providers' => [
-        'users' => [
+
+        'admins' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => App\Models\Admin::class,
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
-    ],
+        'pembina' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Pembina::class,
+        ],
 
+        'siswa' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Siswa::class,
+        ],
+    ],
     /*
     |--------------------------------------------------------------------------
     | Resetting Passwords
