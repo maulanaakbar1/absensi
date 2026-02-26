@@ -1,40 +1,32 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AdminAuthController;
-use App\Http\Controllers\Auth\PembinaAuthController;
-use App\Http\Controllers\Auth\SiswaAuthController;
+use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
-Route::prefix('admin')->group(function () {
-    Route::get('login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
-    Route::post('login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
-    Route::post('logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+Route::get('login', [LoginController::class, 'showLogin'])->name('login');
+Route::post('login', [LoginController::class, 'login'])->name('login.submit');
 
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+// Dashboard tetap dipisah
+Route::prefix('admin')->middleware('auth:admin')->group(function () {
     Route::get('dashboard', function () {
-        return "Dashboard Admin";
-    })->middleware('auth:admin')->name('admin.dashboard');
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
 });
 
-Route::prefix('pembina')->group(function () {
-    Route::get('login', [PembinaAuthController::class, 'showLogin'])->name('pembina.login');
-    Route::post('login', [PembinaAuthController::class, 'login'])->name('pembina.login.submit');
-    Route::post('logout', [PembinaAuthController::class, 'logout'])->name('pembina.logout');
-
+Route::prefix('pembina')->middleware('auth:pembina')->group(function () {
     Route::get('dashboard', function () {
-        return "Dashboard Pembina";
-    })->middleware('auth:pembina')->name('pembina.dashboard');
+        return view('pembina.dashboard');
+    })->name('pembina.dashboard');
 });
 
-Route::prefix('siswa')->group(function () {
-    Route::get('login', [SiswaAuthController::class, 'showLogin'])->name('siswa.login');
-    Route::post('login', [SiswaAuthController::class, 'login'])->name('siswa.login.submit');
-    Route::post('logout', [SiswaAuthController::class, 'logout'])->name('siswa.logout');
-
+Route::prefix('siswa')->middleware('auth:siswa')->group(function () {
     Route::get('dashboard', function () {
         return "Dashboard Siswa";
-    })->middleware('auth:siswa')->name('siswa.dashboard');
+    })->name('siswa.dashboard');
 });
