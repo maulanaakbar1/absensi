@@ -17,6 +17,11 @@ class Siswa extends Authenticatable
         'password',
         'nis',
         'kelas',
+        'no_telp',
+        'nama_ayah',
+        'nama_ibu',
+        'no_telp_ayah',
+        'no_telp_ibu',
     ];
 
     protected $hidden = [

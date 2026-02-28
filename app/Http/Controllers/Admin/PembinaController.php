@@ -22,6 +22,7 @@ class PembinaController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:pembina,email',
+            'no_telepon' => 'nullable|string|max:20',
             'password' => 'required|min:6',
             'organisasi_id' => 'required|exists:organisasi,id',
         ]);
@@ -29,6 +30,7 @@ class PembinaController extends Controller
         Pembina::create([
             'name' => $request->name,
             'email' => $request->email,
+            'no_telepon' => $request->no_telepon, 
             'password' => Hash::make($request->password),
             'organisasi_id' => $request->organisasi_id,
         ]);
@@ -43,11 +45,13 @@ class PembinaController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:pembina,email,' . $id,
+            'no_telepon' => 'nullable|string|max:20',
             'organisasi_id' => 'required|exists:organisasi,id',
         ]);
 
         $pembina->name = $request->name;
         $pembina->email = $request->email;
+        $pembina->no_telepon = $request->no_telepon; 
         $pembina->organisasi_id = $request->organisasi_id;
 
         if ($request->filled('password')) {

@@ -16,9 +16,15 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-
             $table->string('nis')->nullable();
             $table->string('kelas')->nullable();
+            
+            // Field Baru
+            $table->string('no_telp')->nullable();
+            $table->string('nama_ayah')->nullable();
+            $table->string('nama_ibu')->nullable();
+            $table->string('no_telp_ayah')->nullable();
+            $table->string('no_telp_ibu')->nullable();
 
             $table->rememberToken();
             $table->timestamps();

@@ -18,9 +18,10 @@ class OrganisasiController extends Controller
     {
         $request->validate([
             'nama_organisasi' => 'required|string|max:255|unique:organisasi,nama_organisasi',
+            'keterangan' => 'nullable|string',
         ]);
 
-        Organisasi::create($request->all());
+        Organisasi::create($request->only('nama_organisasi','keterangan'));
 
         return back()->with('success', 'Organisasi berhasil ditambahkan!');
     }
@@ -29,10 +30,11 @@ class OrganisasiController extends Controller
     {
         $request->validate([
             'nama_organisasi' => 'required|string|max:255|unique:organisasi,nama_organisasi,' . $id,
+            'keterangan' => 'nullable|string',
         ]);
 
         $org = Organisasi::findOrFail($id);
-        $org->update($request->all());
+        $org->update($request->only('nama_organisasi','keterangan'));
 
         return back()->with('success', 'Organisasi berhasil diperbarui!');
     }

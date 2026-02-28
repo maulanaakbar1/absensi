@@ -30,6 +30,7 @@
         <thead class="bg-slate-50 text-slate-400 text-xs uppercase tracking-widest font-bold">
             <tr>
                 <th class="px-8 py-5">Nama Organisasi</th>
+                <th class="px-8 py-5">Keterangan</th>
                 <th class="px-8 py-5 text-center">Aksi</th>
             </tr>
         </thead>
@@ -37,6 +38,9 @@
             @forelse($organisasi as $org)
             <tr class="hover:bg-slate-50/50 transition-colors">
                 <td class="px-8 py-5 font-bold text-slate-700">{{ $org->nama_organisasi }}</td>
+                <td class="px-8 py-5 text-slate-500 text-sm">
+                    {{ $org->keterangan ?? '-' }}
+                </td>
                 <td class="px-8 py-5 flex justify-center gap-2">
                     <button onclick="editOrg({{ $org }})" class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -65,6 +69,12 @@
                 <label class="block text-sm font-bold text-slate-700 mb-2">Nama Organisasi</label>
                 <input type="text" name="nama_organisasi" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Eks: OSIS, Pramuka..." required>
             </div>
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Keterangan</label>
+                <textarea name="keterangan" rows="3"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Deskripsi singkat organisasi..."></textarea>
+            </div>
             <div class="flex justify-end gap-3 mt-6">
                 <button type="button" onclick="toggleModal('modal-add-org')" class="px-6 py-2 text-slate-500 font-bold hover:text-slate-700">Batal</button>
                 <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-indigo-700">Simpan</button>
@@ -82,6 +92,11 @@
                 <label class="block text-sm font-bold text-slate-700 mb-2">Nama Organisasi</label>
                 <input type="text" name="nama_organisasi" id="edit-nama-org" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500" required>
             </div>
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">Keterangan</label>
+                <textarea name="keterangan" id="edit-keterangan-org" rows="3"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+            </div>
             <div class="flex justify-end gap-3 mt-6">
                 <button type="button" onclick="toggleModal('modal-edit-org')" class="px-6 py-2 text-slate-500 font-bold hover:text-slate-700">Batal</button>
                 <button type="submit" class="bg-amber-500 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-amber-600">Perbarui</button>
@@ -97,7 +112,8 @@
 
     function editOrg(data) {
         document.getElementById('form-edit-org').action = `/admin/organisasi/${data.id}`;
-        document.getElementById('edit-nama-org').value = data.nama_organisasi;
+        document.getElementById('edit-nama-org').value = data.nama_organisasi ?? '';
+        document.getElementById('edit-keterangan-org').value = data.keterangan ?? '';
         toggleModal('modal-edit-org');
     }
 </script>

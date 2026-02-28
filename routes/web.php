@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\PembinaController; 
 use App\Http\Controllers\Admin\OrganisasiController;
+use App\Http\Controllers\Pembina\SiswaController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -32,6 +33,9 @@ Route::prefix('pembina')->middleware('auth:pembina')->group(function () {
     Route::get('dashboard', function () {
         return view('pembina.dashboard');
     })->name('pembina.dashboard');
+
+    // siswa
+    Route::resource('siswa', SiswaController::class)->except(['create', 'show', 'edit']);
 });
 
 // AREA SISWA

@@ -27,6 +27,7 @@
             <tr>
                 <th class="px-8 py-5">Nama</th>
                 <th class="px-8 py-5">Email</th>
+                <th>Nomor Telepon</th>
                 <th class="px-8 py-5">Organisasi</th>
                 <th class="px-8 py-5 text-center">Aksi</th>
             </tr>
@@ -36,6 +37,7 @@
             <tr class="hover:bg-slate-50/50 transition-colors">
                 <td class="px-8 py-5 font-bold text-slate-700">{{ $item->name }}</td>
                 <td class="px-8 py-5 text-slate-500 text-sm">{{ $item->email }}</td>
+                <td>{{ $item->no_telepon ?? '-' }}</td>
                 <td class="px-8 py-5 italic text-blue-600 text-sm font-medium">{{ $item->organisasi->nama_organisasi ?? '-' }}</td>
                 <td class="px-8 py-5 flex justify-center gap-2">
                     <button onclick="editPembina({{ $item }})" class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all">
@@ -75,6 +77,12 @@
                 <input type="email" name="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="budi@email.com" required>
             </div>
             <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Nomor Telepon</label>
+                <input type="text" name="no_telepon"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="08xxxxxxxxxx">
+            </div>
+            <div>
                 <label class="block text-sm font-bold text-slate-700 mb-1">Organisasi</label>
                 <select name="organisasi_id" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
                     <option value="">Pilih Organisasi</option>
@@ -109,6 +117,11 @@
                 <input type="email" name="email" id="edit-email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
             </div>
             <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Nomor Telepon</label>
+                <input type="text" name="no_telepon" id="edit-phone"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+            <div>
                 <label class="block text-sm font-bold text-slate-700 mb-1">Organisasi</label>
                 <select name="organisasi_id" id="edit-org" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" required>
                     @foreach($organisasi as $org)
@@ -135,6 +148,7 @@
         document.getElementById('edit-form').action = `/admin/pembina/${data.id}`;
         document.getElementById('edit-name').value = data.name;
         document.getElementById('edit-email').value = data.email;
+        document.getElementById('edit-phone').value = data.no_telepon;
         document.getElementById('edit-org').value = data.organisasi_id;
         toggleModal('modal-edit');
     }

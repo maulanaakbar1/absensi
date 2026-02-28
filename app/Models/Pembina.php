@@ -14,6 +14,7 @@ class Pembina extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'no_telepon',
         'password',
         'organisasi_id',
     ];

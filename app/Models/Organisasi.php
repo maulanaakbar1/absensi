@@ -9,6 +9,7 @@ class Organisasi extends Model
     protected $table = 'organisasi'; 
     protected $fillable = [
         'nama_organisasi',
+        'keterangan',
     ];
 
 
