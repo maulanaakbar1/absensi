@@ -1,3 +1,3 @@
-<footer class="bg-white/20 backdrop-blur-md text-white text-center py-4 text-sm">
+<footer class="bg-white shadow text-center py-4 text-sm text-gray-500">
     © {{ date('Y') }} Sistem Absensi - Portal Siswa
 </footer>
