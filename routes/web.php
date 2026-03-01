@@ -35,7 +35,7 @@ Route::prefix('pembina')->middleware('auth:pembina')->group(function () {
     })->name('pembina.dashboard');
 
     // siswa
-    Route::resource('siswa', SiswaController::class)->except(['create', 'show', 'edit']);
+    Route::resource('siswa', SiswaController::class)->except(['create', 'edit']);
 });
 
 // AREA SISWA

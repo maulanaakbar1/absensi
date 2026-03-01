@@ -73,4 +73,10 @@ class SiswaController extends Controller
         Siswa::findOrFail($id)->delete();
         return back()->with('success', 'Siswa berhasil dihapus!');
     }
+
+    public function show($id)
+    {
+        $siswa = Siswa::findOrFail($id);
+        return view('pembina.siswa.show', compact('siswa'));
+    }
 }
