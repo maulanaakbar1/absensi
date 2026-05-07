@@ -5,13 +5,34 @@
 <div class="space-y-8">
     {{-- Header --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {{-- Sisi Kiri: Ucapan Selamat Datang --}}
         <div>
             <h3 class="text-2xl font-bold text-slate-800">Halo, {{ Auth::user()->name }}! 👋</h3>
-            <p class="text-slate-500 text-sm">Selamat datang kembali di panel pembina ekskul.</p>
+            <p class="text-slate-500 text-sm mt-1">Selamat datang kembali di panel pembina ekskul.</p>
         </div>
-        <div class="bg-white px-4 py-2 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm">
-            <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Status: Pembina Aktif</span>
+
+        {{-- Sisi Kanan: Status & Tanggal --}}
+        <div class="flex flex-col md:flex-row items-end md:items-center gap-3">
+            {{-- Kartu Tanggal --}}
+            <div class="bg-white px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                <div class="h-8 w-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">Hari Ini</span>
+                    <span class="text-sm font-bold text-slate-700 leading-none">
+                        {{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
+                    </span>
+                </div>
+            </div>
+
+            {{-- Badge Status --}}
+            <div class="bg-white px-4 py-2.5 rounded-2xl border border-slate-200 flex items-center gap-3 shadow-sm">
+                <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Status: Pembina Aktif</span>
+            </div>
         </div>
     </div>
 
@@ -88,7 +109,7 @@
                 </svg>
             </div>
             <div>
-                <h5 class="font-bold text-slate-800">Jadwal Hari Ini</h5>
+                <h5 class="font-bold text-slate-800">Jadwal Latihan</h5>
                 @if($jadwalTerdekat)
                     <p class="text-sm text-blue-700 mt-1 font-semibold">
                         {{ $jadwalTerdekat->hari }}, 

@@ -3,9 +3,27 @@
 @section('title', 'Dashboard Siswa')
 
 @section('content')
-<div class="mb-8">
-    <h3 class="text-2xl font-bold text-slate-800">Halo, {{ Auth::user()->name }}! 👋</h3>
-    <p class="text-slate-500 text-sm">Selamat datang di panel siswa AbsensiPro.</p>
+<div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    {{-- Sisi Kiri: Ucapan Selamat Datang --}}
+    <div>
+        <h3 class="text-2xl font-bold text-slate-800">Halo, {{ Auth::user()->name }}! 👋</h3>
+        <p class="text-slate-500 text-sm">Selamat datang di panel siswa AbsensiPro.</p>
+    </div>
+
+    {{-- Sisi Kanan: Hari & Tanggal --}}
+    <div class="bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <div class="flex flex-col">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">Hari Ini</span>
+            <span class="text-sm font-bold text-slate-700 leading-none">
+                {{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
+            </span>
+        </div>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
