@@ -8,7 +8,29 @@
         </button>
         
         <div class="hidden md:block">
-            <h2 class="text-slate-800 font-extrabold text-lg leading-tight">Dashboard Pembina</h2>
+            <h2 class="text-slate-800 font-extrabold text-lg leading-tight">
+
+                @if (Request::routeIs('admin.dashboard'))
+                    Dashboard Admin
+
+                @elseif (Request::routeIs('admin.pembina.*'))
+                    Data Pembina
+
+                @elseif (Request::routeIs('admin.siswa.*'))
+                    Data Siswa
+
+                @elseif (Request::routeIs('admin.ekskul.*'))
+                    Data Ekstrakurikuler
+
+                @elseif (Request::routeIs('admin.rekap.*'))
+                    Rekap Absensi
+
+                @else
+                    Panel Admin
+
+                @endif
+
+            </h2>
         </div>
     </div>
 

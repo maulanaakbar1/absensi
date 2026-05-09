@@ -8,7 +8,38 @@
         </button>
         
         <div class="hidden md:block">
-            <h2 class="text-slate-800 font-extrabold text-lg leading-tight">Dashboard Pembina</h2>
+            <h2 class="text-slate-800 font-extrabold text-lg leading-tight">
+
+                @if (Request::routeIs('pembina.dashboard'))
+                    Dashboard Pembina
+
+                @elseif (Request::routeIs('pembina.profile'))
+                    Profil Pembina
+
+                @elseif (Request::routeIs('pembina.absensi.manage'))
+                    Kelola Absensi
+
+                @elseif (Request::routeIs('pembina.anggota.*'))
+                    Data Anggota
+
+                @elseif (Request::routeIs('pembina.libur.*'))
+                    Hari Libur
+
+                @elseif (Request::routeIs('pembina.jadwal.*'))
+                    Jadwal Latihan
+
+                @elseif (Request::routeIs('pembina.rekap.*'))
+                    Rekap Absensi
+                            
+                @elseif (Request::routeIs('pembina.riwayat.*'))
+                    Riwayat Absensi
+
+                @else
+                    Panel Pembina
+
+                @endif
+
+            </h2>
         </div>
     </div>
 
