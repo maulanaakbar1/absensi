@@ -4,18 +4,14 @@
 
 @section('content')
 <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-    {{-- Sisi Kiri: Ucapan Selamat Datang --}}
     <div>
-        <h3 class="text-2xl font-bold text-slate-800">Halo, {{ Auth::user()->name }}! 👋</h3>
-        <p class="text-slate-500 text-sm">Selamat datang di panel siswa AbsensiPro.</p>
+        <h3 class="text-2xl font-bold text-slate-800">Halo, {{ $user->name }}! 👋</h3>
+        <p class="text-slate-500 text-sm">Selamat datang di panel siswa <span class="font-semibold text-blue-600">AbsensiPro</span>.</p>
     </div>
 
-    {{-- Sisi Kanan: Hari & Tanggal --}}
     <div class="bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
         <div class="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+            <i class="fas fa-calendar-day"></i>
         </div>
         <div class="flex flex-col">
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">Hari Ini</span>
@@ -26,41 +22,165 @@
     </div>
 </div>
 
+{{-- Statistik Cards --}}
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="h-12 w-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+    {{-- Total Kehadiran --}}
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-blue-400 transition-colors">
+        <div class="flex items-center gap-4">
+            <div class="h-14 w-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-clipboard-check"></i>
             </div>
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Kehadiran</p>
-                <h4 class="text-2xl font-bold text-slate-800">0</h4>
+                <h4 class="text-3xl font-bold text-slate-800">{{ $totalHadir }}</h4>
             </div>
         </div>
     </div>
 
-    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="h-12 w-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+    {{-- Ekstrakurikuler --}}
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-emerald-400 transition-colors">
+        <div class="flex items-center gap-4">
+            <div class="h-14 w-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-running"></i>
             </div>
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ekstrakurikuler</p>
-                <h4 class="text-2xl font-bold text-slate-800">Siswa</h4>
+                <h4 class="text-xl font-bold text-slate-800">{{ $namaEkskul }}</h4>
+            </div>
+        </div>
+    </div>
+
+    {{-- Status Akun --}}
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-orange-400 transition-colors">
+        <div class="flex items-center gap-4">
+            <div class="h-14 w-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Status Akun</p>
+                <h4 class="text-xl font-bold text-slate-800">Aktif</h4>
             </div>
         </div>
     </div>
 </div>
 
-<div class="bg-blue-600 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl shadow-blue-200">
-    <div class="relative z-10">
-        <h4 class="text-xl font-bold mb-2">Informasi Penting</h4>
-        <p class="text-blue-100 text-sm max-w-md">Jangan lupa untuk melakukan absensi setiap kali mengikuti kegiatan ekstrakurikuler di SMKN 1 Talaga.</p>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    {{-- Riwayat Absensi Terbaru --}}
+    <div class="lg:col-span-2 bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+            <h4 class="font-bold text-slate-800 text-lg">Riwayat Absensi Terakhir</h4>
+            <a href="#" class="text-blue-600 text-sm font-semibold hover:underline">Lihat Semua</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-xs font-bold">
+                    <tr>
+                        <th class="px-6 py-4">Tanggal</th>
+                        <th class="px-6 py-4">Jam</th>
+                        <th class="px-6 py-4 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($riwayatAbsensi as $absensi)
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4 text-sm font-medium text-slate-700">
+                            {{ \Carbon\Carbon::parse($absensi->tanggal)->isoFormat('D MMM YYYY') }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-500">{{ $absensi->jam_masuk }}</td>
+                        <td class="px-6 py-4 text-center">
+                            @if($absensi->status == 'hadir')
+                                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">Hadir</span>
+                            @else
+                                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">{{ ucfirst($absensi->status) }}</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="3" class="px-6 py-8 text-center text-slate-400 italic">Belum ada data absensi.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 bg-blue-500 rounded-full opacity-50"></div>
+
+    {{-- Widget Sisi Kanan --}}
+    <div class="flex flex-col gap-6">
+        {{-- Jadwal Ekskul --}}
+        <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+                <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                    <i class="fas fa-calendar-alt text-blue-600"></i>
+                    Jadwal Latihan
+                </h4>
+            </div>
+            <div class="p-6 space-y-4">
+                @forelse($jadwalEkskul as $jadwal)
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 group transition-all hover:bg-white hover:shadow-md hover:border-blue-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <p class="text-sm font-black text-slate-700 tracking-tight">{{ $jadwal->hari }}</p>
+                                <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">
+                                    {{ date('H:i', strtotime($jadwal->jam_mulai)) }} - {{ date('H:i', strtotime($jadwal->jam_selesai)) }} WIB
+                                </p>
+                            </div>
+                            <div class="h-8 w-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-colors">
+                                <i class="fas fa-map-marker-alt text-xs"></i>
+                            </div>
+                        </div>
+                        
+                        {{-- Lokasi & Keterangan --}}
+                        <div class="space-y-1 border-t border-slate-200 pt-2 mt-2">
+                            <p class="text-[11px] text-slate-600 flex items-center gap-2">
+                                <span class="font-bold text-slate-400">Lokasi:</span> {{ $jadwal->lokasi }}
+                            </p>
+                            @if($jadwal->keterangan)
+                            <p class="text-[11px] text-slate-500 flex items-start gap-2 italic leading-relaxed">
+                                <span class="font-bold text-slate-400 not-italic uppercase tracking-tighter">Note:</span> 
+                                "{{ $jadwal->keterangan }}"
+                            </p>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div class="py-8 text-center">
+                        <div class="h-12 w-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-calendar-times text-slate-300"></i>
+                        </div>
+                        <p class="text-slate-400 italic text-xs">Belum ada jadwal tetap.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Info Pembina --}}
+        @if($pembina)
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
+            <div class="relative z-10 flex items-center gap-4">
+                <div class="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-100">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">Pembina Ekskul</p>
+                    <h5 class="text-sm font-bold text-slate-800 leading-tight">{{ $pembina->nama ?? $pembina->user->name }}</h5>
+                </div>
+            </div>
+            {{-- Background Decoration --}}
+            <div class="absolute -right-4 -bottom-4 opacity-5">
+                <i class="fas fa-users text-8xl transform -rotate-12"></i>
+            </div>
+        </div>
+        @endif
+
+        {{-- Help Center (Tetap ada namun dengan gaya baru) --}}
+        <div class="bg-slate-900 p-6 rounded-[2rem] text-white shadow-xl shadow-slate-200">
+            <p class="text-slate-400 text-xs mb-3">Ada kendala atau salah data?</p>
+            <a href="https://wa.me/628xxx" class="flex items-center justify-center gap-3 bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-2xl font-bold transition-all shadow-lg shadow-emerald-900/20">
+                <i class="fab fa-whatsapp"></i>
+                Chat Admin
+            </a>
+        </div>
+    </div>
 </div>
 @endsection
