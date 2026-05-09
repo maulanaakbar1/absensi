@@ -62,8 +62,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/anggota/{id}', [AnggotaController::class, 'update'])->name('pembina.anggota.update');
         Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])->name('pembina.anggota.destroy');
 
-        Route::get('/absensi/manage', [RekapAbsensiController::class, 'manage'])->name('pembina.absensi.manage');
-        Route::post('/absensi/update', [RekapAbsensiController::class, 'updateStatus'])->name('pembina.absensi.update');
+        Route::get('/absensi/manage', [PembinaRekap::class, 'manage'])->name('pembina.absensi.manage');
+
+        Route::post('/absensi/update', [PembinaRekap::class, 'updateStatus'])->name('pembina.absensi.update');
 
         Route::get('/rekap-absensi', [PembinaRekap::class, 'index'])->name('pembina.rekap.index');
 
@@ -78,7 +79,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/hari-libur/{id}', [JadwalController::class, 'liburUpdate'])->name('pembina.libur.update');
         Route::delete('/hari-libur/{id}', [JadwalController::class, 'liburDestroy'])->name('pembina.libur.destroy');
 
-        Route::get('/riwayat-absensi', [RekapAbsensiController::class, 'riwayat'])->name('pembina.riwayat.index');
+        Route::get('/riwayat-absensi', [PembinaRekap::class, 'riwayat'])->name('pembina.riwayat.index');
 
     });
 
