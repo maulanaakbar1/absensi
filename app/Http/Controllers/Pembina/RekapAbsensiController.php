@@ -40,35 +40,62 @@ class RekapAbsensiController extends Controller
     }
 
     public function updateStatus(Request $request)
-    {
-        $request->validate([
-            'siswa_id' => 'required|exists:siswas,id',
-            'tanggal' => 'required|date',
-            'status' => 'required|in:hadir,izin,sakit,alpha'
-        ]);
+{
+    $request->validate([
+        'siswa_id' => 'required|exists:siswas,id',
+        'tanggal' => 'required|date',
+        'status' => 'required|in:hadir,izin,sakit,alpha'
+    ]);
 
-        // Cari data absensi berdasarkan siswa dan tanggal
-        $absensi = Absensi::where('siswa_id', $request->siswa_id)
-            ->whereDate('tanggal', $request->tanggal)
-            ->first();
+    $user = auth()->user();
+    $ekskulId = $user->pembina->ekstrakurikuler_id;
 
-        if ($absensi && $absensi->status === 'hadir') {
-            return back()->with('error', 'Status hadir tidak bisa diubah!');
-        }
+    $hariInput = Carbon::parse($request->tanggal)->translatedFormat('l'); 
+    $hariMap = [
+        'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+        'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
+    ];
+    $hariEnglish = Carbon::parse($request->tanggal)->format('l');
+    $hariIndo = $hariMap[$hariEnglish];
 
-        if ($absensi) {
-            $absensi->update([
-                'status' => $request->status
-            ]);
-        } else {
-            Absensi::create([
-                'siswa_id' => $request->siswa_id,
-                'tanggal'  => $request->tanggal,
-                'status'   => $request->status,
-            ]);
-        }
-        return redirect()->back()->with('success', 'Status absensi berhasil diperbarui');
+    // 2. Cek apakah ada jadwal ekskul di hari tersebut
+    $cekJadwal = \App\Models\Jadwal::where('ekstrakurikuler_id', $ekskulId)
+                ->where('hari', $hariIndo)
+                ->exists();
+
+    if (!$cekJadwal) {
+        return back()->with('error', "Tidak ada jadwal latihan pada hari $hariIndo (" . date('d/m/Y', strtotime($request->tanggal)) . ")");
     }
+
+    // 3. Cek apakah tanggal tersebut terdaftar sebagai Hari Libur Ekskul
+    $cekLibur = \App\Models\HariLibur::where('ekstrakurikuler_id', $ekskulId)
+                ->whereDate('tanggal', $request->tanggal)
+                ->exists();
+    
+    if ($cekLibur) {
+        return back()->with('error', "Gagal absen! Tanggal tersebut ditandai sebagai hari libur ekskul.");
+    }
+
+    // --- Logika update/create absensi tetap sama ---
+    $absensi = Absensi::where('siswa_id', $request->siswa_id)
+        ->whereDate('tanggal', $request->tanggal)
+        ->first();
+
+    if ($absensi && $absensi->status === 'hadir') {
+        return back()->with('error', 'Status hadir tidak bisa diubah!');
+    }
+
+    if ($absensi) {
+        $absensi->update(['status' => $request->status]);
+    } else {
+        Absensi::create([
+            'siswa_id' => $request->siswa_id,
+            'tanggal'  => $request->tanggal,
+            'status'   => $request->status,
+        ]);
+    }
+    return redirect()->back()->with('success', 'Status absensi berhasil diperbarui');
+}
 
     public function manage(Request $request)
     {

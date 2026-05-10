@@ -3,7 +3,7 @@
     
     <div class="p-6 flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-blue-600">AbsensiPro</h1>
+            <h1 class="text-2xl font-bold text-blue-600">EskulMate</h1>
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Pembina Panel</p>
         </div>
         <button @click="sidebarOpen = false" class="md:hidden text-slate-400 hover:text-red-500">

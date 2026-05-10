@@ -6,7 +6,17 @@
         <h1 class="text-2xl font-bold text-slate-800">Manajemen Kehadiran</h1>
     </div>
 
-    <!-- Filter Tanggal -->
+    {{-- LOGIKA PENGECEKAN JADWAL --}}
+    @php
+        $hariMap = [
+            'Sunday' => 'Minggu', 'Monday' => 'Senin', 'Tuesday' => 'Selasa',
+            'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
+        ];
+        $hariIni = $hariMap[date('l', strtotime($tanggal))];
+        $isJadwal = \App\Models\Jadwal::where('ekstrakurikuler_id', auth()->user()->pembina->ekstrakurikuler_id)
+                    ->where('hari', $hariIni)->exists();
+    @endphp
+
     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
         <form action="{{ route('pembina.absensi.manage') }}" method="GET" class="flex items-end gap-4">
             <div>
@@ -19,6 +29,19 @@
             </button>
         </form>
     </div>
+
+    {{-- ALERT JIKA BUKAN HARI JADWAL --}}
+    @if(!$isJadwal)
+    <div class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 text-amber-700">
+        <div class="flex items-center">
+            <span class="mr-2 text-lg">⚠️</span>
+            <p class="text-sm font-medium">
+                Hari <strong>{{ $hariIni }}</strong> bukan jadwal rutin ekskul kamu. 
+                Tombol absen dinonaktifkan secara otomatis untuk mencegah manipulasi data.
+            </p>
+        </div>
+    </div>
+    @endif
 
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <table class="w-full text-sm text-left">
@@ -49,10 +72,11 @@
                                     <input type="hidden" name="siswa_id" value="{{ $siswa->id }}">
                                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                                     
+                                    {{-- SELECT DINONAKTIFKAN JIKA SUDAH HADIR ATAU BUKAN HARI JADWAL --}}
                                     <select name="status" onchange="this.form.submit()"
-                                        @if($status == 'hadir') disabled @endif
+                                        @if($status == 'hadir' || !$isJadwal) disabled @endif
                                         class="text-center rounded-lg py-1.5 w-40
-                                        {{ $status == 'hadir' ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500' }}">
+                                        {{ ($status == 'hadir' || !$isJadwal) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500' }}">
                                         <option value="" {{ $status == 'belum ada' ? 'selected' : '' }} disabled>-- Pilih Status --</option>
                                         <option value="hadir" {{ $status == 'hadir' ? 'selected' : '' }}>Hadir</option>
                                         <option value="sakit" {{ $status == 'sakit' ? 'selected' : '' }}>Sakit</option>
