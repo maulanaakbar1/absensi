@@ -4,17 +4,21 @@
 @section('content')
 <div x-data="{ openAdd: false, openEdit: false, editData: { id: '', nama: '', deskripsi: '' } }">
     
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
+    <div class="mb-8">
+        <div class="mb-4">
             <h3 class="text-2xl font-bold text-slate-800">Daftar Ekstrakurikuler</h3>
             <p class="text-slate-500 text-sm">Kelola semua cabang kegiatan ekskul SMKN 1 Talaga.</p>
         </div>
-        <button @click="openAdd = true" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-            Tambah Ekskul
-        </button>
+
+        <div class="flex justify-end">
+            <button @click="openAdd = true" 
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md shadow-blue-100 flex items-center gap-2 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Tambah Ekskul
+            </button>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

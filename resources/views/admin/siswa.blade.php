@@ -4,19 +4,22 @@
 @section('content')
 <div x-data="{ openModal: false, editMode: false, currentData: {} }" class="space-y-6">
     
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-            <h3 class="text-2xl font-bold text-slate-800">Data Siswa Seluruh Ekskul</h3>
-            <p class="text-slate-500 text-sm">Kelola seluruh data siswa SMKN 1 Talaga.</p>
-        </div>
+    <div class="mb-6">
+    <div class="mb-4">
+        <h3 class="text-2xl font-bold text-slate-800">Data Siswa Seluruh Ekskul</h3>
+        <p class="text-slate-500 text-sm">Kelola seluruh data siswa SMKN 1 Talaga.</p>
+    </div>
+
+    <div class="flex justify-end">
         <button @click="openModal = true; editMode = false; currentData = { jk: 'L', ekskul: '{{ $ekskul->first()->id ?? '' }}' }" 
-                class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md shadow-blue-100 flex items-center gap-2 text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
             Tambah Siswa
         </button>
     </div>
+</div>
 
     @if(session('success'))
         {{-- Warna alert diubah ke Blue --}}
