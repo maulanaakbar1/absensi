@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class SiswaKelas extends Model
+{
+    protected $table = 'siswa_kelas';
+
+    protected $fillable = [
+        'siswa_id',
+        'ekstrakurikuler_id',
+        'tahun_ajaran',
+        'kelas',
+        'status'
+    ];
+
+    public function siswa()
+    {
+        return $this->belongsTo(Siswa::class);
+    }
+
+    public function ekstrakurikuler()
+    {
+        return $this->belongsTo(Ekstrakurikuler::class);
+    }
+
+    public function user()
+    {
+        return $this->siswa->user();
+    }
+}

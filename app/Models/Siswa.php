@@ -8,11 +8,8 @@ class Siswa extends Model
 {
     protected $fillable = [
         'user_id',
-        'ekstrakurikuler_id',
         'nis',
         'nisn',
-        'kelas',
-        'tahun_angkatan',
         'jenis_kelamin',
         'alamat',
         'tempat_lahir',
@@ -33,5 +30,10 @@ class Siswa extends Model
 
     public function absensis() {
         return $this->hasMany(Absensi::class);
+    }
+
+    public function riwayatKelas()
+    {
+        return $this->hasMany(SiswaKelas::class);
     }
 }
