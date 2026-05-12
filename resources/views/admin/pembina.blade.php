@@ -2,26 +2,49 @@
 @section('title', 'Data Pembina')
 
 @section('content')
-{{-- Inisialisasi Alpine.js --}}
-<div x-data="{ openAdd: false, openEdit: false, editData: { id: '', name: '', nip: '', no_telp: '', ekskul_id: '' } }">
+{{-- Tambahkan pencarian ke dalam x-data --}}
+<div x-data="{ 
+    openAdd: false, 
+    openEdit: false, 
+    search: '',
+    editData: { id: '', name: '', nip: '', no_telp: '', ekskul_id: '' } }">
     
-    <div class="mb-8">
-        <div class="mb-4">
+    {{-- Header --}}
+    <div class="flex flex-col gap-4 mb-8">
+        <div>
             <h3 class="text-2xl font-bold text-slate-800">Manajemen Pembina</h3>
             <p class="text-slate-500 text-sm">Kelola data pembina ekstrakurikuler sekolah.</p>
         </div>
 
-        <div class="flex justify-end">
+        {{-- Container tombol: mobile ke kiri, md (desktop) ke kanan --}}
+        <div class="flex justify-start md:justify-end">
             <button @click="openAdd = true" 
-                    class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition shadow-md shadow-blue-100 flex items-center gap-2 text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md shadow-blue-100 hover:bg-blue-700 transition flex items-center gap-2 w-fit"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
                 </svg>
                 Tambah Pembina
             </button>
         </div>
     </div>
 
+    {{-- Filter Pencarian (Terpisah agar lebih bersih) --}}
+    <div class="mb-6 flex justify-start">
+        <div class="relative w-full md:w-72">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </span>
+            <input type="text" 
+                    x-model="search" 
+                    placeholder="Cari nama pembina..." 
+                    class="pl-10 pr-4 py-2.5 w-full rounded-xl border border-slate-200 focus:ring-0 focus:border-blue-500 outline-none transition text-sm bg-white shadow-sm">
+        </div>
+    </div>
+
+    {{-- Bagian Tabel dengan Filter --}}
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
@@ -36,7 +59,10 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @forelse($pembinas as $p)
-                    <tr class="hover:bg-slate-50/80 transition">
+                    {{-- Alpine logic untuk menyembunyikan baris jika tidak sesuai search --}}
+                    <tr x-show="'{{ strtolower($p->user->name) }}'.includes(search.toLowerCase())" 
+                        class="hover:bg-slate-50/80 transition"
+                        x-transition.opacity>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">

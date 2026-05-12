@@ -7,18 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class Siswa extends Model
 {
     protected $fillable = [
-        'user_id', 
-        'ekstrakurikuler_id', 
-        'nis', 
-        'nisn', 
-        'kelas', 
-        'jenis_kelamin', 
-        'alamat', 
-        'tempat_lahir', 
-        'tanggal_lahir', 
-        'nama_ayah', 
-        'nama_ibu', 
-        'no_telp_ayah', 
+        'user_id',
+        'ekstrakurikuler_id',
+        'nis',
+        'nisn',
+        'kelas',
+        'tahun_angkatan',
+        'jenis_kelamin',
+        'alamat',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'nama_ayah',
+        'nama_ibu',
+        'no_telp_ayah',
         'no_telp_ibu'
     ];
 
