@@ -25,7 +25,7 @@
 {{-- Statistik Cards --}}
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     {{-- Total Kehadiran --}}
-    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-blue-400 transition-colors">
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
         <div class="flex items-center gap-4">
             <div class="h-14 w-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
                 <i class="fas fa-clipboard-check"></i>
@@ -38,7 +38,7 @@
     </div>
 
     {{-- Ekstrakurikuler --}}
-    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-emerald-400 transition-colors">
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
         <div class="flex items-center gap-4">
             <div class="h-14 w-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
                 <i class="fas fa-running"></i>
@@ -51,7 +51,7 @@
     </div>
 
     {{-- Status Akun --}}
-    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:border-orange-400 transition-colors">
+    <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
         <div class="flex items-center gap-4">
             <div class="h-14 w-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center text-xl shadow-inner">
                 <i class="fas fa-user-shield"></i>
