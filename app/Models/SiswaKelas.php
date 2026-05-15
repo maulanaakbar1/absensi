@@ -25,9 +25,4 @@ class SiswaKelas extends Model
     {
         return $this->belongsTo(Ekstrakurikuler::class);
     }
-
-    public function user()
-    {
-        return $this->siswa->user();
-    }
 }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Pembina;
 
 use App\Http\Controllers\Controller;
 use App\Models\Siswa;
-use App\Models\SiswaKelas;
 use App\Models\User;
 use App\Models\Pembina; 
 use App\Models\Ekstrakurikuler;
@@ -17,61 +16,35 @@ class AnggotaController extends Controller
     public function index(Request $request)
     {
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
-
         $ekskulId = $pembina->ekstrakurikuler_id;
 
-        // Ambil list tahun ajaran
-        $listTahun = SiswaKelas::where('ekstrakurikuler_id', $ekskulId)
-            ->select('tahun_ajaran')
-            ->distinct()
-            ->orderBy('tahun_ajaran', 'desc')
-            ->pluck('tahun_ajaran');
+        $listTahun = Siswa::where('ekstrakurikuler_id', $ekskulId)
+                        ->whereNotNull('tahun_angkatan')
+                        ->distinct()
+                        ->orderBy('tahun_angkatan', 'desc')
+                        ->pluck('tahun_angkatan');
 
-        // Ambil list kelas
-        $listKelas = SiswaKelas::where('ekstrakurikuler_id', $ekskulId)
-            ->select('kelas')
-            ->distinct()
-            ->orderBy('kelas')
-            ->pluck('kelas');
+        $query = Siswa::with(['user', 'ekstrakurikuler'])
+                    ->where('ekstrakurikuler_id', $ekskulId);
 
-        // Query anggota
-        $query = SiswaKelas::with(['siswa.user'])
-            ->where('ekstrakurikuler_id', $ekskulId)
-
-            // Filter nama
-            ->when($request->search, function ($q) use ($request) {
-                $q->whereHas('siswa.user', function ($user) use ($request) {
-                    $user->where('name', 'like', '%' . $request->search . '%');
-                });
-            })
-
-            // Filter tahun ajaran
-            ->when($request->tahun_ajaran, function ($q) use ($request) {
-                $q->where('tahun_ajaran', $request->tahun_ajaran);
-            })
-
-            // Filter kelas
-            ->when($request->kelas, function ($q) use ($request) {
-                $q->where('kelas', $request->kelas);
+        if ($request->filled('search')) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
             });
+        }
 
-        // Ambil data
-        $anggota = $query
-            ->orderBy('tahun_ajaran', 'desc')
-            ->orderBy('kelas', 'asc')
-            ->get();
+        if ($request->filled('tahun')) {
+            $query->where('tahun_angkatan', $request->tahun);
+        }
 
-        return view('pembina.anggota', compact(
-            'anggota',
-            'listTahun',
-            'listKelas'
-        ));
+        $anggota = $query->latest()->get();
+
+        return view('pembina.anggota', compact('anggota', 'listTahun'));
     }
 
     public function store(Request $request)
     {
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
-
         $ekskulId = $pembina->ekstrakurikuler_id;
 
         $request->validate([
@@ -81,7 +54,7 @@ class AnggotaController extends Controller
             'nis' => 'required|unique:siswas,nis',
             'nisn' => 'required|unique:siswas,nisn',
             'kelas' => 'required',
-            'tahun_ajaran' => 'required',
+            'tahun_angkatan' => 'required|digits:4',
             'jenis_kelamin' => 'required',
         ]);
 
@@ -92,30 +65,22 @@ class AnggotaController extends Controller
             'role' => 'siswa'
         ]);
 
-        $siswa = Siswa::create([
+        Siswa::create([
             'user_id' => $user->id,
+            'ekstrakurikuler_id' => $ekskulId,
             'nis' => $request->nis,
             'nisn' => $request->nisn,
+            'kelas' => $request->kelas,
+            'tahun_angkatan' => $request->tahun_angkatan,
             'jenis_kelamin' => $request->jenis_kelamin
         ]);
 
-        SiswaKelas::create([
-            'siswa_id' => $siswa->id,
-            'ekstrakurikuler_id' => $ekskulId,
-            'tahun_ajaran' => $request->tahun_ajaran,
-            'kelas' => $request->kelas,
-        ]);
-
-        return back()->with(
-            'success',
-            'Anggota berhasil ditambahkan ke ekstrakurikuler Anda!'
-        );
+        return back()->with('success', 'Anggota berhasil ditambahkan ke ekstrakurikuler Anda!');
     }
 
     public function update(Request $request, $id)
     {
         $siswa = Siswa::findOrFail($id);
-
         $user = $siswa->user;
 
         $request->validate([
@@ -124,8 +89,7 @@ class AnggotaController extends Controller
             'nis' => 'required|unique:siswas,nis,' . $siswa->id,
             'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
             'kelas' => 'required',
-            'tahun_ajaran' => 'required',
-            'jenis_kelamin' => 'required',
+            'tahun_angkatan' => 'required|digits:4',
         ]);
 
         $user->update([
@@ -133,47 +97,26 @@ class AnggotaController extends Controller
             'email' => $request->email,
         ]);
 
-        // Update password jika diisi
-        if ($request->filled('password')) {
-            $user->update([
-                'password' => Hash::make($request->password)
-            ]);
+        if($request->filled('password')) {
+            $user->update(['password' => Hash::make($request->password)]);
         }
 
-        $siswa->update([
-            'nis' => $request->nis,
-            'nisn' => $request->nisn,
-            'jenis_kelamin' => $request->jenis_kelamin,
-        ]);
+        $siswa->update($request->only([
+            'nis',
+            'nisn',
+            'kelas',
+            'tahun_angkatan',
+            'jenis_kelamin',
+            'ekstrakurikuler_id'
+        ]));
 
-        // Update data kelas aktif
-        $riwayat = SiswaKelas::where('siswa_id', $siswa->id)
-            ->where('status', 'aktif')
-            ->first();
-
-        if ($riwayat) {
-            $riwayat->update([
-                'kelas' => $request->kelas,
-                'tahun_ajaran' => $request->tahun_ajaran,
-            ]);
-        }
-
-        return back()->with(
-            'success',
-            'Data anggota berhasil diperbarui!'
-        );
+        return back()->with('success', 'Data anggota berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);
-
-        // otomatis hapus relasi jika pakai cascade
-        $siswa->user->delete();
-
-        return back()->with(
-            'success',
-            'Anggota berhasil dihapus!'
-        );
+        $siswa->user->delete(); // Ini otomatis hapus siswas karena cascade
+        return back()->with('success', 'Anggota berhasil dihapus!');
     }
 }
