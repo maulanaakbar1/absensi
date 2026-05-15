@@ -5,8 +5,7 @@ namespace App\Http\Controllers\Pembina;
 use App\Http\Controllers\Controller;
 use App\Models\Siswa;
 use App\Models\User;
-use App\Models\Pembina; 
-use App\Models\Ekstrakurikuler;
+use App\Models\Pembina;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -18,12 +17,6 @@ class AnggotaController extends Controller
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
         $ekskulId = $pembina->ekstrakurikuler_id;
 
-        $listTahun = Siswa::where('ekstrakurikuler_id', $ekskulId)
-                        ->whereNotNull('tahun_angkatan')
-                        ->distinct()
-                        ->orderBy('tahun_angkatan', 'desc')
-                        ->pluck('tahun_angkatan');
-
         $query = Siswa::with(['user', 'ekstrakurikuler'])
                     ->where('ekstrakurikuler_id', $ekskulId);
 
@@ -33,13 +26,9 @@ class AnggotaController extends Controller
             });
         }
 
-        if ($request->filled('tahun')) {
-            $query->where('tahun_angkatan', $request->tahun);
-        }
-
         $anggota = $query->latest()->get();
 
-        return view('pembina.anggota', compact('anggota', 'listTahun'));
+        return view('pembina.anggota', compact('anggota'));
     }
 
     public function store(Request $request)
@@ -54,7 +43,6 @@ class AnggotaController extends Controller
             'nis' => 'required|unique:siswas,nis',
             'nisn' => 'required|unique:siswas,nisn',
             'kelas' => 'required',
-            'tahun_angkatan' => 'required|digits:4',
             'jenis_kelamin' => 'required',
         ]);
 
@@ -71,7 +59,6 @@ class AnggotaController extends Controller
             'nis' => $request->nis,
             'nisn' => $request->nisn,
             'kelas' => $request->kelas,
-            'tahun_angkatan' => $request->tahun_angkatan,
             'jenis_kelamin' => $request->jenis_kelamin
         ]);
 
@@ -89,7 +76,7 @@ class AnggotaController extends Controller
             'nis' => 'required|unique:siswas,nis,' . $siswa->id,
             'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
             'kelas' => 'required',
-            'tahun_angkatan' => 'required|digits:4',
+            'jenis_kelamin' => 'required',
         ]);
 
         $user->update([
@@ -97,18 +84,18 @@ class AnggotaController extends Controller
             'email' => $request->email,
         ]);
 
-        if($request->filled('password')) {
-            $user->update(['password' => Hash::make($request->password)]);
+        if ($request->filled('password')) {
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
         }
 
-        $siswa->update($request->only([
-            'nis',
-            'nisn',
-            'kelas',
-            'tahun_angkatan',
-            'jenis_kelamin',
-            'ekstrakurikuler_id'
-        ]));
+        $siswa->update([
+            'nis' => $request->nis,
+            'nisn' => $request->nisn,
+            'kelas' => $request->kelas,
+            'jenis_kelamin' => $request->jenis_kelamin,
+        ]);
 
         return back()->with('success', 'Data anggota berhasil diperbarui!');
     }
@@ -116,7 +103,9 @@ class AnggotaController extends Controller
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);
-        $siswa->user->delete(); // Ini otomatis hapus siswas karena cascade
+
+        $siswa->user->delete();
+
         return back()->with('success', 'Anggota berhasil dihapus!');
     }
 }
