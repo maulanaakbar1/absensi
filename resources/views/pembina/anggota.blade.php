@@ -53,6 +53,33 @@
                 </select>
             </div>
 
+            {{-- Filter Kelas --}}
+            <div class="w-full md:w-44">
+                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                    Kelas
+                </label>
+
+                <select
+                    name="kelas"
+                    onchange="this.form.submit()"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700"
+                >
+                    <option value="">Semua Kelas</option>
+
+                    <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>
+                        X
+                    </option>
+
+                    <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>
+                        XI
+                    </option>
+
+                    <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>
+                        XII
+                    </option>
+                </select>
+            </div>
+
             {{-- Cari Nama --}}
             <div class="flex-1 w-full">
                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">Cari Nama</label>

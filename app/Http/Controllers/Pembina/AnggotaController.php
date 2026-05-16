@@ -23,6 +23,9 @@ class AnggotaController extends Controller
             $this->getCurrentTahunAjaran()
         );
 
+        // Filter kelas
+        $selectedKelas = $request->get('kelas');
+
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
             : null;
@@ -91,6 +94,17 @@ class AnggotaController extends Controller
             return $siswa;
         });
 
+        // FILTER KELAS
+        if ($selectedKelas) {
+
+            $anggota = $anggota->filter(function ($siswa) use ($selectedKelas) {
+
+                return $siswa->tingkat_display == $selectedKelas;
+
+            })->values();
+
+        }
+
         // Dropdown tahun ajaran
         $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
 
@@ -108,7 +122,8 @@ class AnggotaController extends Controller
             'anggota',
             'tahunAjaranList',
             'selectedTahun',
-            'selectedTahunStart'
+            'selectedTahunStart',
+            'selectedKelas'
         ));
     }
 
