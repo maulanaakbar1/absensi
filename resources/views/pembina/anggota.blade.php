@@ -150,15 +150,20 @@
                     <tr class="hover:bg-slate-50/40 transition">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-3">
-                                <div class="h-9 w-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                <div class="h-10 w-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0">
                                     {{ strtoupper(substr($s->user?->name ?? 'S', 0, 1)) }}
                                 </div>
-                                <span class="font-bold text-slate-700">
-                                    {{ $s->user?->name ?? '-' }}
-                                </span>
+                                <div>
+                                    <p class="font-bold text-slate-700">
+                                        {{ $s->user?->name ?? '-' }}
+                                    </p>
+                                    <p class="text-xs text-slate-400">
+                                        {{ $s->user?->email ?? '-' }}
+                                    </p>
+                                </div>
                             </div>
                         </td>
-
+                        
                         <td class="px-6 py-4 text-sm font-semibold text-slate-600 whitespace-nowrap">
                             {{ $s->nisn ?? '-' }}
                         </td>
