@@ -17,18 +17,85 @@ class AnggotaController extends Controller
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
         $ekskulId = $pembina->ekstrakurikuler_id;
 
+        // Default: tampilkan semua tahun ajaran
+        $selectedTahun = $request->get(
+            'tahun_ajaran',
+            $this->getCurrentTahunAjaran()
+        );
+        $selectedTahunStart = $selectedTahun !== 'semua'
+            ? $this->parseTahunAjaranStart($selectedTahun)
+            : null;
+
         $query = Siswa::with(['user', 'ekstrakurikuler'])
                     ->where('ekstrakurikuler_id', $ekskulId);
 
+        // Hanya filter per tahun kalau bukan "semua"
+        if ($selectedTahunStart) {
+            $query->where(function ($q) use ($selectedTahunStart) {
+                    $q->whereNull('tahun_masuk')
+                    ->orWhere(function ($q2) use ($selectedTahunStart) {
+                        $q2->whereRaw(
+                            '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                            [$selectedTahunStart]
+                        );
+                    });
+            });
+        }
+
         if ($request->filled('search')) {
-            $query->whereHas('user', function($q) use ($request) {
+            $query->whereHas('user', function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%');
             });
         }
 
         $anggota = $query->latest()->get();
 
-        return view('pembina.anggota', compact('anggota'));
+        $anggota->transform(function ($siswa) use ($selectedTahunStart) {
+
+            $tahunDisplay = $selectedTahunStart
+                ?? $this->parseTahunAjaranStart(
+                    $this->getCurrentTahunAjaran()
+                );
+
+            $tingkat = $this->getTingkat($siswa, $tahunDisplay);
+
+            $kelasDisplay = $this->getKelasDisplay($siswa, $tahunDisplay);
+
+            $siswa->kelas_display = $kelasDisplay;
+            $siswa->tingkat_display = $tingkat;
+
+            return $siswa;
+        });
+
+        // List tahun ajaran yang tersedia (untuk dropdown filter)
+        $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
+
+        // Pastikan selectedTahun ada di list
+        if ($selectedTahun !== 'semua' && !in_array($selectedTahun, $tahunAjaranList)) {
+            $tahunAjaranList[] = $selectedTahun;
+        }
+
+        return view('pembina.anggota', compact(
+            'anggota',
+            'tahunAjaranList',
+            'selectedTahun',
+            'selectedTahunStart'
+        ));
+
+        // List tahun ajaran yang tersedia (untuk dropdown filter)
+        $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
+
+        // Pastikan selectedTahun ada di list
+        if ($selectedTahun !== 'semua' && !in_array($selectedTahun, $tahunAjaranList)) {
+            $tahunAjaranList[] = $selectedTahun;
+        }
+
+        return view('pembina.anggota', compact(
+            'anggota',
+            'tahunAjaranList',
+            'selectedTahun',
+            'selectedTahunStart'
+        ));
     }
 
     public function store(Request $request)
@@ -37,29 +104,33 @@ class AnggotaController extends Controller
         $ekskulId = $pembina->ekstrakurikuler_id;
 
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'nis' => 'required|unique:siswas,nis',
-            'nisn' => 'required|unique:siswas,nisn',
-            'kelas' => 'required',
-            'jenis_kelamin' => 'required',
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email|unique:users',
+            'password'      => 'required|min:6',
+            'nis'           => 'required|unique:siswas,nis',
+            'nisn'          => 'required|unique:siswas,nisn',
+            'tahun_masuk'   => 'required|integer|min:2000|max:2100',
+            'tingkat_awal' => 'required|in:10,11,12',
+            'jurusan'       => 'required|string|max:50',
+            'jenis_kelamin' => 'required|in:L,P',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+            'name'     => $request->name,
+            'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'siswa'
+            'role'     => 'siswa',
         ]);
 
         Siswa::create([
-            'user_id' => $user->id,
+            'user_id'           => $user->id,
             'ekstrakurikuler_id' => $ekskulId,
-            'nis' => $request->nis,
-            'nisn' => $request->nisn,
-            'kelas' => $request->kelas,
-            'jenis_kelamin' => $request->jenis_kelamin
+            'tahun_masuk'       => $request->tahun_masuk,
+            'tingkat_awal' => $request->tingkat_awal,
+            'jurusan'           => $request->jurusan,
+            'nis'               => $request->nis,
+            'nisn'              => $request->nisn,
+            'jenis_kelamin'     => $request->jenis_kelamin,
         ]);
 
         return back()->with('success', 'Anggota berhasil ditambahkan ke ekstrakurikuler Anda!');
@@ -68,32 +139,34 @@ class AnggotaController extends Controller
     public function update(Request $request, $id)
     {
         $siswa = Siswa::findOrFail($id);
-        $user = $siswa->user;
+        $user  = $siswa->user;
 
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'nis' => 'required|unique:siswas,nis,' . $siswa->id,
-            'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
-            'kelas' => 'required',
-            'jenis_kelamin' => 'required',
+            'name'          => 'required|string|max:255',
+            'email'         => 'required|email|unique:users,email,' . $user->id,
+            'nis'           => 'required|unique:siswas,nis,' . $siswa->id,
+            'nisn'          => 'required|unique:siswas,nisn,' . $siswa->id,
+            'tahun_masuk'   => 'required|integer|min:2000|max:2100',
+            'tingkat_awal' => 'required|in:10,11,12',
+            'jurusan'       => 'required|string|max:50',
+            'jenis_kelamin' => 'required|in:L,P',
         ]);
 
         $user->update([
-            'name' => $request->name,
+            'name'  => $request->name,
             'email' => $request->email,
         ]);
 
         if ($request->filled('password')) {
-            $user->update([
-                'password' => Hash::make($request->password)
-            ]);
+            $user->update(['password' => Hash::make($request->password)]);
         }
 
         $siswa->update([
-            'nis' => $request->nis,
-            'nisn' => $request->nisn,
-            'kelas' => $request->kelas,
+            'tahun_masuk'   => $request->tahun_masuk,
+            'tingkat_awal' => $request->tingkat_awal,
+            'jurusan'       => $request->jurusan,
+            'nis'           => $request->nis,
+            'nisn'          => $request->nisn,
             'jenis_kelamin' => $request->jenis_kelamin,
         ]);
 
@@ -103,9 +176,86 @@ class AnggotaController extends Controller
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);
-
         $siswa->user->delete();
 
         return back()->with('success', 'Anggota berhasil dihapus!');
+    }
+
+    private function parseTahunAjaranStart(string $tahunAjaran): int
+    {
+        return (int) explode('/', $tahunAjaran)[0];
+    }
+
+    private function getCurrentTahunAjaran(): string
+    {
+        $year = now()->month >= 7
+            ? now()->year
+            : now()->year - 1;
+
+        return $year . '/' . ($year + 1);
+    }
+
+    private function getTahunAjaranList(int $ekskulId): array
+    {
+        $range = Siswa::where('ekstrakurikuler_id', $ekskulId)
+            ->whereNotNull('tahun_masuk')
+            ->selectRaw('MIN(tahun_masuk) as min_tahun, MAX(tahun_masuk) as max_tahun')
+            ->first();
+
+        if (!$range || !$range->min_tahun) {
+            return [];
+        }
+
+        $currentYear = now()->month >= 7
+            ? now()->year
+            : now()->year - 1;
+
+        $maxLimit = max($currentYear, $range->max_tahun);
+
+        $list = [];
+
+        for ($y = $range->min_tahun; $y <= $maxLimit; $y++) {
+            $list[] = $y . '/' . ($y + 1);
+        }
+
+        return array_reverse($list);
+    }
+
+    private function getTingkat($siswa, int $tahunAjaranStart): ?int
+    {
+        if (!$siswa->tahun_masuk) {
+            return null;
+        }
+
+        $tingkat = ($tahunAjaranStart - $siswa->tahun_masuk)
+            + $siswa->tingkat_awal;
+
+        return ($tingkat >= 10 && $tingkat <= 12)
+            ? $tingkat
+            : null;
+    }
+
+    private function getKelasDisplay($siswa, int $tahunAjaranStart): string
+    {
+        $tingkat = $this->getTingkat($siswa, $tahunAjaranStart);
+
+        if (!$tingkat) {
+            return $siswa->kelas ?? '-';
+        }
+
+        $label = match ($tingkat) {
+            10 => 'X',
+            11 => 'XI',
+            12 => 'XII',
+            default => '?',
+        };
+
+        $jurusan = preg_replace(
+            '/^(X|XI|XII)\s+/i',
+            '',
+            $siswa->jurusan ?? ''
+        );
+
+        return trim($label . ' ' . $jurusan);
     }
 }

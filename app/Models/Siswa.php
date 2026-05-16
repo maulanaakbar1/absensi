@@ -9,10 +9,12 @@ class Siswa extends Model
     protected $fillable = [
         'user_id',
         'ekstrakurikuler_id',
+        'tahun_masuk',
+        'tingkat_awal',
+        'jurusan',
         'nis',
         'nisn',
         'kelas',
-        'tahun_angkatan',
         'jenis_kelamin',
         'alamat',
         'tempat_lahir',
@@ -23,15 +25,23 @@ class Siswa extends Model
         'no_telp_ibu'
     ];
 
-    public function user() {
+    protected $casts = [
+        'tahun_masuk' => 'integer',
+        'tanggal_lahir' => 'date',
+    ];
+
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function ekstrakurikuler() {
+    public function ekstrakurikuler()
+    {
         return $this->belongsTo(Ekstrakurikuler::class);
     }
 
-    public function absensis() {
+    public function absensis()
+    {
         return $this->hasMany(Absensi::class);
     }
 }
