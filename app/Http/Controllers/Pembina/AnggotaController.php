@@ -17,39 +17,57 @@ class AnggotaController extends Controller
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
         $ekskulId = $pembina->ekstrakurikuler_id;
 
-        // Default: tampilkan semua tahun ajaran
+        // Default: tampilkan tahun ajaran sekarang
         $selectedTahun = $request->get(
             'tahun_ajaran',
             $this->getCurrentTahunAjaran()
         );
+
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
             : null;
 
         $query = Siswa::with(['user', 'ekstrakurikuler'])
-                    ->where('ekstrakurikuler_id', $ekskulId);
+            ->where('ekstrakurikuler_id', $ekskulId);
 
-        // Hanya filter per tahun kalau bukan "semua"
+        // Filter berdasarkan tahun ajaran
         if ($selectedTahunStart) {
+
             $query->where(function ($q) use ($selectedTahunStart) {
-                    $q->whereNull('tahun_masuk')
-                    ->orWhere(function ($q2) use ($selectedTahunStart) {
-                        $q2->whereRaw(
-                            '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
-                            [$selectedTahunStart]
-                        );
-                    });
+
+                $q->whereNull('tahun_masuk')
+
+                ->orWhere(function ($q2) use ($selectedTahunStart) {
+
+                    $q2->whereRaw(
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        [$selectedTahunStart]
+                    );
+
+                });
+
             });
+
         }
 
+        // Search nama siswa
         if ($request->filled('search')) {
+
             $query->whereHas('user', function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%');
+
+                $q->where(
+                    'name',
+                    'like',
+                    '%' . $request->search . '%'
+                );
+
             });
+
         }
 
         $anggota = $query->latest()->get();
 
+        // Transform data kelas otomatis
         $anggota->transform(function ($siswa) use ($selectedTahunStart) {
 
             $tahunDisplay = $selectedTahunStart
@@ -57,9 +75,15 @@ class AnggotaController extends Controller
                     $this->getCurrentTahunAjaran()
                 );
 
-            $tingkat = $this->getTingkat($siswa, $tahunDisplay);
+            $tingkat = $this->getTingkat(
+                $siswa,
+                $tahunDisplay
+            );
 
-            $kelasDisplay = $this->getKelasDisplay($siswa, $tahunDisplay);
+            $kelasDisplay = $this->getKelasDisplay(
+                $siswa,
+                $tahunDisplay
+            );
 
             $siswa->kelas_display = $kelasDisplay;
             $siswa->tingkat_display = $tingkat;
@@ -67,27 +91,17 @@ class AnggotaController extends Controller
             return $siswa;
         });
 
-        // List tahun ajaran yang tersedia (untuk dropdown filter)
+        // Dropdown tahun ajaran
         $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
 
-        // Pastikan selectedTahun ada di list
-        if ($selectedTahun !== 'semua' && !in_array($selectedTahun, $tahunAjaranList)) {
+        // Pastikan selected tetap ada di dropdown
+        if (
+            $selectedTahun !== 'semua'
+            && !in_array($selectedTahun, $tahunAjaranList)
+        ) {
+
             $tahunAjaranList[] = $selectedTahun;
-        }
 
-        return view('pembina.anggota', compact(
-            'anggota',
-            'tahunAjaranList',
-            'selectedTahun',
-            'selectedTahunStart'
-        ));
-
-        // List tahun ajaran yang tersedia (untuk dropdown filter)
-        $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
-
-        // Pastikan selectedTahun ada di list
-        if ($selectedTahun !== 'semua' && !in_array($selectedTahun, $tahunAjaranList)) {
-            $tahunAjaranList[] = $selectedTahun;
         }
 
         return view('pembina.anggota', compact(

@@ -313,8 +313,32 @@
                             </div>
                         </div>
 
-                        {{-- Tahun Masuk & Jurusan --}}
-                        <div class="grid grid-cols-2 gap-4">
+                        {{-- Tahun Masuk, Tingkat & Jurusan --}}
+                        <div class="grid grid-cols-3 gap-4">
+
+                            {{-- Tahun Masuk --}}
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                                    Tahun Masuk
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="tahun_masuk"
+                                    x-model="currentData.tahun_masuk"
+                                    min="2000"
+                                    max="2100"
+                                    placeholder="2025"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
+                                    required
+                                >
+
+                                <p class="text-[10px] text-slate-400 mt-1 ml-1">
+                                    Tahun pertama siswa masuk
+                                </p>
+                            </div>
+
+                            {{-- Tingkat Awal --}}
                             <div>
                                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">
                                     Kelas Saat Masuk
@@ -337,8 +361,12 @@
                                 </p>
                             </div>
 
+                            {{-- Jurusan --}}
                             <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">Jurusan</label>
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                                    Jurusan
+                                </label>
+
                                 <input
                                     type="text"
                                     name="jurusan"
@@ -347,10 +375,12 @@
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
                                     required
                                 >
+
                                 <p class="text-[10px] text-slate-400 mt-1 ml-1">
                                     Tanpa tingkat (X/XI/XII)
                                 </p>
                             </div>
+
                         </div>
 
                         {{-- Jenis Kelamin --}}
