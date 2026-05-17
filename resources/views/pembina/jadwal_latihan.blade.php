@@ -124,8 +124,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Keterangan Tambahan</label>
-                        <textarea name="keterangan" id="keterangan" rows="2" placeholder="Membawa baju olahraga, dsb..." class="w-full border-slate-200 rounded-xl focus:ring-blue-500"></textarea>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Keterangan</label>
+                        <textarea name="keterangan" id="keterangan" rows="2" placeholder="Latihan Pasukan..." class="w-full border-slate-200 rounded-xl focus:ring-blue-500"></textarea>
                     </div>
                 </div>
 

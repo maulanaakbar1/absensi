@@ -350,15 +350,110 @@ class RekapAbsensiController extends Controller
         $user = auth()->user();
         $ekskulId = $user->pembina->ekstrakurikuler_id;
 
-        $riwayat = Absensi::whereHas('siswa', function($query) use ($ekskulId) {
-            $query->where('ekstrakurikuler_id', $ekskulId);
-        })
-        ->with('siswa.user') 
-        ->latest('tanggal')
-        ->latest('jam_masuk')
-        ->paginate(15); 
+        // =========================
+        // FILTER TAHUN AJARAN
+        // =========================
+        $selectedTahun = $request->get(
+            'tahun_ajaran',
+            $this->getCurrentTahunAjaran()
+        );
 
-        return view('pembina.riwayat_absensi', compact('riwayat'));
+        // =========================
+        // FILTER KELAS
+        // =========================
+        $selectedKelas = $request->get('kelas');
+
+        $selectedTahunStart = $selectedTahun !== 'semua'
+            ? $this->parseTahunAjaranStart($selectedTahun)
+            : null;
+
+        $query = Absensi::whereHas('siswa', function ($q) use (
+            $ekskulId,
+            $selectedTahunStart
+        ) {
+
+            $q->where('ekstrakurikuler_id', $ekskulId);
+
+            // FILTER TAHUN AJARAN
+            if ($selectedTahunStart) {
+
+                $q->where(function ($q2) use ($selectedTahunStart) {
+
+                    $q2->whereNull('tahun_masuk')
+
+                    ->orWhere(function ($q3) use ($selectedTahunStart) {
+
+                        $q3->whereRaw(
+                            '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                            [$selectedTahunStart]
+                        );
+
+                    });
+
+                });
+
+            }
+
+        })
+        ->with(['siswa.user'])
+        ->latest('tanggal')
+        ->latest('jam_masuk');
+
+        $riwayat = $query->paginate(15);
+
+        // =========================
+        // TRANSFORM KELAS DISPLAY
+        // =========================
+        $riwayat->getCollection()->transform(function ($row) use ($selectedTahunStart) {
+
+            $tahunDisplay = $selectedTahunStart
+                ?? $this->parseTahunAjaranStart(
+                    $this->getCurrentTahunAjaran()
+                );
+
+            $siswa = $row->siswa;
+
+            $tingkat = $this->getTingkat(
+                $siswa,
+                $tahunDisplay
+            );
+
+            $kelasDisplay = $this->getKelasDisplay(
+                $siswa,
+                $tahunDisplay
+            );
+
+            $siswa->kelas_display = $kelasDisplay;
+            $siswa->tingkat_display = $tingkat;
+
+            return $row;
+        });
+
+        // =========================
+        // FILTER KELAS
+        // =========================
+        if ($selectedKelas) {
+
+            $filtered = $riwayat->getCollection()->filter(function ($row) use ($selectedKelas) {
+
+                return $row->siswa->tingkat_display == $selectedKelas;
+
+            })->values();
+
+            $riwayat->setCollection($filtered);
+        }
+
+        // =========================
+        // LIST TAHUN AJARAN
+        // =========================
+        $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
+
+        return view('pembina.riwayat_absensi', compact(
+            'riwayat',
+            'tahunAjaranList',
+            'selectedTahun',
+            'selectedKelas'
+        ));
     }
 
     private function parseTahunAjaranStart(string $tahunAjaran): int
