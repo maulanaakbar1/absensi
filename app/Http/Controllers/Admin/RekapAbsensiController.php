@@ -15,10 +15,40 @@ class RekapAbsensiController extends Controller
     public function index(Request $request)
     {
         $bulan = $request->get('bulan', date('m'));
-        $tahun = $request->get('tahun', date('Y'));
+
         $ekskul = $request->get('ekskul', 'all');
 
-        $jumlahHari = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
+        // =========================
+        // FILTER TAHUN AJARAN
+        // =========================
+        $selectedTahun = $request->get(
+            'tahun_ajaran',
+            $this->getCurrentTahunAjaran()
+        );
+
+        $selectedKelas = $request->get('kelas');
+
+        // =========================
+        // TAHUN AWAL TA
+        // =========================
+        $selectedTahunStart = $selectedTahun !== 'semua'
+            ? $this->parseTahunAjaranStart($selectedTahun)
+            : now()->year;
+
+        // =========================
+        // TENTUKAN TAHUN
+        // =========================
+        if ((int) $bulan >= 7) {
+            $tahun = $selectedTahunStart;
+        } else {
+            $tahun = $selectedTahunStart + 1;
+        }
+
+        $jumlahHari = Carbon::createFromDate(
+            $tahun,
+            $bulan,
+            1
+        )->daysInMonth;
 
         $query = Siswa::with([
             'user',
@@ -28,11 +58,75 @@ class RekapAbsensiController extends Controller
             }
         ]);
 
+        // =========================
+        // FILTER EKSKUL
+        // =========================
         if ($ekskul != 'all') {
             $query->where('ekstrakurikuler_id', $ekskul);
         }
 
+        // =========================
+        // FILTER TAHUN AJARAN
+        // =========================
+        if ($selectedTahunStart) {
+
+            $query->where(function ($q) use ($selectedTahunStart) {
+
+                $q->whereNull('tahun_masuk')
+
+                ->orWhere(function ($q2) use ($selectedTahunStart) {
+
+                    $q2->whereRaw(
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        [$selectedTahunStart]
+                    );
+
+                });
+
+            });
+
+        }
+
         $siswas = $query->get();
+
+        // =========================
+        // TRANSFORM KELAS DISPLAY
+        // =========================
+        $siswas->transform(function ($siswa) use ($selectedTahunStart) {
+
+            $tahunDisplay = $selectedTahunStart
+                ?? $this->parseTahunAjaranStart(
+                    $this->getCurrentTahunAjaran()
+                );
+
+            $tingkat = $this->getTingkat(
+                $siswa,
+                $tahunDisplay
+            );
+
+            $kelasDisplay = $this->getKelasDisplay(
+                $siswa,
+                $tahunDisplay
+            );
+
+            $siswa->kelas_display = $kelasDisplay;
+            $siswa->tingkat_display = $tingkat;
+
+            return $siswa;
+        });
+
+        // =========================
+        // FILTER KELAS
+        // =========================
+        if ($selectedKelas) {
+
+            $siswas = $siswas->filter(function ($siswa) use ($selectedKelas) {
+
+                return $siswa->tingkat_display == $selectedKelas;
+
+            })->values();
+
+        }
 
         $listEkskul = Ekstrakurikuler::all();
 
@@ -42,10 +136,24 @@ class RekapAbsensiController extends Controller
 
         $jadwals = Jadwal::all();
 
+        // =========================
+        // LIST TAHUN AJARAN
+        // =========================
+        $tahunAjaranList = $this->getTahunAjaranList();
+
         $namaBulan = [
-            '01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April',
-            '05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus',
-            '09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'
+            '01'=>'Januari',
+            '02'=>'Februari',
+            '03'=>'Maret',
+            '04'=>'April',
+            '05'=>'Mei',
+            '06'=>'Juni',
+            '07'=>'Juli',
+            '08'=>'Agustus',
+            '09'=>'September',
+            '10'=>'Oktober',
+            '11'=>'November',
+            '12'=>'Desember'
         ];
 
         return view('admin.rekap_absensi', compact(
@@ -57,7 +165,87 @@ class RekapAbsensiController extends Controller
             'listEkskul',
             'ekskul',
             'hariLibur',
-            'jadwals'
+            'jadwals',
+            'tahunAjaranList',
+            'selectedTahun',
+            'selectedKelas'
         ));
+    }
+
+    private function parseTahunAjaranStart(string $tahunAjaran): int
+    {
+        return (int) explode('/', $tahunAjaran)[0];
+    }
+
+    private function getCurrentTahunAjaran(): string
+    {
+        $year = now()->month >= 7
+            ? now()->year
+            : now()->year - 1;
+
+        return $year . '/' . ($year + 1);
+    }
+
+    private function getTahunAjaranList(): array
+    {
+        $range = Siswa::whereNotNull('tahun_masuk')
+            ->selectRaw('MIN(tahun_masuk) as min_tahun, MAX(tahun_masuk) as max_tahun')
+            ->first();
+
+        if (!$range || !$range->min_tahun) {
+            return [];
+        }
+
+        $currentYear = now()->month >= 7
+            ? now()->year
+            : now()->year - 1;
+
+        $maxLimit = max($currentYear, $range->max_tahun);
+
+        $list = [];
+
+        for ($y = $range->min_tahun; $y <= $maxLimit; $y++) {
+            $list[] = $y . '/' . ($y + 1);
+        }
+
+        return array_reverse($list);
+    }
+
+    private function getTingkat($siswa, int $tahunAjaranStart): ?int
+    {
+        if (!$siswa->tahun_masuk) {
+            return null;
+        }
+
+        $tingkat = ($tahunAjaranStart - $siswa->tahun_masuk)
+            + $siswa->tingkat_awal;
+
+        return ($tingkat >= 10 && $tingkat <= 12)
+            ? $tingkat
+            : null;
+    }
+
+    private function getKelasDisplay($siswa, int $tahunAjaranStart): string
+    {
+        $tingkat = $this->getTingkat($siswa, $tahunAjaranStart);
+
+        if (!$tingkat) {
+            return $siswa->kelas ?? '-';
+        }
+
+        $label = match ($tingkat) {
+            10 => 'X',
+            11 => 'XI',
+            12 => 'XII',
+            default => '?',
+        };
+
+        $jurusan = preg_replace(
+            '/^(X|XI|XII)\s+/i',
+            '',
+            $siswa->jurusan ?? ''
+        );
+
+        return trim($label . ' ' . $jurusan);
     }
 }
