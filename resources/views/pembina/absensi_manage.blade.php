@@ -17,16 +17,86 @@
                     ->where('hari', $hariIni)->exists();
     @endphp
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
-        <form action="{{ route('pembina.absensi.manage') }}" method="GET" class="flex items-end gap-4">
-            <div>
-                <label class="block text-sm font-semibold text-slate-600 mb-2">Tanggal</label>
-                <input type="date" name="tanggal" value="{{ $tanggal }}" 
-                    class="rounded-lg border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+    <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm mb-6">
+        <form action="{{ route('pembina.absensi.manage') }}" method="GET"
+            class="flex flex-col md:flex-row gap-4 items-end">
+
+            {{-- Tahun Ajaran --}}
+            <div class="w-full md:w-56">
+                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                    Tahun Ajaran
+                </label>
+
+                <select
+                    name="tahun_ajaran"
+                    onchange="this.form.submit()"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700">
+                    <option value="semua">Semua Tahun</option>
+
+                    @foreach($tahunAjaranList as $tahun)
+                        <option
+                            value="{{ $tahun }}"
+                            {{ $selectedTahun == $tahun ? 'selected' : '' }}>
+                            {{ $tahun }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
-            <button type="submit" class="bg-slate-800 text-white px-6 py-2 rounded-lg font-medium hover:bg-slate-700 flex items-center gap-2">
-                <span>🔍</span> Filter
-            </button>
+
+            {{-- Filter Kelas --}}
+            <div class="w-full md:w-44">
+                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                    Kelas
+                </label>
+
+                <select
+                    name="kelas"
+                    onchange="this.form.submit()"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700">
+                    <option value="">Semua Kelas</option>
+
+                    <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>
+                        X
+                    </option>
+
+                    <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>
+                        XI
+                    </option>
+
+                    <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>
+                        XII
+                    </option>
+                </select>
+            </div>
+
+            {{-- Tanggal --}}
+            <div class="w-full md:w-56">
+                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                    Tanggal
+                </label>
+
+                <input
+                    type="date"
+                    name="tanggal"
+                    value="{{ $tanggal }}"
+                    onchange="this.form.submit()"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm">
+            </div>
+
+            {{-- Reset Filter --}}
+            <div class="w-full md:w-auto">
+                @if(
+                    request('kelas') ||
+                        (request('tahun_ajaran') && request('tahun_ajaran') !== 'semua') ||
+                        request('tanggal')
+                    )
+                    <a href="{{ route('pembina.absensi.manage') }}"
+                        class="block bg-slate-100 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition text-sm text-center whitespace-nowrap">
+                        Reset Filter
+                    </a>
+                @endif
+            </div>
+
         </form>
     </div>
 
@@ -43,65 +113,198 @@
     </div>
     @endif
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table class="w-full text-sm text-left">
-            <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
-                    <th class="px-6 py-4 font-bold text-slate-700 text-center w-16">No</th>
-                    <th class="px-6 py-4 font-bold text-slate-700">NISN</th>
-                    <th class="px-6 py-4 font-bold text-slate-700">Nama Siswa</th>
-                    <th class="px-6 py-4 font-bold text-slate-700">Kelas</th>
-                    <th class="px-12 py-4 font-bold text-slate-700">Status Kehadiran</th>
-                    <th class="px-6 py-4 font-bold text-slate-700">Keterangan</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                @foreach($siswas as $index => $siswa)
-                    @php
-                        $absen = $siswa->absensis->first();
-                        $status = $absen ? $absen->status : 'belum ada';
-                    @endphp
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="px-6 py-4 text-center">{{ $index + 1 }}</td>
-                        <td class="px-6 py-4 text-slate-600">{{ $siswa->nisn }}</td>
-                        <td class="px-6 py-4 font-semibold text-slate-800 uppercase">{{ $siswa->user->name }}</td>
-                        <td class="px-6 py-4 text-slate-600">{{ $siswa->kelas }}</td>
-                        <td class="px-6 py-4">
-                            <form action="{{ route('pembina.absensi.update') }}" method="POST" class="flex items-center">
+    <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[1100px] text-sm text-left border-collapse">
+                
+                {{-- HEADER --}}
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-6 py-5 text-center text-xs font-bold uppercase tracking-wider text-slate-500 w-16">
+                            No
+                        </th>
+
+                        <th class="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                            NISN
+                        </th>
+
+                        <th class="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                            Nama Siswa
+                        </th>
+
+                        <th class="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                            Kelas
+                        </th>
+
+                        <th class="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                            Angkatan
+                        </th>
+
+                        <th class="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                            Status Kehadiran
+                        </th>
+
+                        <th class="px-6 py-5 text-xs font-bold uppercase tracking-wider text-slate-500 whitespace-nowrap">
+                            Keterangan
+                        </th>
+                    </tr>
+                </thead>
+
+                {{-- BODY --}}
+                <tbody class="divide-y divide-slate-100">
+
+                    @forelse($siswas as $index => $siswa)
+
+                        @php
+                            $absen = $siswa->absensis->first();
+                            $status = $absen ? $absen->status : 'belum ada';
+
+                            $statusColor = match($status) {
+                                'hadir' => 'bg-emerald-100 text-emerald-700',
+                                'sakit' => 'bg-amber-100 text-amber-700',
+                                'izin'  => 'bg-blue-100 text-blue-700',
+                                'alpa'  => 'bg-red-100 text-red-700',
+                                default => 'bg-slate-100 text-slate-500',
+                            };
+                        @endphp
+
+                        <tr class="hover:bg-slate-50/70 transition">
+
+                            {{-- NO --}}
+                            <td class="px-6 py-5 text-center font-medium text-slate-500">
+                                {{ $index + 1 }}
+                            </td>
+
+                            {{-- NISN --}}
+                            <td class="px-6 py-5 text-slate-600 font-medium whitespace-nowrap">
+                                {{ $siswa->nisn }}
+                            </td>
+
+                            {{-- NAMA --}}
+                            <td class="px-6 py-5">
+                                <div class="flex items-center gap-3">
+
+                                    <div class="h-11 w-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0">
+                                        {{ strtoupper(substr($siswa->user?->name ?? 'S', 0, 1)) }}
+                                    </div>
+
+                                    <div>
+                                        <p class="font-bold text-slate-800 uppercase leading-tight">
+                                            {{ $siswa->user?->name ?? '-' }}
+                                        </p>
+
+                                        <p class="text-xs text-slate-400">
+                                            {{ $siswa->user?->email ?? '-' }}
+                                        </p>
+                                    </div>
+
+                                </div>
+                            </td>
+
+                            {{-- KELAS --}}
+                            <td class="px-6 py-5">
+                                <div class="inline-flex items-center px-3 py-2 rounded-xl bg-blue-50 text-blue-700">
+                                    <span class="text-xs font-bold uppercase tracking-wide whitespace-nowrap">
+                                        {{ $siswa->kelas_display }}
+                                    </span>
+                                </div>
+                            </td>
+
+                            {{-- ANGKATAN --}}
+                            <td class="px-6 py-5">
+                                @if($siswa->tahun_masuk)
+                                    <span class="inline-flex px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">
+                                        {{ $siswa->tahun_masuk }}
+                                    </span>
+                                @else
+                                    <span class="text-slate-400 italic">
+                                        -
+                                    </span>
+                                @endif
+                            </td>
+
+                            {{-- SELECT STATUS --}}
+                            <td class="px-6 py-5">
+                                <form action="{{ route('pembina.absensi.update') }}" method="POST">
                                     @csrf
+
                                     <input type="hidden" name="siswa_id" value="{{ $siswa->id }}">
                                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
-                                    
-                                    {{-- SELECT DINONAKTIFKAN JIKA SUDAH HADIR ATAU BUKAN HARI JADWAL --}}
-                                    <select name="status" onchange="this.form.submit()"
+
+                                    <select
+                                        name="status"
+                                        onchange="this.form.submit()"
                                         @if($status == 'hadir' || !$isJadwal) disabled @endif
-                                        class="text-center rounded-lg py-1.5 w-40
-                                        {{ ($status == 'hadir' || !$isJadwal) ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'border-slate-200 focus:border-blue-500 focus:ring-blue-500' }}">
-                                        <option value="" {{ $status == 'belum ada' ? 'selected' : '' }} disabled>-- Pilih Status --</option>
-                                        <option value="hadir" {{ $status == 'hadir' ? 'selected' : '' }}>Hadir</option>
-                                        <option value="sakit" {{ $status == 'sakit' ? 'selected' : '' }}>Sakit</option>
-                                        <option value="izin" {{ $status == 'izin' ? 'selected' : '' }}>Izin</option>
-                                        <option value="alpa" {{ $status == 'alpa' ? 'selected' : '' }}>Alpa</option>
+                                        class="w-44 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-blue-500
+                                        {{ ($status == 'hadir' || !$isJadwal)
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : 'bg-white'
+                                        }}"
+                                    >
+                                        <option value="" disabled {{ $status == 'belum ada' ? 'selected' : '' }}>
+                                            -- Pilih Status --
+                                        </option>
+
+                                        <option value="hadir" {{ $status == 'hadir' ? 'selected' : '' }}>
+                                            Hadir
+                                        </option>
+
+                                        <option value="sakit" {{ $status == 'sakit' ? 'selected' : '' }}>
+                                            Sakit
+                                        </option>
+
+                                        <option value="izin" {{ $status == 'izin' ? 'selected' : '' }}>
+                                            Izin
+                                        </option>
+
+                                        <option value="alpa" {{ $status == 'alpa' ? 'selected' : '' }}>
+                                            Alpa
+                                        </option>
                                     </select>
                                 </form>
-                        </td>
-                        <td class="px-6 py-4">
-                            @if($status == 'hadir')
-                                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-md font-bold text-[11px] uppercase">Hadir</span>
-                            @elseif($status == 'sakit')
-                                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-md font-bold text-[11px] uppercase">Sakit</span>
-                            @elseif($status == 'izin')
-                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md font-bold text-[11px] uppercase">Izin</span>
-                            @elseif($status == 'alpa')
-                                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-md font-bold text-[11px] uppercase">Alpa</span>
-                            @else
-                                <span class="text-slate-400 italic">Belum Ada</span>
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+                            </td>
+
+                            {{-- BADGE STATUS --}}
+                            <td class="px-6 py-5">
+                                <div class="flex items-center">
+                                    <span class="inline-flex items-center justify-center min-w-[110px] px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide {{ $statusColor }}">
+                                        {{ $status == 'belum ada' ? 'Belum Ada' : $status }}
+                                    </span>
+                                </div>
+                            </td>
+
+                        </tr>
+
+                    @empty
+
+                        <tr>
+                            <td colspan="7" class="px-6 py-16 text-center">
+                                <div class="flex flex-col items-center gap-2 text-slate-400">
+
+                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                        class="h-12 w-12 opacity-40"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="1.5"
+                                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 13V7a2 2 0 012-2h10a2 2 0 012 2v6" />
+                                    </svg>
+
+                                    <p class="text-sm italic">
+                                        Tidak ada data siswa ditemukan.
+                                    </p>
+
+                                </div>
+                            </td>
+                        </tr>
+
+                    @endforelse
+
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 @endsection
