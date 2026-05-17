@@ -7,25 +7,93 @@
         {{-- Header & Filter --}}
         <div class="p-6 border-b border-slate-100">
             <form action="{{ route('pembina.rekap.index') }}" method="GET" class="flex flex-wrap items-end gap-4">
-                <div class="flex-1 min-w-[200px]">
-                    <label class="block text-sm font-semibold text-slate-600 mb-2">Pilih Bulan</label>
-                    <select name="bulan" class="w-full border-slate-200 rounded-xl focus:ring-emerald-500">
-                        @foreach($namaBulan as $key => $name)
-                            <option value="{{ $key }}" {{ $bulan == $key ? 'selected' : '' }}>{{ $name }}</option>
+
+                {{-- Tahun Ajaran --}}
+                <div class="flex-1 min-w-[220px]">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">
+                        Tahun Ajaran
+                    </label>
+
+                    <select
+                        name="tahun_ajaran"
+                        onchange="this.form.submit()"
+                        class="w-full border-slate-200 rounded-xl focus:ring-cyan-500"
+                    >
+                        <option value="semua">
+                            Semua Tahun Ajaran
+                        </option>
+
+                        @foreach($tahunAjaranList as $tahunAjaran)
+                            <option
+                                value="{{ $tahunAjaran }}"
+                                {{ $selectedTahun == $tahunAjaran ? 'selected' : '' }}
+                            >
+                                {{ $tahunAjaran }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
-                <div class="flex-1 min-w-[200px]">
-                    <label class="block text-sm font-semibold text-slate-600 mb-2">Pilih Tahun</label>
-                    <select name="tahun" class="w-full border-slate-200 rounded-xl focus:ring-emerald-500">
-                        @for($i = date('Y'); $i >= date('Y')-2; $i--)
-                            <option value="{{ $i }}" {{ $tahun == $i ? 'selected' : '' }}>{{ $i }}</option>
-                        @endfor
+
+                {{-- Filter Kelas --}}
+                <div class="flex-1 min-w-[180px]">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">
+                        Kelas
+                    </label>
+
+                    <select
+                        name="kelas"
+                        onchange="this.form.submit()"
+                        class="w-full border-slate-200 rounded-xl focus:ring-cyan-500"
+                    >
+                        <option value="">Semua Kelas</option>
+
+                        <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>
+                            X
+                        </option>
+
+                        <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>
+                            XI
+                        </option>
+
+                        <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>
+                            XII
+                        </option>
                     </select>
                 </div>
-                <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-2.5 rounded-xl font-bold">
-                    Filter
-                </button>
+
+                {{-- Bulan --}}
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">
+                        Pilih Bulan
+                    </label>
+
+                    <select
+                        name="bulan"
+                        onchange="this.form.submit()"
+                        class="w-full border-slate-200 rounded-xl focus:ring-emerald-500"
+                    >
+                        @foreach($namaBulan as $key => $name)
+                            <option value="{{ $key }}" {{ $bulan == $key ? 'selected' : '' }}>
+                                {{ $name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @php
+                    $isFiltered =
+                        request('tahun_ajaran') ||
+                        request('kelas') ||
+                        request('bulan');
+                @endphp
+
+                @if($isFiltered)
+                    <a href="{{ route('pembina.rekap.index') }}"
+                    class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-2.5 rounded-xl font-bold">
+                        Reset
+                    </a>
+                @endif
+
             </form>
         </div>
 
@@ -67,6 +135,7 @@
                             <th rowspan="2" class="w-32 border px-2">NISN</th>
                             <th rowspan="2" class="w-64 border px-2">Nama Siswa</th>
                             <th rowspan="2" class="w-32 border px-2">Kelas</th>
+                            <th rowspan="2" class="w-24 border px-2 text-center">Angkatan</th>
                             <th colspan="{{ $jumlahHari }}" class="border text-center text-xs">Tanggal</th>
                             <th colspan="4" class="border text-center text-xs">Total</th>
                         </tr>
@@ -94,7 +163,13 @@
                             <td class="border text-center">{{ $index + 1 }}</td>
                             <td class="border px-2">{{ $siswa->nisn }}</td>
                             <td class="border px-2">{{ $siswa->user->name ?? '-' }}</td>
-                            <td class="border px-2 text-center">{{ $siswa->kelas }}</td>
+                            <td class="border px-2 text-center">
+                                {{ $siswa->kelas_display }}
+                            </td>
+
+                            <td class="border px-2 text-center">
+                                {{ $siswa->tahun_masuk ?? '-' }}
+                            </td>
 
                             @for($i = 1; $i <= $jumlahHari; $i++)
                                 @php
