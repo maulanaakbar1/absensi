@@ -94,7 +94,7 @@
                             <td class="border text-center">{{ $index + 1 }}</td>
                             <td class="border px-2">{{ $siswa->nisn }}</td>
                             <td class="border px-2">{{ $siswa->user->name ?? '-' }}</td>
-                            <td class="border px-2">{{ $siswa->kelas }}</td>
+                            <td class="border px-2 text-center">{{ $siswa->kelas }}</td>
 
                             @for($i = 1; $i <= $jumlahHari; $i++)
                                 @php
