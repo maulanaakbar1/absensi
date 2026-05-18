@@ -146,36 +146,26 @@
                 </div>
             </div>
 
-            {{-- Sisi Kanan: Tombol Download --}}
+            {{-- Sisi Kanan: Tombol Download (SUDAH DIPERBAIKI) --}}
             <div class="flex items-center gap-2">
                 {{-- PDF --}}
-                <a href="{{ route('pembina.rekap.pdf', request()->query()) }}"
-                class="inline-flex items-center gap-1.5 bg-white hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 text-xs font-semibold px-2.5 py-1.5 rounded-md shadow-sm transition-all duration-200 active:scale-95">
-
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="w-3.5 h-3.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        stroke-width="2">
-                        <path stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                <a href="{{ request()->is('admin/*') ? route('admin.rekap.pdf', request()->all()) : route('pembina.rekap.pdf', request()->all()) }}"
+                class="inline-flex items-center gap-1.5 bg-white hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 text-xs font-semibold px-3 py-2 rounded-xl shadow-sm transition-all duration-200 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
-
                     <span>PDF</span>
                 </a>
 
                 {{-- Excel --}}
-                <a href="{{ route('admin.rekap.excel', request()->query()) }}"
-                class="inline-flex items-center gap-1.5 bg-white hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 hover:border-emerald-600 text-xs font-semibold px-2.5 py-1.5 rounded-md shadow-sm transition-all duration-200 active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <a href="{{ request()->is('admin/*') ? route('admin.rekap.excel', request()->all()) : route('pembina.rekap.excel', request()->all()) }}"
+                class="inline-flex items-center gap-1.5 bg-white hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 hover:border-emerald-600 text-xs font-semibold px-3 py-2 rounded-xl shadow-sm transition-all duration-200 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 00-2-2V5a2 2 0 002-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <span>Excel</span>
                 </a>
             </div>
-        </div>
         </div>
 
         <div class="p-6">

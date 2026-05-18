@@ -1,6 +1,5 @@
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
     <thead>
-        {{-- Baris Tahun Ajaran (Hanya muncul 1 kali di paling atas) --}}
         <tr>
             <td colspan="{{ 5 + $jumlahHari + 4 }}" align="left" style="font-weight: bold; font-size: 12px; border: none;">
                 Tahun Ajaran : 
@@ -11,18 +10,25 @@
                 @endif
             </td>
         </tr>
-        {{-- Baris Kosong Pemisah --}}
+
+        @if($isAdmin ?? false)
+        <tr>
+            <td colspan="{{ 5 + $jumlahHari + 4 }}" align="left" style="font-weight: bold; font-size: 12px; border: none;">
+                Ekstrakurikuler : {{ $namaEkskul ?? '-' }}
+            </td>
+        </tr>
+        @endif
+
         <tr>
             <td colspan="{{ 5 + $jumlahHari + 4 }}" style="border: none;"></td>
         </tr>
 
-        {{-- Baris Judul Utama --}}
         <tr>
             <td colspan="{{ 5 + $jumlahHari + 4 }}" align="center" style="font-weight: bold; font-size: 14px;">
                 Rekap Absensi Bulan {{ $namaBulan[$bulan] }} {{ $tahun }}
             </td>
         </tr>
-        {{-- Baris Kosong Pemisah --}}
+        
         <tr>
             <td colspan="{{ 5 + $jumlahHari + 4 }}"></td>
         </tr>

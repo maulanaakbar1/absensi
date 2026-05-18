@@ -48,13 +48,17 @@
 </head>
 <body>
 
-{{-- TAMBAHAN: Info Tahun Ajaran di paling atas seperti di Excel --}}
 <div class="info-tahun-ajaran">
     Tahun Ajaran : 
     @if(isset($selectedTahun) && $selectedTahun !== 'semua')
         {{ $selectedTahun }}
     @else
         Semua
+    @endif
+
+    @if($isAdmin ?? false)
+        <br>
+        Ekstrakurikuler : {{ $namaEkskul ?? '-' }}
     @endif
 </div>
 

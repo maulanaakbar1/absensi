@@ -278,26 +278,33 @@ class RekapAbsensiController extends Controller
 
     private function getRekapData(Request $request): array
     {
+        // Mengamankan fallback input jika kosong
         $bulan = $request->get('bulan', date('m'));
-        $ekskul = $request->get('ekskul', 'all');
-
-        $selectedTahun = $request->get(
-            'tahun_ajaran',
-            $this->getCurrentTahunAjaran()
-        );
-
         $selectedKelas = $request->get('kelas');
+        
+        // Deteksi otomatis role berdasarkan URL prefix
+        $isAdmin = $request->is('admin/*') || auth()->user()->role === 'admin';
+        
+        if ($isAdmin) {
+            $ekskul = $request->get('ekskul', 'all');
+        } else {
+            // Jika pembina, batasi hanya untuk ekskul yang dipegangnya agar tidak merujuk ke 'all' yang memicu loop/error data
+            $ekskul = auth()->user()->pembina->ekstrakurikuler_id ?? $request->get('ekskul');
+        }
 
-        $selectedTahunStart = $selectedTahun !== 'semua'
-            ? $this->parseTahunAjaranStart($selectedTahun)
-            : now()->year;
+        $selectedTahun = $request->get('tahun_ajaran');
+        if (!$selectedTahun || $selectedTahun === 'semua') {
+            $selectedTahun = $this->getCurrentTahunAjaran();
+        }
 
-        $tahun = ((int) $bulan >= 7)
-            ? $selectedTahunStart
-            : $selectedTahunStart + 1;
+        $selectedTahunStart = $this->parseTahunAjaranStart($selectedTahun);
+
+        // Tentukan tahun kalender berdasarkan bulan akademik
+        $tahun = ((int) $bulan >= 7) ? $selectedTahunStart : $selectedTahunStart + 1;
 
         $jumlahHari = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
 
+        // Build Query Siswa
         $query = Siswa::with([
             'user',
             'absensis' => function ($q) use ($bulan, $tahun) {
@@ -306,10 +313,12 @@ class RekapAbsensiController extends Controller
             }
         ]);
 
-        if ($ekskul != 'all') {
+        // Filter Ekskul
+        if ($ekskul && $ekskul !== 'all') {
             $query->where('ekstrakurikuler_id', $ekskul);
         }
 
+        // Filter Tahun Ajaran / Tahun Masuk Sekolah
         if ($selectedTahunStart) {
             $query->where(function ($q) use ($selectedTahunStart) {
                 $q->whereNull('tahun_masuk')
@@ -324,24 +333,23 @@ class RekapAbsensiController extends Controller
 
         $siswas = $query->get();
 
+        // Transformasi Tampilan Kelas & Tingkat
         $siswas->transform(function ($siswa) use ($selectedTahunStart) {
-            $tahunDisplay = $selectedTahunStart;
-            $tingkat = $this->getTingkat($siswa, $tahunDisplay);
-            $kelasDisplay = $this->getKelasDisplay($siswa, $tahunDisplay);
-            $siswa->kelas_display = $kelasDisplay;
-            $siswa->tingkat_display = $tingkat;
+            $siswa->kelas_display = $this->getKelasDisplay($siswa, $selectedTahunStart);
+            $siswa->tingkat_display = $this->getTingkat($siswa, $selectedTahunStart);
             return $siswa;
         });
 
+        // Filter Tingkat Kelas (X/XI/XII) jika dipilih
         if ($selectedKelas) {
             $siswas = $siswas->filter(function ($siswa) use ($selectedKelas) {
                 return $siswa->tingkat_display == $selectedKelas;
             })->values();
         }
 
-        // Nama ekskul untuk ditampilkan di export
+        // Mengambil Nama Ekskul untuk Header PDF
         $namaEkskul = 'Semua Ekskul';
-        if ($ekskul != 'all') {
+        if ($ekskul && $ekskul !== 'all') {
             $ekskulModel = Ekstrakurikuler::find($ekskul);
             $namaEkskul = $ekskulModel ? $ekskulModel->nama : 'Semua Ekskul';
         }
@@ -356,7 +364,7 @@ class RekapAbsensiController extends Controller
         return compact(
             'siswas', 'bulan', 'tahun', 'jumlahHari',
             'namaBulan', 'selectedTahun', 'selectedTahunStart',
-            'selectedKelas', 'namaEkskul'
+            'selectedKelas', 'namaEkskul', 'isAdmin'
         );
     }
 }

@@ -663,6 +663,8 @@ class RekapAbsensiController extends Controller
             '12'=>'Desember'
         ];
 
+        $isAdmin = auth()->user()->role === 'admin';
+
         return compact(
             'siswas',
             'bulan',
@@ -671,7 +673,8 @@ class RekapAbsensiController extends Controller
             'namaBulan',
             'selectedTahun',
             'selectedTahunStart',
-            'selectedKelas'
+            'selectedKelas',
+            'isAdmin'
         );
     }
     
