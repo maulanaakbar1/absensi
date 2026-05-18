@@ -48,6 +48,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/rekap-absensi', [AdminRekap::class, 'index'])->name('admin.rekap.index');
 
+        Route::get('/rekap-absensi/pdf', [AdminRekap::class, 'downloadPdf'])->name('admin.rekap.pdf');
+        Route::get('/rekap-absensi/excel', [AdminRekap::class, 'downloadExcel'])->name('admin.rekap.excel');
+
     });
 
     // --- KHUSUS PEMBINA ---

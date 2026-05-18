@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Http\Controllers\Admin;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RekapAbsensiExport;
 
 use App\Http\Controllers\Controller;
 use App\Models\Siswa;
@@ -247,5 +250,113 @@ class RekapAbsensiController extends Controller
         );
 
         return trim($label . ' ' . $jurusan);
+    }
+
+    public function downloadPdf(Request $request)
+    {
+        $data = $this->getRekapData($request);
+
+        $pdf = Pdf::loadView(
+            'exports.rekap_absensi_pdf',
+            $data
+        )->setPaper('a4', 'landscape');
+
+        return $pdf->download(
+            'rekap-absensi-' . now()->format('YmdHis') . '.pdf'
+        );
+    }
+
+    public function downloadExcel(Request $request)
+    {
+        $data = $this->getRekapData($request);
+
+        return Excel::download(
+            new RekapAbsensiExport($data),
+            'rekap-absensi-' . now()->format('YmdHis') . '.xlsx'
+        );
+    }
+
+    private function getRekapData(Request $request): array
+    {
+        $bulan = $request->get('bulan', date('m'));
+        $ekskul = $request->get('ekskul', 'all');
+
+        $selectedTahun = $request->get(
+            'tahun_ajaran',
+            $this->getCurrentTahunAjaran()
+        );
+
+        $selectedKelas = $request->get('kelas');
+
+        $selectedTahunStart = $selectedTahun !== 'semua'
+            ? $this->parseTahunAjaranStart($selectedTahun)
+            : now()->year;
+
+        $tahun = ((int) $bulan >= 7)
+            ? $selectedTahunStart
+            : $selectedTahunStart + 1;
+
+        $jumlahHari = Carbon::createFromDate($tahun, $bulan, 1)->daysInMonth;
+
+        $query = Siswa::with([
+            'user',
+            'absensis' => function ($q) use ($bulan, $tahun) {
+                $q->whereMonth('tanggal', $bulan)
+                ->whereYear('tanggal', $tahun);
+            }
+        ]);
+
+        if ($ekskul != 'all') {
+            $query->where('ekstrakurikuler_id', $ekskul);
+        }
+
+        if ($selectedTahunStart) {
+            $query->where(function ($q) use ($selectedTahunStart) {
+                $q->whereNull('tahun_masuk')
+                ->orWhere(function ($q2) use ($selectedTahunStart) {
+                    $q2->whereRaw(
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        [$selectedTahunStart]
+                    );
+                });
+            });
+        }
+
+        $siswas = $query->get();
+
+        $siswas->transform(function ($siswa) use ($selectedTahunStart) {
+            $tahunDisplay = $selectedTahunStart;
+            $tingkat = $this->getTingkat($siswa, $tahunDisplay);
+            $kelasDisplay = $this->getKelasDisplay($siswa, $tahunDisplay);
+            $siswa->kelas_display = $kelasDisplay;
+            $siswa->tingkat_display = $tingkat;
+            return $siswa;
+        });
+
+        if ($selectedKelas) {
+            $siswas = $siswas->filter(function ($siswa) use ($selectedKelas) {
+                return $siswa->tingkat_display == $selectedKelas;
+            })->values();
+        }
+
+        // Nama ekskul untuk ditampilkan di export
+        $namaEkskul = 'Semua Ekskul';
+        if ($ekskul != 'all') {
+            $ekskulModel = Ekstrakurikuler::find($ekskul);
+            $namaEkskul = $ekskulModel ? $ekskulModel->nama : 'Semua Ekskul';
+        }
+
+        $namaBulan = [
+            '01'=>'Januari', '02'=>'Februari', '03'=>'Maret',
+            '04'=>'April',   '05'=>'Mei',      '06'=>'Juni',
+            '07'=>'Juli',    '08'=>'Agustus',  '09'=>'September',
+            '10'=>'Oktober', '11'=>'November', '12'=>'Desember'
+        ];
+
+        return compact(
+            'siswas', 'bulan', 'tahun', 'jumlahHari',
+            'namaBulan', 'selectedTahun', 'selectedTahunStart',
+            'selectedKelas', 'namaEkskul'
+        );
     }
 }
