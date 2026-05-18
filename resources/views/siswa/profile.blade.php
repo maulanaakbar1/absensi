@@ -20,6 +20,16 @@
         </div>
 
         <div class="p-8">
+            @if ($errors->any())
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                    <ul class="text-sm text-red-600 space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>• {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             @if(session('success'))
                 <div class="mb-6 p-4 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100 font-bold text-sm flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -67,16 +77,49 @@
                             <input type="text" name="nisn" value="{{ old('nisn', $siswa->nisn) }}" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-bold text-slate-700">Kelas</label>
-                            <input type="text" name="kelas" value="{{ old('kelas', $siswa->kelas) }}" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <label class="text-sm font-bold text-slate-700">
+                                Tahun Angkatan
+                            </label>
+
+                            <input type="text"
+                                value="{{ $siswa->tahun_masuk }}"
+                                readonly
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700">
+                                Tahun Ajaran
+                            </label>
+
+                            <input type="text"
+                                value="{{ $tahunAjaran }}"
+                                readonly
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-slate-700">
+                                Kelas Saat Ini
+                            </label>
+
+                            <input type="text"
+                                value="{{ $kelasDisplay }}"
+                                readonly
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-bold">
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-700">Tempat Lahir</label>
                             <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $siswa->tempat_lahir) }}" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-bold text-slate-700">Tanggal Lahir</label>
-                            <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $siswa->tanggal_lahir) }}" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <label class="text-sm font-bold text-slate-700">
+                                Tanggal Lahir
+                            </label>
+
+                            <input
+                                type="date"
+                                name="tanggal_lahir"
+                                value="{{ old('tanggal_lahir', optional($siswa->tanggal_lahir)->format('Y-m-d')) }}"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-700">Jenis Kelamin</label>

@@ -12,9 +12,22 @@ class ProfileController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $siswa = $user->siswa; 
-        
-        return view('siswa.profile', compact('user', 'siswa'));
+        $siswa = $user->siswa;
+
+        $tahunAjaran = $this->getCurrentTahunAjaran();
+        $tahunAjaranStart = (int) explode('/', $tahunAjaran)[0];
+
+        $kelasDisplay = $this->getKelasDisplay(
+            $siswa,
+            $tahunAjaranStart
+        );
+
+        return view('siswa.profile', compact(
+            'user',
+            'siswa',
+            'tahunAjaran',
+            'kelasDisplay'
+        ));
     }
 
     public function update(Request $request)
@@ -25,7 +38,6 @@ class ProfileController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'kelas' => 'required|string',
             'nis' => 'required|string|unique:siswas,nis,' . $siswa->id,
             'jenis_kelamin' => 'required|in:L,P',
             'nisn' => 'required|string|unique:siswas,nisn,' . $siswa->id,
@@ -49,7 +61,6 @@ class ProfileController extends Controller
         $siswa->update([
             'nis' => $request->nis, 
             'jenis_kelamin' => $request->jenis_kelamin, 
-            'kelas' => $request->kelas,
             'nisn' => $request->nisn,
             'alamat' => $request->alamat,
             'tempat_lahir' => $request->tempat_lahir,
@@ -61,5 +72,52 @@ class ProfileController extends Controller
         ]);
 
         return back()->with('success', 'Profil dan data personal berhasil diperbarui!');
+    }
+
+    private function getCurrentTahunAjaran(): string
+    {
+        $year = now()->month >= 7
+            ? now()->year
+            : now()->year - 1;
+
+        return $year . '/' . ($year + 1);
+    }
+
+    private function getTingkat($siswa, int $tahunAjaranStart): ?int
+    {
+        if (!$siswa->tahun_masuk) {
+            return null;
+        }
+
+        $tingkat = ($tahunAjaranStart - $siswa->tahun_masuk)
+            + $siswa->tingkat_awal;
+
+        return ($tingkat >= 10 && $tingkat <= 12)
+            ? $tingkat
+            : null;
+    }
+
+    private function getKelasDisplay($siswa, int $tahunAjaranStart): string
+    {
+        $tingkat = $this->getTingkat($siswa, $tahunAjaranStart);
+
+        if (!$tingkat) {
+            return '-';
+        }
+
+        $label = match ($tingkat) {
+            10 => 'X',
+            11 => 'XI',
+            12 => 'XII',
+            default => '?',
+        };
+
+        $jurusan = preg_replace(
+            '/^(X|XI|XII)\s+/i',
+            '',
+            $siswa->jurusan ?? ''
+        );
+
+        return trim($label . ' ' . $jurusan);
     }
 }
