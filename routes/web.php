@@ -81,6 +81,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/riwayat-absensi', [PembinaRekap::class, 'riwayat'])->name('pembina.riwayat.index');
 
+        Route::get('/rekap-absensi/pdf', [PembinaRekap::class, 'downloadPdf'])->name('pembina.rekap.pdf');
+        Route::get('/rekap-absensi/excel', [PembinaRekap::class, 'downloadExcel'])->name('pembina.rekap.excel');
+
     });
 
     // --- KHUSUS SISWA ---

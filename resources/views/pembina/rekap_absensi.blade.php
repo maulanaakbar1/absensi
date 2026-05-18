@@ -97,27 +97,60 @@
             </form>
         </div>
 
-        {{-- Legend --}}
-        <div class="px-6 py-5 flex flex-wrap gap-8 bg-slate-50/80 border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <div class="w-6 h-6 bg-emerald-100 border border-emerald-200 rounded-md"></div> 
-                <span class="text-sm font-bold text-slate-700">Hadir</span>
+        <div class="px-6 py-5 flex flex-wrap items-center justify-between gap-8 bg-slate-50/80 border-b border-slate-100 w-full">
+            {{-- Sisi Kiri: Item Legenda --}}
+            <div class="flex flex-wrap items-center gap-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-emerald-100 border border-emerald-200 rounded-md"></div> 
+                    <span class="text-sm font-bold text-slate-700">Hadir</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-amber-100 border border-amber-200 rounded-md"></div> 
+                    <span class="text-sm font-bold text-slate-700">Sakit</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-blue-100 border border-blue-200 rounded-md"></div> 
+                    <span class="text-sm font-bold text-slate-700">Izin</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-slate-400 border border-slate-500 rounded-md"></div> 
+                    <span class="text-sm font-bold text-slate-700">Alpa</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-red-500 border border-red-600 rounded-md"></div> 
+                    <span class="text-sm font-bold text-slate-700">Libur</span>
+                </div>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="w-6 h-6 bg-amber-100 border border-amber-200 rounded-md"></div> 
-                <span class="text-sm font-bold text-slate-700">Sakit</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="w-6 h-6 bg-blue-100 border border-blue-200 rounded-md"></div> 
-                <span class="text-sm font-bold text-slate-700">Izin</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="w-6 h-6 bg-slate-400 border border-slate-500 rounded-md"></div> 
-                <span class="text-sm font-bold text-slate-700">Alpa</span>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="w-6 h-6 bg-red-500 border border-red-600 rounded-md"></div> 
-                <span class="text-sm font-bold text-slate-700">Libur</span>
+
+            {{-- Sisi Kanan: Tombol Aksi (Dengan Efek Warna Pas di Hover) --}}
+            <div class="flex items-center gap-2">
+                {{-- PDF --}}
+                <a href="{{ route('pembina.rekap.pdf', request()->query()) }}"
+                class="inline-flex items-center gap-1.5 bg-white hover:bg-red-600 text-red-600 hover:text-white border border-red-200 hover:border-red-600 text-xs font-semibold px-2.5 py-1.5 rounded-md shadow-sm transition-all duration-200 active:scale-95">
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="w-3.5 h-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+
+                    <span>PDF</span>
+                </a>
+
+                {{-- EXCEL --}}
+                <a href="{{ route('pembina.rekap.excel', request()->query()) }}"
+                class="inline-flex items-center gap-1.5 bg-white hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 hover:border-emerald-600 text-xs font-semibold px-2.5 py-1.5 rounded-md shadow-sm transition-all duration-200 active:scale-95">
+                    
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 00-2-2V5a2 2 0 002-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Excel</span>
+                </a>
             </div>
         </div>
 
