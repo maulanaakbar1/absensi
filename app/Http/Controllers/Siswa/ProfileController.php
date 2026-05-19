@@ -48,6 +48,7 @@ class ProfileController extends Controller
             'nama_ibu' => 'nullable|string',
             'no_telp_ayah' => 'nullable|string|max:15',
             'no_telp_ibu' => 'nullable|string|max:15',
+            'no_telp_siswa' => 'nullable|string|max:15',
             'password' => 'nullable|min:8|confirmed',
         ]);
 
@@ -69,6 +70,7 @@ class ProfileController extends Controller
             'nama_ibu' => $request->nama_ibu,
             'no_telp_ayah' => $request->no_telp_ayah,
             'no_telp_ibu' => $request->no_telp_ibu,
+            'no_telp_siswa' => $request->no_telp_siswa,
         ]);
 
         return back()->with('success', 'Profil dan data personal berhasil diperbarui!');

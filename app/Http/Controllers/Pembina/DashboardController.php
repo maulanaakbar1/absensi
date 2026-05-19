@@ -58,17 +58,62 @@ class DashboardController extends Controller
             return back()->with('error', 'Ekskul tidak ditemukan.');
         }
 
+        // Ambil semua siswa sesuai ekskul pembina
         $siswaList = Siswa::with('user')
             ->where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
             ->get();
 
+        // Ambil jadwal ekskul
+        $jadwal = Jadwal::where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
+            ->first();
+
         foreach ($siswaList as $siswa) {
 
-            $pesan = "📢 INFORMASI EKSKUL\n\n"
-                . "Ekskul: " . $pembina->ekstrakurikuler->nama . "\n"
-                . "Siswa: " . $siswa->user->name . "\n\n"
-                . "Jangan lupa mengikuti kegiatan ekskul sesuai jadwal.\n\n"
-                . "Terima kasih.";
+            // =========================
+            // FORMAT PESAN
+            // =========================
+            $pesan = "📢 INFORMASI EKSKUL\n\n";
+
+            $pesan .= "Ekskul: " . $pembina->ekstrakurikuler->nama . "\n";
+            $pesan .= "Siswa: " . $siswa->user->name . "\n\n";
+
+            // Kalau jadwal ada
+            if ($jadwal) {
+
+                $pesan .= "📅 Jadwal Kegiatan\n";
+                $pesan .= "Hari : {$jadwal->hari}\n";
+
+                $pesan .= "Jam : "
+                    . date('H:i', strtotime($jadwal->jam_mulai))
+                    . " - "
+                    . date('H:i', strtotime($jadwal->jam_selesai))
+                    . " WIB\n";
+
+                $pesan .= "Lokasi : {$jadwal->lokasi}\n";
+
+                // Kalau ada keterangan
+                if ($jadwal->keterangan) {
+                    $pesan .= "Keterangan : {$jadwal->keterangan}\n";
+                }
+
+                $pesan .= "\n";
+            }
+
+            $pesan .= "Jangan lupa mengikuti kegiatan ekskul sesuai jadwal.\n\n";
+            $pesan .= "Terima kasih.";
+
+            // =========================
+            // KIRIM KE SISWA
+            // =========================
+            if ($siswa->no_telp_siswa) {
+
+                Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
+                ])->post(env('WA_API_URL'), [
+                    'phone' => $this->formatNomor($siswa->no_telp_siswa),
+                    'message' => $pesan,
+                ]);
+            }
 
             // =========================
             // KIRIM KE AYAH

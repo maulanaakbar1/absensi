@@ -107,6 +107,17 @@
                                 class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-bold">
                         </div>
                         <div class="space-y-2">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase">
+                                No. Telp Siswa
+                            </label>
+
+                            <input
+                                type="text"
+                                name="no_telp_siswa"
+                                value="{{ old('no_telp_siswa', $siswa->no_telp_siswa) }}"
+                                class="w-full px-4 py-2.5 rounded-lg border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="space-y-2">
                             <label class="text-sm font-bold text-slate-700">Tempat Lahir</label>
                             <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir', $siswa->tempat_lahir) }}" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition">
                         </div>
