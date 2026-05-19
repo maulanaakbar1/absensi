@@ -56,6 +56,26 @@
                     <p class="text-slate-500 leading-relaxed max-w-md">
                         {{ $pembina->ekstrakurikuler->deskripsi ?? 'Silahkan hubungi admin untuk menetapkan tugas pembina.' }}
                     </p>
+                    {{-- Tombol Kirim WA --}}
+                    <div class="mt-5">
+                        <form action="{{ route('pembina.kirim-wa') }}" method="POST">
+                            @csrf
+
+                            <button type="submit"
+                                class="inline-flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-bold shadow-lg shadow-green-200 transition duration-300">
+
+                                {{-- Icon WhatsApp --}}
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                    class="h-5 w-5"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path d="M20.52 3.48A11.94 11.94 0 0012.04 0C5.52 0 .24 5.28.24 11.76c0 2.08.56 4.12 1.6 5.92L0 24l6.52-1.72a11.82 11.82 0 005.52 1.4h.04c6.48 0 11.76-5.28 11.76-11.76 0-3.16-1.24-6.12-3.32-8.44zM12.08 21.6h-.04a9.8 9.8 0 01-4.96-1.36l-.36-.2-3.88 1.04 1.04-3.76-.24-.4a9.74 9.74 0 01-1.52-5.2c0-5.4 4.4-9.8 9.84-9.8 2.64 0 5.08 1.04 6.92 2.88a9.72 9.72 0 012.88 6.92c0 5.44-4.4 9.84-9.72 9.84zm5.4-7.36c-.28-.16-1.68-.84-1.92-.92-.28-.12-.44-.16-.64.16-.2.28-.72.92-.92 1.08-.16.2-.36.2-.64.08-.28-.16-1.24-.44-2.36-1.44-.88-.76-1.44-1.68-1.64-1.96-.16-.28 0-.44.12-.6.16-.16.28-.36.44-.52.12-.16.16-.28.24-.48.08-.16.04-.36-.04-.52-.08-.16-.64-1.52-.88-2.08-.24-.56-.48-.48-.64-.48h-.56c-.2 0-.52.08-.76.36-.24.28-1 1-.96 2.4 0 1.4 1 2.76 1.16 2.96.16.2 2 3.08 4.92 4.2.68.28 1.24.44 1.68.56.72.24 1.4.2 1.92.12.6-.08 1.68-.68 1.92-1.32.24-.68.24-1.24.16-1.36-.04-.12-.24-.2-.52-.36z"/>
+                                </svg>
+
+                                Kirim Info WA
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
             <div class="absolute -right-10 -top-10 h-40 w-40 bg-blue-50 rounded-full opacity-50 group-hover:scale-110 transition-transform duration-700"></div>

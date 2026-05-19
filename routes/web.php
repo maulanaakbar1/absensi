@@ -53,9 +53,12 @@ Route::middleware(['auth'])->group(function () {
 
     });
 
-    // --- KHUSUS PEMBINA ---
+     // --- KHUSUS PEMBINA ---
     Route::middleware(['role:pembina'])->prefix('pembina')->group(function () {
+
         Route::get('/dashboard', [PembinaDashboard::class, 'index'])->name('pembina.dashboard');
+
+        Route::post('/kirim-wa', [PembinaDashboard::class, 'kirimWa'])->name('pembina.kirim-wa');
 
         Route::get('/profile', [PembinaProfile::class, 'index'])->name('pembina.profile');
         Route::put('/profile', [PembinaProfile::class, 'update'])->name('pembina.profile.update');
@@ -66,7 +69,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])->name('pembina.anggota.destroy');
 
         Route::get('/absensi/manage', [PembinaRekap::class, 'manage'])->name('pembina.absensi.manage');
-
         Route::post('/absensi/update', [PembinaRekap::class, 'updateStatus'])->name('pembina.absensi.update');
 
         Route::get('/rekap-absensi', [PembinaRekap::class, 'index'])->name('pembina.rekap.index');
@@ -75,7 +77,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/jadwal', [JadwalController::class, 'store'])->name('pembina.jadwal.store');
         Route::put('/jadwal/{id}', [JadwalController::class, 'update'])->name('pembina.jadwal.update');
         Route::delete('/jadwal/{id}', [JadwalController::class, 'destroy'])->name('pembina.jadwal.destroy');
-
 
         Route::get('/hari-libur', [JadwalController::class, 'liburIndex'])->name('pembina.libur.index');
         Route::post('/hari-libur', [JadwalController::class, 'liburStore'])->name('pembina.libur.store');
