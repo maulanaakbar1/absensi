@@ -202,6 +202,30 @@ class AnggotaController extends Controller
         return back()->with('success', 'Data anggota berhasil diperbarui!');
     }
 
+    public function show($id)
+    {
+        $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
+
+        $siswa = Siswa::with(['user', 'ekstrakurikuler'])
+            ->where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
+            ->findOrFail($id);
+
+        $tahunAjaran = $this->getCurrentTahunAjaran();
+
+        $tahunStart = $this->parseTahunAjaranStart($tahunAjaran);
+
+        $kelasDisplay = $this->getKelasDisplay(
+            $siswa,
+            $tahunStart
+        );
+
+        return view('pembina.anggota-show', compact(
+            'siswa',
+            'tahunAjaran',
+            'kelasDisplay'
+        ));
+    }
+
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);

@@ -53,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
 
     });
 
-     // --- KHUSUS PEMBINA ---
+    // --- KHUSUS PEMBINA ---
     Route::middleware(['role:pembina'])->prefix('pembina')->group(function () {
 
         Route::get('/dashboard', [PembinaDashboard::class, 'index'])->name('pembina.dashboard');
@@ -64,6 +64,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/profile', [PembinaProfile::class, 'update'])->name('pembina.profile.update');
 
         Route::get('/anggota', [AnggotaController::class, 'index'])->name('pembina.anggota.index');
+        Route::get('/anggota/{id}', [AnggotaController::class, 'show'])->name('pembina.anggota.show');
         Route::post('/anggota', [AnggotaController::class, 'store'])->name('pembina.anggota.store');
         Route::put('/anggota/{id}', [AnggotaController::class, 'update'])->name('pembina.anggota.update');
         Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])->name('pembina.anggota.destroy');
