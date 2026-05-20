@@ -8,6 +8,8 @@ use App\Models\Jadwal;
 use App\Models\HariLibur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class AbsenController extends Controller
@@ -17,25 +19,21 @@ class AbsenController extends Controller
         $user = Auth::user();
         $siswa = $user->siswa;
 
-        // ✅ Cek biodata
         $isComplete = $siswa->nisn && $siswa->alamat && $siswa->nama_ayah;
 
         $today = Carbon::today();
-        $hariIni = $today->translatedFormat('l'); // Senin, Selasa, dll
+        $hariIni = $today->translatedFormat('l'); 
 
         $ekskulId = $siswa->ekstrakurikuler_id;
 
-        // ✅ CEK JADWAL
         $adaJadwal = Jadwal::where('ekstrakurikuler_id', $ekskulId)
             ->where('hari', $hariIni)
             ->exists();
 
-        // ✅ CEK LIBUR (DARI DB)
         $isLibur = HariLibur::where('ekstrakurikuler_id', $ekskulId)
             ->whereDate('tanggal', $today)
             ->exists();
 
-        // ✅ CEK SUDAH ABSEN
         $absenHariIni = Absensi::where('siswa_id', $siswa->id)
             ->whereDate('tanggal', $today)
             ->first();
@@ -52,7 +50,6 @@ class AbsenController extends Controller
     {
         $siswa = Auth::user()->siswa;
 
-        // ❌ PROTEK BIODATA
         if (!$siswa->nisn || !$siswa->alamat || !$siswa->nama_ayah) {
             return redirect()->route('siswa.profile')
                 ->with('error', 'Lengkapi biodata dulu sebelum absen!');
@@ -61,7 +58,6 @@ class AbsenController extends Controller
         $today = Carbon::today();
         $hariIni = $today->translatedFormat('l');
 
-        // ❌ CEK JADWAL
         $adaJadwal = Jadwal::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
             ->where('hari', $hariIni)
             ->exists();
@@ -70,7 +66,6 @@ class AbsenController extends Controller
             return back()->with('error', 'Tidak ada jadwal latihan hari ini!');
         }
 
-        // ❌ CEK LIBUR
         $isLibur = HariLibur::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
             ->whereDate('tanggal', $today)
             ->exists();
@@ -79,7 +74,6 @@ class AbsenController extends Controller
             return back()->with('error', 'Hari ini adalah hari libur!');
         }
 
-        // ❌ CEK SUDAH ABSEN
         $sudahAbsen = Absensi::where('siswa_id', $siswa->id)
             ->whereDate('tanggal', $today)
             ->exists();
@@ -95,16 +89,73 @@ class AbsenController extends Controller
             'status' => 'required|in:hadir,izin,sakit'
         ]);
 
-        // ✅ SIMPAN
-        Absensi::create([
+        // =======================
+        // SIMPAN FOTO
+        // =======================
+
+        $image = $request->foto;
+
+        $image = str_replace('data:image/jpeg;base64,', '', $image);
+        $image = str_replace(' ', '+', $image);
+
+        $imageName = 'absensi_' . time() . '.jpg';
+
+        Storage::disk('public')->put(
+            'absensi/' . $imageName,
+            base64_decode($image)
+        );
+
+        // URL FOTO PUBLIC
+        $fotoUrl = asset('storage/absensi/' . $imageName);
+
+        // =======================
+        // SIMPAN ABSENSI
+        // =======================
+
+        $absensi = Absensi::create([
             'siswa_id' => $siswa->id,
             'tanggal' => $today,
             'jam_masuk' => Carbon::now()->toTimeString(),
-            'foto' => $request->foto,
+
+            // simpan path file
+            'foto' => 'absensi/' . $imageName,
+
             'lokasi' => $request->lokasi,
             'status' => $request->status,
             'keterangan' => $request->keterangan ?? 'Absensi Kamera',
         ]);
+
+        $user = Auth::user();
+
+        $pesan = "📸 ABSENSI EKSTRAKURIKULER\n\n";
+
+        $pesan .= "Nama: " . $user->name . "\n";
+        $pesan .= "Status: " . strtoupper($request->status) . "\n";
+        $pesan .= "Tanggal: " . Carbon::now()->translatedFormat('d F Y') . "\n";
+        $pesan .= "Jam: " . Carbon::now()->format('H:i') . " WIB\n";
+        $pesan .= "Lokasi GPS:\n";
+        $pesan .= $request->lokasi . "\n\n";
+
+        if ($request->keterangan) {
+            $pesan .= "Keterangan:\n";
+            $pesan .= $request->keterangan . "\n\n";
+        }
+
+        $pesan .= "Siswa telah melakukan absensi ekskul.";
+
+        // Kirim ke ayah
+        $this->kirimWaAbsensi(
+            $siswa->no_telp_ayah,
+            $pesan,
+            $fotoUrl
+        );
+
+        // Kirim ke ibu
+        $this->kirimWaAbsensi(
+            $siswa->no_telp_ibu,
+            $pesan,
+            $fotoUrl
+        );
 
         return redirect()->route('siswa.absen.riwayat')
             ->with('success', 'Berhasil melakukan absensi!');
@@ -119,5 +170,34 @@ class AbsenController extends Controller
             ->paginate(10);
 
         return view('siswa.riwayat', compact('semuaRiwayat'));
+    }
+
+    private function kirimWaAbsensi($nomor, $pesan, $foto = null)
+    {
+        if (!$nomor) {
+            return;
+        }
+
+        $nomor = preg_replace('/[^0-9]/', '', $nomor);
+
+        if (substr($nomor, 0, 1) == '0') {
+            $nomor = '62' . substr($nomor, 1);
+        }
+
+        $payload = [
+            'phone' => $nomor,
+            'message' => $pesan,
+        ];
+
+        // kirim media
+        if ($foto) {
+            $payload['media_url'] = $foto;
+        }
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
+        ])->post(env('WA_API_URL'), $payload);
+
+        dd($response->json());
     }
 }
