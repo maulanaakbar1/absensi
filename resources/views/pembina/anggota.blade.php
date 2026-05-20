@@ -23,12 +23,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-600 px-6 py-4 rounded-2xl font-bold">
-            {{ session('success') }}
-        </div>
-    @endif
-
     {{-- Filter --}}
     <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
         <form action="{{ route('pembina.anggota.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
@@ -247,10 +241,13 @@
                                 </button>
 
                                 {{-- Delete --}}
-                                <form action="{{ route('pembina.anggota.destroy', $s->id) }}" method="POST" onsubmit="return confirm('Hapus siswa ini? Semua data terkait juga akan dihapus.')" class="inline">
+                                <form action="{{ route('pembina.anggota.destroy', $s->id) }}" method="POST" class="inline form-delete">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition" title="Hapus siswa">
+                                    <button type="button" 
+                                            data-nama="{{ $s->user?->name }}" 
+                                            class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition btn-delete" 
+                                            title="Hapus siswa">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -473,3 +470,55 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        @if(session('success'))
+            Swal.fire({
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded-[2rem]'
+                }
+            });
+        @endif
+
+        // 2. Konfirmasi Interaktif Sebelum Menghapus Data Siswa
+        const deleteButtons = document.querySelectorAll('.btn-delete');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const form = this.closest('.form-delete');
+                const namaSiswa = this.getAttribute('data-nama') || 'Siswa ini';
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: `Data dari ${namaSiswa} beserta seluruh riwayatnya akan dihapus permanen!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444', // Red-500
+                    cancelButtonColor: '#64748b',  // Slate-500
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'rounded-[2.5rem]',
+                        confirmButton: 'rounded-xl font-bold px-5 py-2.5 text-sm',
+                        cancelButton: 'rounded-xl font-bold px-5 py-2.5 text-sm'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+    });
+</script>
+@endpush
