@@ -24,11 +24,7 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="mb-4 p-4 bg-emerald-100 text-emerald-700 rounded-xl border border-emerald-200 text-sm font-medium">
-            {{ session('success') }}
-        </div>
-    @endif
+    {{-- Alert bawaan lama telah dihapus karena digantikan oleh Pop-up otomatis SweetAlert2 --}}
 
     {{-- TABLE CONTAINER: Biar bisa digeser (Horizontal Scroll) --}}
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -60,14 +56,22 @@
                         <td class="px-6 py-4">
                             <div class="flex justify-center gap-2">
                                 <button @click="openModal = true; editMode = true; currentLibur = {{ $libur }}" 
-                                    class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition">
+                                    class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition"
+                                    title="Edit Hari Libur">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
-                                <form action="{{ route('pembina.libur.destroy', $libur->id) }}" method="POST" onsubmit="return confirm('Hapus hari libur ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition">
+                                
+                                {{-- Form Hapus dengan Integrasi SweetAlert2 --}}
+                                <form action="{{ route('pembina.libur.destroy', $libur->id) }}" method="POST" class="inline form-delete">
+                                    @csrf 
+                                    @method('DELETE')
+                                    <button type="button" 
+                                        data-tanggal="{{ \Carbon\Carbon::parse($libur->tanggal)->translatedFormat('d F Y') }}"
+                                        data-keterangan="{{ $libur->keterangan }}"
+                                        class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition btn-delete"
+                                        title="Hapus Hari Libur">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
@@ -134,4 +138,59 @@
         </div>
     </div>
 </div>
+
+{{-- PUSH SCRIPT SWEETALERT2 --}}
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // 1. Notifikasi Pop-up Sukses (Tambah / Edit / Hapus)
+        @if(session('success'))
+            Swal.fire({
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded-[2rem]'
+                }
+            });
+        @endif
+
+        // 2. Konfirmasi Sebelum Menghapus Hari Libur
+        const deleteButtons = document.querySelectorAll('.btn-delete');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const form = this.closest('.form-delete');
+                const tanggal = this.getAttribute('data-tanggal');
+                const keterangan = this.getAttribute('data-keterangan');
+
+                Swal.fire({
+                    title: 'Hapus Hari Libur?',
+                    text: `Hari libur tanggal ${tanggal} (${keterangan}) akan dihapus kembali. Latihan pada tanggal ini akan berjalan normal!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444', // Red 500
+                    cancelButtonColor: '#64748b',  // Slate 500
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'rounded-[2.5rem]',
+                        confirmButton: 'rounded-xl font-bold px-5 py-2.5 text-sm',
+                        cancelButton: 'rounded-xl font-bold px-5 py-2.5 text-sm'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+    });
+</script>
+@endpush
 @endsection
