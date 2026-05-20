@@ -24,11 +24,19 @@ class AuthController extends Controller
             $request->session()->regenerate();
             
             $user = Auth::user();
-            // Redirect sesuai role
-            if ($user->role === 'admin') return redirect()->intended('/admin/dashboard');
-            if ($user->role === 'pembina') return redirect()->intended('/pembina/dashboard');
             
-            return redirect()->intended('/siswa/dashboard');
+            // Buat pesan selamat datang kustom
+            $pesanSukses = 'Selamat datang kembali, ' . $user->name . '!';
+
+            // Redirect sesuai role sambil membawa flash session 'loginSuccess'
+            if ($user->role === 'admin') {
+                return redirect()->intended('/admin/dashboard')->with('loginSuccess', $pesanSukses);
+            }
+            if ($user->role === 'pembina') {
+                return redirect()->intended('/pembina/dashboard')->with('loginSuccess', $pesanSukses);
+            }
+            
+            return redirect()->intended('/siswa/dashboard')->with('loginSuccess', $pesanSukses);
         }
 
         return back()->with('loginError', 'Email atau password salah!');
@@ -39,6 +47,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+
+        return redirect('/login')->with('logoutSuccess', 'Anda telah berhasil keluar dari sistem.');
     }
 }

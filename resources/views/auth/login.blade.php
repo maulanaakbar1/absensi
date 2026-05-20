@@ -94,5 +94,26 @@
             Butuh bantuan? Hubungi <a href="#" class="text-blue-500 hover:underline font-semibold">Tim IT SMKN 1 Talaga</a>
         </p>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        @if(session('logoutSuccess'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: 'Berhasil Keluar',
+                    text: "{{ session('logoutSuccess') }}",
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    customClass: {
+                        popup: 'rounded-[2.5rem]', // Samakan dengan bunderan card login lu
+                    }
+                });
+            });
+        </script>
+        @endif
+        
 </body>
 </html>

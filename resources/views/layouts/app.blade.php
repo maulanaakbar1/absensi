@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') | EkskulMate</title>
+    <title>@yield('title') | AbsensiPro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
@@ -32,7 +31,7 @@
         @include('partials.' . Auth::user()->role . '.navbar')
         
         <div class="p-8">
-            {{-- Alert Warning --}}
+            {{-- Alert Warning Data Belum Lengkap --}}
             @if(session('warning_data'))
                 <div class="mb-6 flex items-center justify-between gap-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm">
                     <div class="flex items-center gap-3">
@@ -57,5 +56,25 @@
     </main>
 
     @stack('scripts')
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    @if(session('loginSuccess'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                title: 'Berhasil Masuk!',
+                text: "{{ session('loginSuccess') }}",
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded-[2rem]',
+                }
+            });
+        });
+    </script>
+    @endif
 </body>
 </html>
