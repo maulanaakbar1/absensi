@@ -749,4 +749,53 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 2500,
+                customClass: {
+                    popup: 'rounded-[1.5rem]',
+                }pus Dat
+            });
+        @endif
+
+        const deleteButtons = document.querySelectorAll('.btn-delete');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                const form = this.closest('.form-delete');
+                const namaSiswa = this.getAttribute('data-nama');
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: `Data siswa "${namaSiswa}" akan dihapus permanen dari sistem.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444', 
+                    cancelButtonColor: '#64748b',  
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'rounded-[2rem]',
+                        confirmButton: 'rounded-xl px-4 py-2 text-sm font-bold',
+                        cancelButton: 'rounded-xl px-4 py-2 text-sm font-bold'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+
 @endsection
