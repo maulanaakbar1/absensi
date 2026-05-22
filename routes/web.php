@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/pembina/{id}', [PembinaController::class, 'destroy'])->name('admin.pembina.destroy');
 
         Route::get('/siswa', [AdminSiswa::class, 'index'])->name('admin.siswa.index');
+        Route::get('/siswa/{id}', [AdminSiswa::class, 'show'])->name('admin.siswa.show');
         Route::post('/siswa', [AdminSiswa::class, 'store'])->name('admin.siswa.store');
         Route::put('/siswa/{id}', [AdminSiswa::class, 'update'])->name('admin.siswa.update');
         Route::delete('/siswa/{id}', [AdminSiswa::class, 'destroy'])->name('admin.siswa.destroy');
