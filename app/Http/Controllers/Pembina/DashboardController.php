@@ -72,12 +72,12 @@ class DashboardController extends Controller
             // =========================
             // FORMAT PESAN
             // =========================
-            $pesan = "📢 INFORMASI EKSKUL\n\n";
 
-            $pesan .= "Ekskul: " . $pembina->ekstrakurikuler->nama . "\n";
-            $pesan .= "Siswa: " . $siswa->user->name . "\n\n";
+            $pesan = "📢 *INFORMASI EKSKUL*\n\n";
 
-            // Kalau jadwal ada
+            $pesan .= "🏫 Ekskul: " . $pembina->ekstrakurikuler->nama . "\n";
+            $pesan .= "👤 Siswa: " . $siswa->user->name . "\n\n";
+
             if ($jadwal) {
 
                 $pesan .= "📅 Jadwal Kegiatan\n";
@@ -89,11 +89,10 @@ class DashboardController extends Controller
                     . date('H:i', strtotime($jadwal->jam_selesai))
                     . " WIB\n";
 
-                $pesan .= "Lokasi : {$jadwal->lokasi}\n";
+                $pesan .= "📍 Lokasi : {$jadwal->lokasi}\n";
 
-                // Kalau ada keterangan
                 if ($jadwal->keterangan) {
-                    $pesan .= "Keterangan : {$jadwal->keterangan}\n";
+                    $pesan .= "📝 Keterangan : {$jadwal->keterangan}\n";
                 }
 
                 $pesan .= "\n";
@@ -105,6 +104,7 @@ class DashboardController extends Controller
             // =========================
             // KIRIM KE SISWA
             // =========================
+
             if ($siswa->no_telp_siswa) {
 
                 Http::withHeaders([
@@ -113,11 +113,15 @@ class DashboardController extends Controller
                     'phone' => $this->formatNomor($siswa->no_telp_siswa),
                     'message' => $pesan,
                 ]);
+
+                // Delay 2 detik
+                sleep(2);
             }
 
             // =========================
             // KIRIM KE AYAH
             // =========================
+
             if ($siswa->no_telp_ayah) {
 
                 Http::withHeaders([
@@ -126,11 +130,15 @@ class DashboardController extends Controller
                     'phone' => $this->formatNomor($siswa->no_telp_ayah),
                     'message' => $pesan,
                 ]);
+
+                // Delay 2 detik
+                sleep(2);
             }
 
             // =========================
             // KIRIM KE IBU
             // =========================
+
             if ($siswa->no_telp_ibu) {
 
                 Http::withHeaders([
@@ -139,6 +147,9 @@ class DashboardController extends Controller
                     'phone' => $this->formatNomor($siswa->no_telp_ibu),
                     'message' => $pesan,
                 ]);
+
+                // Delay 2 detik
+                sleep(2);
             }
         }
 
