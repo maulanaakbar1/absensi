@@ -21,22 +21,67 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+
             $request->session()->regenerate();
-            
+
             $user = Auth::user();
-            
-            // Buat pesan selamat datang kustom
+
+            // =========================
+            // CEK SISWA PUNYA PEMBINA?
+            // =========================
+            if ($user->role === 'siswa') {
+
+                $siswa = $user->siswa;
+
+                // kalau belum punya ekskul
+                if (!$siswa || !$siswa->ekstrakurikuler_id) {
+
+                    Auth::logout();
+
+                    return back()->with(
+                        'loginError',
+                        'Anda belum terdaftar ke ekstrakurikuler.'
+                    );
+                }
+
+                // cek pembina berdasarkan ekskul siswa
+                $pembinaAda = \App\Models\Pembina::where(
+                    'ekstrakurikuler_id',
+                    $siswa->ekstrakurikuler_id
+                )->exists();
+
+                // kalau belum ada pembina
+                if (!$pembinaAda) {
+
+                    Auth::logout();
+
+                    return back()->with(
+                        'loginError',
+                        'Ekstrakurikuler Anda belum memiliki pembina.'
+                    );
+                }
+            }
+
+            // =========================
+            // LOGIN BERHASIL
+            // =========================
             $pesanSukses = 'Selamat datang kembali, ' . $user->name . '!';
 
-            // Redirect sesuai role sambil membawa flash session 'loginSuccess'
             if ($user->role === 'admin') {
-                return redirect()->intended('/admin/dashboard')->with('loginSuccess', $pesanSukses);
+                return redirect()
+                    ->intended('/admin/dashboard')
+                    ->with('loginSuccess', $pesanSukses);
             }
+
             if ($user->role === 'pembina') {
-                return redirect()->intended('/pembina/dashboard')->with('loginSuccess', $pesanSukses);
+                return redirect()
+                    ->intended('/pembina/dashboard')
+                    ->with('loginSuccess', $pesanSukses);
             }
-            
-            return redirect()->intended('/siswa/dashboard')->with('loginSuccess', $pesanSukses);
+
+            return redirect()
+                ->intended('/siswa/dashboard')
+                ->with('loginSuccess', $pesanSukses);
         }
 
         return back()->with('loginError', 'Email atau password salah!');
