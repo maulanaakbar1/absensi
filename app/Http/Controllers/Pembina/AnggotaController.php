@@ -23,8 +23,9 @@ class AnggotaController extends Controller
             $this->getCurrentTahunAjaran()
         );
 
-        // Filter kelas
+        // Filter
         $selectedKelas = $request->get('kelas');
+        $selectedJurusan = $request->get('jurusan');
 
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
@@ -68,6 +69,13 @@ class AnggotaController extends Controller
 
         }
 
+        // FILTER JURUSAN
+        if ($selectedJurusan) {
+
+            $query->where('jurusan', $selectedJurusan);
+
+        }
+
         $anggota = $query->latest()->get();
 
         // Transform data kelas otomatis
@@ -108,6 +116,15 @@ class AnggotaController extends Controller
         // Dropdown tahun ajaran
         $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
 
+        // Dropdown jurusan
+        $jurusanList = Siswa::where('ekstrakurikuler_id', $ekskulId)
+            ->whereNotNull('jurusan')
+            ->select('jurusan')
+            ->distinct()
+            ->orderBy('jurusan')
+            ->pluck('jurusan')
+            ->toArray();
+
         // Pastikan selected tetap ada di dropdown
         if (
             $selectedTahun !== 'semua'
@@ -123,7 +140,9 @@ class AnggotaController extends Controller
             'tahunAjaranList',
             'selectedTahun',
             'selectedTahunStart',
-            'selectedKelas'
+            'selectedKelas',
+            'selectedJurusan',
+            'jurusanList'
         ));
     }
 
@@ -133,15 +152,15 @@ class AnggotaController extends Controller
         $ekskulId = $pembina->ekstrakurikuler_id;
 
         $request->validate([
-            'name'          => 'required|string|max:255',
-            'email'         => 'required|email|unique:users',
-            'password'      => 'required|min:6',
-            'nis'           => 'required|unique:siswas,nis',
-            'nisn'          => 'required|unique:siswas,nisn',
-            'tahun_masuk'   => 'required|integer|min:2000|max:2100',
-            'tingkat_awal' => 'required|in:10,11,12',
-            'jurusan'       => 'required|string|max:50',
-            'jenis_kelamin' => 'required|in:L,P',
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|unique:users',
+            'password'       => 'required|min:6',
+            'nis'            => 'required|unique:siswas,nis',
+            'nisn'           => 'required|unique:siswas,nisn',
+            'tahun_masuk'    => 'required|integer|min:2000|max:2100',
+            'tingkat_awal'   => 'required|in:10,11,12',
+            'jurusan'        => 'required|string|max:50',
+            'jenis_kelamin'  => 'required|in:L,P',
         ]);
 
         $user = User::create([
@@ -177,14 +196,14 @@ class AnggotaController extends Controller
         $user  = $siswa->user;
 
         $request->validate([
-            'name'          => 'required|string|max:255',
-            'email'         => 'required|email|unique:users,email,' . $user->id,
-            'nis'           => 'required|unique:siswas,nis,' . $siswa->id,
-            'nisn'          => 'required|unique:siswas,nisn,' . $siswa->id,
-            'tahun_masuk'   => 'required|integer|min:2000|max:2100',
-            'tingkat_awal' => 'required|in:10,11,12',
-            'jurusan'       => 'required|string|max:50',
-            'jenis_kelamin' => 'required|in:L,P',
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email,' . $user->id,
+            'nis'            => 'required|unique:siswas,nis,' . $siswa->id,
+            'nisn'           => 'required|unique:siswas,nisn,' . $siswa->id,
+            'tahun_masuk'    => 'required|integer|min:2000|max:2100',
+            'tingkat_awal'   => 'required|in:10,11,12',
+            'jurusan'        => 'required|string|max:50',
+            'jenis_kelamin'  => 'required|in:L,P',
         ]);
 
         $user->update([
@@ -193,7 +212,9 @@ class AnggotaController extends Controller
         ]);
 
         if ($request->filled('password')) {
-            $user->update(['password' => Hash::make($request->password)]);
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
         }
 
         $siswa->update([
