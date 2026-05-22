@@ -148,17 +148,21 @@ class SiswaController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
-
             'nis' => 'required|unique:siswas,nis',
             'nisn' => 'required|unique:siswas,nisn',
-
             'tahun_masuk' => 'required|integer|min:2000|max:2100',
             'tingkat_awal' => 'required|in:10,11,12',
             'jurusan' => 'required|string|max:50',
-
             'jenis_kelamin' => 'required|in:L,P',
-
-            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id'
+            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
+            'no_telp_siswa' => 'nullable|string|max:15',
+            'tempat_lahir' => 'nullable|string|max:100',
+            'tanggal_lahir' => 'nullable|date',
+            'alamat' => 'nullable|string',
+            'nama_ayah' => 'nullable|string|max:100',
+            'no_telp_ayah' => 'nullable|string|max:15',
+            'nama_ibu' => 'nullable|string|max:100',
+            'no_telp_ibu' => 'nullable|string|max:15',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -172,17 +176,21 @@ class SiswaController extends Controller
 
             Siswa::create([
                 'user_id' => $user->id,
-
                 'ekstrakurikuler_id' => $request->ekstrakurikuler_id,
-
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
-
                 'tahun_masuk' => $request->tahun_masuk,
                 'tingkat_awal' => $request->tingkat_awal,
                 'jurusan' => $request->jurusan,
-
                 'jenis_kelamin' => $request->jenis_kelamin,
+                'no_telp_siswa' => $request->no_telp_siswa,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'alamat' => $request->alamat,
+                'nama_ayah' => $request->nama_ayah,
+                'no_telp_ayah' => $request->no_telp_ayah,
+                'nama_ibu' => $request->nama_ibu,
+                'no_telp_ibu' => $request->no_telp_ibu,
             ]);
         });
 
@@ -199,19 +207,22 @@ class SiswaController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-
             'email' => 'required|email|unique:users,email,' . $user->id,
-
             'nis' => 'required|unique:siswas,nis,' . $siswa->id,
             'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
-
             'tahun_masuk' => 'required|integer|min:2000|max:2100',
             'tingkat_awal' => 'required|in:10,11,12',
             'jurusan' => 'required|string|max:50',
-
             'jenis_kelamin' => 'required|in:L,P',
-
-            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id'
+            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
+            'no_telp_siswa' => 'nullable|string|max:15',
+            'tempat_lahir' => 'nullable|string|max:100',
+            'tanggal_lahir' => 'nullable|date',
+            'alamat' => 'nullable|string',
+            'nama_ayah' => 'nullable|string|max:100',
+            'no_telp_ayah' => 'nullable|string|max:15',
+            'nama_ibu' => 'nullable|string|max:100',
+            'no_telp_ibu' => 'nullable|string|max:15'
         ]);
 
         DB::transaction(function () use (
@@ -235,14 +246,19 @@ class SiswaController extends Controller
             $siswa->update([
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
-
                 'tahun_masuk' => $request->tahun_masuk,
                 'tingkat_awal' => $request->tingkat_awal,
                 'jurusan' => $request->jurusan,
-
                 'jenis_kelamin' => $request->jenis_kelamin,
-
                 'ekstrakurikuler_id' => $request->ekstrakurikuler_id,
+                'no_telp_siswa' => $request->no_telp_siswa,
+                'tempat_lahir' => $request->tempat_lahir,
+                'tanggal_lahir' => $request->tanggal_lahir,
+                'alamat' => $request->alamat,
+                'nama_ayah' => $request->nama_ayah,
+                'no_telp_ayah' => $request->no_telp_ayah,
+                'nama_ibu' => $request->nama_ibu,
+                'no_telp_ibu' => $request->no_telp_ibu,
             ]);
         });
 
