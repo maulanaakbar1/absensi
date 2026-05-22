@@ -420,17 +420,16 @@
                                 {{-- DELETE --}}
                                 <form
                                     action="{{ route('admin.siswa.destroy', $s->id) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Hapus siswa ini?')"
-                                >
+                                    method="POST">
 
                                     @csrf
                                     @method('DELETE')
 
                                     <button
-                                        type="submit"
-                                        class="p-2 text-red-500 hover:bg-red-50 rounded-xl transition"
-                                    >
+                                        type="button"
+                                        class="btn-delete p-2 text-red-500 hover:bg-red-50 rounded-xl transition"
+                                        data-nama="{{ $s->user?->name }}"
+                                        data-id="{{ $s->id }}">
 
                                         <svg xmlns="http://www.w3.org/2000/svg"
                                             class="h-5 w-5"
@@ -739,52 +738,71 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        
-        @if(session('success'))
+document.addEventListener('DOMContentLoaded', function () {
+
+    // =========================
+    // SUCCESS ALERT
+    // =========================
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: "{{ session('success') }}",
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: {
+                popup: 'rounded-[1.5rem]',
+            }
+        });
+    @endif
+
+
+    // =========================
+    // DELETE CONFIRM
+    // =========================
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+
+            const form = this.closest('.form-delete');
+            const nama = this.getAttribute('data-nama');
+
             Swal.fire({
-                icon: 'success',
-                title: 'Berhasil!',
-                text: "{{ session('success') }}",
-                showConfirmButton: false,
-                timer: 2500,
+                title: 'Hapus Siswa?',
+                text: `Data "${nama}" akan dihapus permanen!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
                 customClass: {
                     popup: 'rounded-[1.5rem]',
-                }pus Dat
-            });
-        @endif
+                    confirmButton: 'rounded-xl px-4 py-2 font-bold',
+                    cancelButton: 'rounded-xl px-4 py-2 font-bold'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
 
-        const deleteButtons = document.querySelectorAll('.btn-delete');
-        
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function (e) {
-                const form = this.closest('.form-delete');
-                const namaSiswa = this.getAttribute('data-nama');
-
-                Swal.fire({
-                    title: 'Apakah Anda yakin?',
-                    text: `Data siswa "${namaSiswa}" akan dihapus permanen dari sistem.`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444', 
-                    cancelButtonColor: '#64748b',  
-                    confirmButtonText: 'Ya, Hapus!',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true,
-                    customClass: {
-                        popup: 'rounded-[2rem]',
-                        confirmButton: 'rounded-xl px-4 py-2 text-sm font-bold',
-                        cancelButton: 'rounded-xl px-4 py-2 text-sm font-bold'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Terhapus!',
+                        text: 'Data siswa berhasil dihapus.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
             });
+
         });
     });
+
+});
 </script>
 
 @endsection
