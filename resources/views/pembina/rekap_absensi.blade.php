@@ -61,6 +61,27 @@
                     </select>
                 </div>
 
+                {{-- Filter Jurusan --}}
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">
+                        Jurusan
+                    </label>
+
+                    <select
+                        name="jurusan"
+                        onchange="this.form.submit()"
+                        class="w-full border-slate-200 rounded-xl focus:ring-cyan-500"
+                    >
+                        <option value="">Semua Jurusan</option>
+
+                        @foreach($jurusanList as $jurusan)
+                            <option value="{{ $jurusan }}" {{ $selectedJurusan == $jurusan ? 'selected' : '' }}>
+                                {{ $jurusan }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 {{-- Bulan --}}
                 <div class="flex-1 min-w-[200px]">
                     <label class="block text-sm font-semibold text-slate-600 mb-2">
@@ -84,7 +105,8 @@
                     $isFiltered =
                         request('tahun_ajaran') ||
                         request('kelas') ||
-                        request('bulan');
+                        request('bulan') ||
+                        request('jurusan');
                 @endphp
 
                 @if($isFiltered)
