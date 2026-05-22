@@ -8,9 +8,9 @@ use App\Models\Jadwal;
 use App\Models\HariLibur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 
 class AbsenController extends Controller
 {
@@ -19,21 +19,25 @@ class AbsenController extends Controller
         $user = Auth::user();
         $siswa = $user->siswa;
 
+        // ✅ Cek biodata
         $isComplete = $siswa->nisn && $siswa->alamat && $siswa->nama_ayah;
 
         $today = Carbon::today();
-        $hariIni = $today->translatedFormat('l'); 
+        $hariIni = $today->translatedFormat('l');
 
         $ekskulId = $siswa->ekstrakurikuler_id;
 
+        // ✅ CEK JADWAL
         $adaJadwal = Jadwal::where('ekstrakurikuler_id', $ekskulId)
             ->where('hari', $hariIni)
             ->exists();
 
+        // ✅ CEK LIBUR
         $isLibur = HariLibur::where('ekstrakurikuler_id', $ekskulId)
             ->whereDate('tanggal', $today)
             ->exists();
 
+        // ✅ CEK SUDAH ABSEN
         $absenHariIni = Absensi::where('siswa_id', $siswa->id)
             ->whereDate('tanggal', $today)
             ->first();
@@ -50,6 +54,7 @@ class AbsenController extends Controller
     {
         $siswa = Auth::user()->siswa;
 
+        // ❌ PROTEK BIODATA
         if (!$siswa->nisn || !$siswa->alamat || !$siswa->nama_ayah) {
             return redirect()->route('siswa.profile')
                 ->with('error', 'Lengkapi biodata dulu sebelum absen!');
@@ -58,6 +63,7 @@ class AbsenController extends Controller
         $today = Carbon::today();
         $hariIni = $today->translatedFormat('l');
 
+        // ❌ CEK JADWAL
         $adaJadwal = Jadwal::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
             ->where('hari', $hariIni)
             ->exists();
@@ -66,6 +72,7 @@ class AbsenController extends Controller
             return back()->with('error', 'Tidak ada jadwal latihan hari ini!');
         }
 
+        // ❌ CEK LIBUR
         $isLibur = HariLibur::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
             ->whereDate('tanggal', $today)
             ->exists();
@@ -74,6 +81,7 @@ class AbsenController extends Controller
             return back()->with('error', 'Hari ini adalah hari libur!');
         }
 
+        // ❌ CEK SUDAH ABSEN
         $sudahAbsen = Absensi::where('siswa_id', $siswa->id)
             ->whereDate('tanggal', $today)
             ->exists();
@@ -83,79 +91,87 @@ class AbsenController extends Controller
                 ->with('error', 'Anda sudah absen hari ini!');
         }
 
+        // ✅ VALIDASI
         $request->validate([
             'foto' => 'required',
             'lokasi' => 'required',
             'status' => 'required|in:hadir,izin,sakit'
         ]);
 
-        // =======================
-        // SIMPAN FOTO
-        // =======================
+        // ==========================
+        // SIMPAN FOTO BASE64
+        // ==========================
 
-        $image = $request->foto;
+        $fotoPath = null;
 
-        $image = str_replace('data:image/jpeg;base64,', '', $image);
-        $image = str_replace(' ', '+', $image);
+        if ($request->foto) {
 
-        $imageName = 'absensi_' . time() . '.jpg';
+            $folderPath = public_path('storage/absensi/');
 
-        Storage::disk('public')->put(
-            'absensi/' . $imageName,
-            base64_decode($image)
-        );
+            if (!file_exists($folderPath)) {
+                mkdir($folderPath, 0777, true);
+            }
 
-        // URL FOTO PUBLIC
-        $fotoUrl = asset('storage/absensi/' . $imageName);
+            $image_parts = explode(";base64,", $request->foto);
 
-        // =======================
-        // SIMPAN ABSENSI
-        // =======================
+            if (count($image_parts) > 1) {
 
+                $image_base64 = base64_decode($image_parts[1]);
+
+                $fileName = 'absen_' . time() . '_' . uniqid() . '.jpg';
+
+                file_put_contents(
+                    $folderPath . $fileName,
+                    $image_base64
+                );
+
+                $fotoPath = 'absensi/' . $fileName;
+            }
+        }
+
+        // ✅ SIMPAN ABSENSI
         $absensi = Absensi::create([
             'siswa_id' => $siswa->id,
             'tanggal' => $today,
             'jam_masuk' => Carbon::now()->toTimeString(),
-
-            // simpan path file
-            'foto' => 'absensi/' . $imageName,
-
+            'foto' => $fotoPath,
             'lokasi' => $request->lokasi,
             'status' => $request->status,
             'keterangan' => $request->keterangan ?? 'Absensi Kamera',
         ]);
 
-        $user = Auth::user();
+        // ==========================
+        // ✅ KIRIM WA KE ORTU
+        // ==========================
 
-        $pesan = "📸 ABSENSI EKSTRAKURIKULER\n\n";
+        $status = strtoupper($request->status);
 
-        $pesan .= "Nama: " . $user->name . "\n";
-        $pesan .= "Status: " . strtoupper($request->status) . "\n";
-        $pesan .= "Tanggal: " . Carbon::now()->translatedFormat('d F Y') . "\n";
-        $pesan .= "Jam: " . Carbon::now()->format('H:i') . " WIB\n";
-        $pesan .= "Lokasi GPS:\n";
-        $pesan .= $request->lokasi . "\n\n";
+        $pesan = "📢 *NOTIFIKASI ABSENSI EKSTRAKURIKULER*\n\n" .
+            "👤 Nama: {$siswa->user->name}\n" .
+            "🏫 Kelas: {$siswa->kelas}\n" .
+            "📌 Status: {$status}\n" .
+            "📅 Tanggal: " . now()->format('d-m-Y') . "\n" .
+            "⏰ Jam: " . now()->format('H:i') . " WIB\n\n" .
+            "📝 Keterangan:\n" .
+            ($request->keterangan ?? '-') . "\n\n" .
+            "📍 Lokasi:\n" .
+            "https://maps.google.com/?q={$request->lokasi}";
 
-        if ($request->keterangan) {
-            $pesan .= "Keterangan:\n";
-            $pesan .= $request->keterangan . "\n\n";
+        // ✅ Kirim ke Ayah
+        if ($siswa->no_telp_ayah) {
+
+            $nomorAyah = $this->formatNomor($siswa->no_telp_ayah);
+
+            $this->kirimWhatsapp($nomorAyah, $pesan);
         }
 
-        $pesan .= "Siswa telah melakukan absensi ekskul.";
+        // ✅ Kirim ke Ibu
+        if ($siswa->no_telp_ibu) {
 
-        // Kirim ke ayah
-        $this->kirimWaAbsensi(
-            $siswa->no_telp_ayah,
-            $pesan,
-            $fotoUrl
-        );
+            $nomorIbu = $this->formatNomor($siswa->no_telp_ibu);
 
-        // Kirim ke ibu
-        $this->kirimWaAbsensi(
-            $siswa->no_telp_ibu,
-            $pesan,
-            $fotoUrl
-        );
+            $this->kirimWhatsapp($nomorIbu, $pesan);
+        }
 
         return redirect()->route('siswa.absen.riwayat')
             ->with('success', 'Berhasil melakukan absensi!');
@@ -172,32 +188,57 @@ class AbsenController extends Controller
         return view('siswa.riwayat', compact('semuaRiwayat'));
     }
 
-    private function kirimWaAbsensi($nomor, $pesan, $foto = null)
+    // ==========================
+    // FORMAT NOMOR INDONESIA
+    // ==========================
+    private function formatNomor($nomor)
     {
-        if (!$nomor) {
-            return;
-        }
-
         $nomor = preg_replace('/[^0-9]/', '', $nomor);
 
         if (substr($nomor, 0, 1) == '0') {
             $nomor = '62' . substr($nomor, 1);
         }
 
-        $payload = [
-            'phone' => $nomor,
-            'message' => $pesan,
-        ];
+        return $nomor;
+    }
 
-        // kirim media
-        if ($foto) {
-            $payload['media_url'] = $foto;
+    // ==========================
+    // KIRIM WHATSAPP
+    // ==========================
+    private function kirimWhatsapp($nomor, $pesan)
+    {
+        $token = env('WA_API_TOKEN');
+
+        $client = new Client();
+
+        try {
+
+            $response = $client->post(env('WA_API_URL'), [
+
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+
+                'json' => [
+                    'phone' => $nomor,
+                    'message' => $pesan,
+                ]
+
+            ]);
+
+            Log::info('WA BERHASIL', [
+                'nomor' => $nomor,
+                'response' => $response->getBody()->getContents()
+            ]);
+
+        } catch (\Exception $e) {
+
+            Log::error('WA GAGAL', [
+                'nomor' => $nomor,
+                'error' => $e->getMessage()
+            ]);
         }
-
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
-        ])->post(env('WA_API_URL'), $payload);
-
-        dd($response->json());
     }
 }

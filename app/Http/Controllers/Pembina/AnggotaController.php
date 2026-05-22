@@ -152,14 +152,20 @@ class AnggotaController extends Controller
         ]);
 
         Siswa::create([
-            'user_id'           => $user->id,
+            'user_id' => $user->id,
             'ekstrakurikuler_id' => $ekskulId,
-            'tahun_masuk'       => $request->tahun_masuk,
+            'tahun_masuk' => $request->tahun_masuk,
             'tingkat_awal' => $request->tingkat_awal,
-            'jurusan'           => $request->jurusan,
-            'nis'               => $request->nis,
-            'nisn'              => $request->nisn,
-            'jenis_kelamin'     => $request->jenis_kelamin,
+            'jurusan' => $request->jurusan,
+
+            'kelas' => $this->generateKelas(
+                $request->tingkat_awal,
+                $request->jurusan
+            ),
+
+            'nis' => $request->nis,
+            'nisn' => $request->nisn,
+            'jenis_kelamin' => $request->jenis_kelamin,
         ]);
 
         return back()->with('success', 'Anggota berhasil ditambahkan ke ekstrakurikuler Anda!');
@@ -191,11 +197,17 @@ class AnggotaController extends Controller
         }
 
         $siswa->update([
-            'tahun_masuk'   => $request->tahun_masuk,
+            'tahun_masuk' => $request->tahun_masuk,
             'tingkat_awal' => $request->tingkat_awal,
-            'jurusan'       => $request->jurusan,
-            'nis'           => $request->nis,
-            'nisn'          => $request->nisn,
+            'jurusan' => $request->jurusan,
+
+            'kelas' => $this->generateKelas(
+                $request->tingkat_awal,
+                $request->jurusan
+            ),
+
+            'nis' => $request->nis,
+            'nisn' => $request->nisn,
             'jenis_kelamin' => $request->jenis_kelamin,
         ]);
 
@@ -308,6 +320,18 @@ class AnggotaController extends Controller
             '',
             $siswa->jurusan ?? ''
         );
+
+        return trim($label . ' ' . $jurusan);
+    }
+
+    private function generateKelas($tingkat, $jurusan)
+    {
+        $label = match ((int)$tingkat) {
+            10 => 'X',
+            11 => 'XI',
+            12 => 'XII',
+            default => '',
+        };
 
         return trim($label . ' ' . $jurusan);
     }

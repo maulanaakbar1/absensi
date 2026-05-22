@@ -225,8 +225,8 @@
                     {{-- FOTO (DIBESARKAN) --}}
                     <td class="px-4 py-4 text-center">
                         @if($row->foto)
-                            <button onclick="openImage('{{ $row->foto }}')">
-                                <img src="{{ $row->foto }}" 
+                            <button onclick="openImage('{{ asset('storage/' . $row->foto) }}')">
+                                <img src="{{ asset('storage/' . $row->foto) }}" 
                                     class="w-16 md:w-20 h-auto aspect-[3/4] md:aspect-square object-cover rounded-xl border shadow hover:scale-105 transition mx-auto">
                             </button>
                         @else
