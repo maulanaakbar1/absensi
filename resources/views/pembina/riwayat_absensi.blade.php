@@ -110,6 +110,30 @@
 
                 </div>
 
+                {{-- JURUSAN --}}
+                <div class="w-full md:w-56">
+
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                        Jurusan
+                    </label>
+
+                    <select
+                        name="jurusan"
+                        onchange="this.form.submit()"
+                        class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 focus:border-blue-500 focus:ring-0">
+
+                        <option value="">Semua Jurusan</option>
+
+                        @foreach($jurusanList as $jurusan)
+                            <option value="{{ $jurusan }}" 
+                                {{ $selectedJurusan == $jurusan ? 'selected' : '' }}>
+                                {{ $jurusan }}
+                            </option>
+                        @endforeach
+
+                    </select>
+                </div>
+
                 {{-- RESET --}}
                 @if(
                     request('kelas') ||

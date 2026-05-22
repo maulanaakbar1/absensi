@@ -219,151 +219,10 @@ class RekapAbsensiController extends Controller
     }
 
     public function manage(Request $request)
-{
-    $tanggal = $request->tanggal ?? now()->toDateString();
-
-    $pembina = auth()->user()->pembina;
-
-    // =========================
-    // FILTER TAHUN AJARAN
-    // =========================
-    $selectedTahun = $request->get(
-        'tahun_ajaran',
-        $this->getCurrentTahunAjaran()
-    );
-
-    // =========================
-    // FILTER KELAS
-    // =========================
-    $selectedKelas = $request->get('kelas');
-
-    // =========================
-    // FILTER JURUSAN
-    // =========================
-    $selectedJurusan = $request->get('jurusan');
-
-    $selectedTahunStart = $selectedTahun !== 'semua'
-        ? $this->parseTahunAjaranStart($selectedTahun)
-        : null;
-
-    $query = Siswa::with([
-        'user',
-        'absensis' => function ($q) use ($tanggal) {
-            $q->whereDate('tanggal', $tanggal);
-        }
-    ])->where(
-        'ekstrakurikuler_id',
-        $pembina->ekstrakurikuler_id
-    );
-
-    // =========================
-    // FILTER TAHUN AJARAN
-    // =========================
-    if ($selectedTahunStart) {
-
-        $query->where(function ($q) use ($selectedTahunStart) {
-
-            $q->whereNull('tahun_masuk')
-
-            ->orWhere(function ($q2) use ($selectedTahunStart) {
-
-                $q2->whereRaw(
-                    '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
-                    [$selectedTahunStart]
-                );
-
-            });
-
-        });
-
-    }
-
-    // =========================
-    // FILTER JURUSAN
-    // =========================
-    if ($selectedJurusan) {
-
-        $query->where('jurusan', $selectedJurusan);
-
-    }
-
-    $siswas = $query->get();
-
-    // =========================
-    // LIST JURUSAN
-    // =========================
-    $jurusanList = Siswa::where(
-            'ekstrakurikuler_id',
-            $pembina->ekstrakurikuler_id
-        )
-        ->whereNotNull('jurusan')
-        ->select('jurusan')
-        ->distinct()
-        ->orderBy('jurusan')
-        ->pluck('jurusan')
-        ->toArray();
-
-    // =========================
-    // TRANSFORM KELAS DISPLAY
-    // =========================
-    $siswas->transform(function ($siswa) use ($selectedTahunStart) {
-
-        $tahunDisplay = $selectedTahunStart
-            ?? $this->parseTahunAjaranStart(
-                $this->getCurrentTahunAjaran()
-            );
-
-        $tingkat = $this->getTingkat(
-            $siswa,
-            $tahunDisplay
-        );
-
-        $kelasDisplay = $this->getKelasDisplay(
-            $siswa,
-            $tahunDisplay
-        );
-
-        $siswa->kelas_display = $kelasDisplay;
-        $siswa->tingkat_display = $tingkat;
-
-        return $siswa;
-    });
-
-    // =========================
-    // FILTER KELAS
-    // =========================
-    if ($selectedKelas) {
-
-        $siswas = $siswas->filter(function ($siswa) use ($selectedKelas) {
-
-            return $siswa->tingkat_display == $selectedKelas;
-
-        })->values();
-
-    }
-
-    // =========================
-    // LIST TAHUN AJARAN
-    // =========================
-    $tahunAjaranList = $this->getTahunAjaranList(
-        $pembina->ekstrakurikuler_id
-    );
-
-    return view('pembina.absensi_manage', compact(
-        'siswas',
-        'tanggal',
-        'tahunAjaranList',
-        'selectedTahun',
-        'selectedKelas',
-        'selectedJurusan',
-        'jurusanList'
-    ));
-}
-
-    public function riwayat(Request $request)
     {
-        $user = auth()->user();
-        $ekskulId = $user->pembina->ekstrakurikuler_id;
+        $tanggal = $request->tanggal ?? now()->toDateString();
+
+        $pembina = auth()->user()->pembina;
 
         // =========================
         // FILTER TAHUN AJARAN
@@ -378,16 +237,164 @@ class RekapAbsensiController extends Controller
         // =========================
         $selectedKelas = $request->get('kelas');
 
+        // =========================
+        // FILTER JURUSAN
+        // =========================
+        $selectedJurusan = $request->get('jurusan');
+
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
             : null;
 
+        $query = Siswa::with([
+            'user',
+            'absensis' => function ($q) use ($tanggal) {
+                $q->whereDate('tanggal', $tanggal);
+            }
+        ])->where(
+            'ekstrakurikuler_id',
+            $pembina->ekstrakurikuler_id
+        );
+
+        // =========================
+        // FILTER TAHUN AJARAN
+        // =========================
+        if ($selectedTahunStart) {
+
+            $query->where(function ($q) use ($selectedTahunStart) {
+
+                $q->whereNull('tahun_masuk')
+
+                ->orWhere(function ($q2) use ($selectedTahunStart) {
+
+                    $q2->whereRaw(
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        [$selectedTahunStart]
+                    );
+
+                });
+
+            });
+
+        }
+
+        // =========================
+        // FILTER JURUSAN
+        // =========================
+        if ($selectedJurusan) {
+
+            $query->where('jurusan', $selectedJurusan);
+
+        }
+
+        $siswas = $query->get();
+
+        // =========================
+        // LIST JURUSAN
+        // =========================
+        $jurusanList = Siswa::where(
+                'ekstrakurikuler_id',
+                $pembina->ekstrakurikuler_id
+            )
+            ->whereNotNull('jurusan')
+            ->select('jurusan')
+            ->distinct()
+            ->orderBy('jurusan')
+            ->pluck('jurusan')
+            ->toArray();
+
+        // =========================
+        // TRANSFORM KELAS DISPLAY
+        // =========================
+        $siswas->transform(function ($siswa) use ($selectedTahunStart) {
+
+            $tahunDisplay = $selectedTahunStart
+                ?? $this->parseTahunAjaranStart(
+                    $this->getCurrentTahunAjaran()
+                );
+
+            $tingkat = $this->getTingkat(
+                $siswa,
+                $tahunDisplay
+            );
+
+            $kelasDisplay = $this->getKelasDisplay(
+                $siswa,
+                $tahunDisplay
+            );
+
+            $siswa->kelas_display = $kelasDisplay;
+            $siswa->tingkat_display = $tingkat;
+
+            return $siswa;
+        });
+
+        // =========================
+        // FILTER KELAS
+        // =========================
+        if ($selectedKelas) {
+
+            $siswas = $siswas->filter(function ($siswa) use ($selectedKelas) {
+
+                return $siswa->tingkat_display == $selectedKelas;
+
+            })->values();
+
+        }
+
+        // =========================
+        // LIST TAHUN AJARAN
+        // =========================
+        $tahunAjaranList = $this->getTahunAjaranList(
+            $pembina->ekstrakurikuler_id
+        );
+
+        return view('pembina.absensi_manage', compact(
+            'siswas',
+            'tanggal',
+            'tahunAjaranList',
+            'selectedTahun',
+            'selectedKelas',
+            'selectedJurusan',
+            'jurusanList'
+        ));
+    }
+
+    public function riwayat(Request $request)
+    {
+        $user = auth()->user();
+        $ekskulId = $user->pembina->ekstrakurikuler_id;
+
+        // =========================
+        // FILTER INPUT
+        // =========================
+        $selectedTahun = $request->get(
+            'tahun_ajaran',
+            $this->getCurrentTahunAjaran()
+        );
+
+        $selectedKelas = $request->get('kelas');
+        $selectedJurusan = $request->get('jurusan');
+
+        $selectedTahunStart = $selectedTahun !== 'semua'
+            ? $this->parseTahunAjaranStart($selectedTahun)
+            : null;
+
+        // =========================
+        // QUERY DASAR
+        // =========================
         $query = Absensi::whereHas('siswa', function ($q) use (
             $ekskulId,
-            $selectedTahunStart
+            $selectedTahunStart,
+            $selectedJurusan
         ) {
 
             $q->where('ekstrakurikuler_id', $ekskulId);
+
+            // FILTER JURUSAN
+            if ($selectedJurusan) {
+                $q->where('jurusan', $selectedJurusan);
+            }
 
             // FILTER TAHUN AJARAN
             if ($selectedTahunStart) {
@@ -395,15 +402,14 @@ class RekapAbsensiController extends Controller
                 $q->where(function ($q2) use ($selectedTahunStart) {
 
                     $q2->whereNull('tahun_masuk')
+                        ->orWhere(function ($q3) use ($selectedTahunStart) {
 
-                    ->orWhere(function ($q3) use ($selectedTahunStart) {
+                            $q3->whereRaw(
+                                '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                                [$selectedTahunStart]
+                            );
 
-                        $q3->whereRaw(
-                            '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
-                            [$selectedTahunStart]
-                        );
-
-                    });
+                        });
 
                 });
 
@@ -422,21 +428,13 @@ class RekapAbsensiController extends Controller
         $riwayat->getCollection()->transform(function ($row) use ($selectedTahunStart) {
 
             $tahunDisplay = $selectedTahunStart
-                ?? $this->parseTahunAjaranStart(
-                    $this->getCurrentTahunAjaran()
-                );
+                ?? $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
             $siswa = $row->siswa;
 
-            $tingkat = $this->getTingkat(
-                $siswa,
-                $tahunDisplay
-            );
+            $tingkat = $this->getTingkat($siswa, $tahunDisplay);
 
-            $kelasDisplay = $this->getKelasDisplay(
-                $siswa,
-                $tahunDisplay
-            );
+            $kelasDisplay = $this->getKelasDisplay($siswa, $tahunDisplay);
 
             $siswa->kelas_display = $kelasDisplay;
             $siswa->tingkat_display = $tingkat;
@@ -445,7 +443,7 @@ class RekapAbsensiController extends Controller
         });
 
         // =========================
-        // FILTER KELAS
+        // FILTER KELAS (AFTER QUERY)
         // =========================
         if ($selectedKelas) {
 
@@ -463,11 +461,31 @@ class RekapAbsensiController extends Controller
         // =========================
         $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
 
+        if (
+            $selectedTahun !== 'semua'
+            && !in_array($selectedTahun, $tahunAjaranList)
+        ) {
+            $tahunAjaranList[] = $selectedTahun;
+        }
+
+        // =========================
+        // LIST JURUSAN
+        // =========================
+        $jurusanList = \App\Models\Siswa::where('ekstrakurikuler_id', $ekskulId)
+            ->whereNotNull('jurusan')
+            ->select('jurusan')
+            ->distinct()
+            ->orderBy('jurusan')
+            ->pluck('jurusan')
+            ->toArray();
+
         return view('pembina.riwayat_absensi', compact(
             'riwayat',
             'tahunAjaranList',
             'selectedTahun',
-            'selectedKelas'
+            'selectedKelas',
+            'selectedJurusan',
+            'jurusanList'
         ));
     }
 
