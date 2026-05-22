@@ -19,7 +19,7 @@ class AbsenController extends Controller
         $user = Auth::user();
         $siswa = $user->siswa;
 
-        // ✅ Cek biodata
+        // Cek biodata
         $isComplete = $siswa->nisn && $siswa->alamat && $siswa->nama_ayah;
 
         $today = Carbon::today();
@@ -27,17 +27,17 @@ class AbsenController extends Controller
 
         $ekskulId = $siswa->ekstrakurikuler_id;
 
-        // ✅ CEK JADWAL
+        // CEK JADWAL
         $adaJadwal = Jadwal::where('ekstrakurikuler_id', $ekskulId)
             ->where('hari', $hariIni)
             ->exists();
 
-        // ✅ CEK LIBUR
+        // CEK LIBUR
         $isLibur = HariLibur::where('ekstrakurikuler_id', $ekskulId)
             ->whereDate('tanggal', $today)
             ->exists();
 
-        // ✅ CEK SUDAH ABSEN
+        // CEK SUDAH ABSEN
         $absenHariIni = Absensi::where('siswa_id', $siswa->id)
             ->whereDate('tanggal', $today)
             ->first();
@@ -54,7 +54,7 @@ class AbsenController extends Controller
     {
         $siswa = Auth::user()->siswa;
 
-        // ❌ PROTEK BIODATA
+        // PROTEK BIODATA
         if (!$siswa->nisn || !$siswa->alamat || !$siswa->nama_ayah) {
             return redirect()->route('siswa.profile')
                 ->with('error', 'Lengkapi biodata dulu sebelum absen!');
@@ -63,7 +63,7 @@ class AbsenController extends Controller
         $today = Carbon::today();
         $hariIni = $today->translatedFormat('l');
 
-        // ❌ CEK JADWAL
+        // CEK JADWAL
         $adaJadwal = Jadwal::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
             ->where('hari', $hariIni)
             ->exists();
@@ -72,7 +72,7 @@ class AbsenController extends Controller
             return back()->with('error', 'Tidak ada jadwal latihan hari ini!');
         }
 
-        // ❌ CEK LIBUR
+        // CEK LIBUR
         $isLibur = HariLibur::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
             ->whereDate('tanggal', $today)
             ->exists();
@@ -81,7 +81,7 @@ class AbsenController extends Controller
             return back()->with('error', 'Hari ini adalah hari libur!');
         }
 
-        // ❌ CEK SUDAH ABSEN
+        // CEK SUDAH ABSEN
         $sudahAbsen = Absensi::where('siswa_id', $siswa->id)
             ->whereDate('tanggal', $today)
             ->exists();
@@ -91,11 +91,12 @@ class AbsenController extends Controller
                 ->with('error', 'Anda sudah absen hari ini!');
         }
 
-        // ✅ VALIDASI
+        // VALIDASI
         $request->validate([
             'foto' => 'required',
             'lokasi' => 'required',
-            'status' => 'required|in:hadir,izin,sakit'
+            'status' => 'required|in:hadir,izin,sakit',
+            'keterangan' => 'nullable|string|max:255'
         ]);
 
         // ==========================
@@ -129,43 +130,94 @@ class AbsenController extends Controller
             }
         }
 
-        // ✅ SIMPAN ABSENSI
+        // ==========================
+        // STATUS & KETERANGAN
+        // ==========================
+
+        $status = strtolower($request->status);
+
+        $keteranganDefault = match ($status) {
+            'hadir' => 'Hadir mengikuti kegiatan ekstrakurikuler.',
+            'izin'  => 'Izin tidak mengikuti kegiatan ekstrakurikuler.',
+            'sakit' => 'Sakit dan tidak dapat mengikuti kegiatan ekstrakurikuler.',
+            default => 'Absensi ekstrakurikuler'
+        };
+
+        $keterangan = $request->keterangan ?: $keteranganDefault;
+
+        // ==========================
+        // FORMAT KELAS
+        // ==========================
+
+        $kelas = '-';
+
+        if (!empty($siswa->kelas)) {
+
+            $kelas = $siswa->kelas;
+
+        } elseif (!empty($siswa->jurusan)) {
+
+            $kelas = $siswa->jurusan;
+
+        }
+
+        // ==========================
+        // SIMPAN ABSENSI
+        // ==========================
+
         $absensi = Absensi::create([
             'siswa_id' => $siswa->id,
             'tanggal' => $today,
             'jam_masuk' => Carbon::now()->toTimeString(),
             'foto' => $fotoPath,
             'lokasi' => $request->lokasi,
-            'status' => $request->status,
-            'keterangan' => $request->keterangan ?? 'Absensi Kamera',
+            'status' => $status,
+            'keterangan' => $keterangan,
         ]);
 
         // ==========================
-        // ✅ KIRIM WA KE ORTU
+        // TEMPLATE PESAN WA
         // ==========================
 
-        $status = strtoupper($request->status);
+        $statusText = strtoupper($status);
 
-        $pesan = "📢 *NOTIFIKASI ABSENSI EKSTRAKURIKULER*\n\n" .
+        $emojiStatus = match ($status) {
+            'hadir' => '✅',
+            'izin'  => '🟡',
+            'sakit' => '🤒',
+            default => '📌'
+        };
+
+        $pesan =
+            "📢 *NOTIFIKASI ABSENSI EKSTRAKURIKULER*\n\n" .
             "👤 Nama: {$siswa->user->name}\n" .
-            "🏫 Kelas: {$siswa->kelas}\n" .
-            "📌 Status: {$status}\n" .
+            "🏫 Kelas: {$kelas}\n" .
+            "{$emojiStatus} Status: {$statusText}\n" .
             "📅 Tanggal: " . now()->format('d-m-Y') . "\n" .
             "⏰ Jam: " . now()->format('H:i') . " WIB\n\n" .
             "📝 Keterangan:\n" .
-            ($request->keterangan ?? '-') . "\n\n" .
+            ($keterangan ?: '-') . "\n\n" .
             "📍 Lokasi:\n" .
             "https://maps.google.com/?q={$request->lokasi}";
 
-        // ✅ Kirim ke Ayah
+        // ==========================
+        // KIRIM KE AYAH
+        // ==========================
+
         if ($siswa->no_telp_ayah) {
 
             $nomorAyah = $this->formatNomor($siswa->no_telp_ayah);
 
             $this->kirimWhatsapp($nomorAyah, $pesan);
+
+            // ⏳ jeda sebelum kirim ke ibu
+            sleep(3);
         }
 
-        // ✅ Kirim ke Ibu
+        // ==========================
+        // KIRIM KE IBU
+        // ==========================
+
         if ($siswa->no_telp_ibu) {
 
             $nomorIbu = $this->formatNomor($siswa->no_telp_ibu);
@@ -191,6 +243,7 @@ class AbsenController extends Controller
     // ==========================
     // FORMAT NOMOR INDONESIA
     // ==========================
+
     private function formatNomor($nomor)
     {
         $nomor = preg_replace('/[^0-9]/', '', $nomor);
@@ -205,6 +258,7 @@ class AbsenController extends Controller
     // ==========================
     // KIRIM WHATSAPP
     // ==========================
+
     private function kirimWhatsapp($nomor, $pesan)
     {
         $token = env('WA_API_TOKEN');
