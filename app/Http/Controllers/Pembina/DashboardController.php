@@ -7,7 +7,6 @@ use App\Models\Pembina;
 use App\Models\Siswa;
 use App\Models\Jadwal;
 use App\Models\Absensi;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -22,30 +21,97 @@ class DashboardController extends Controller
             ->first();
 
         if (!$pembina || !$pembina->ekstrakurikuler) {
-            return view('pembina.dashboard', ['pembina' => $pembina, 'jumlahSiswa' => 0]);
+            return view('pembina.dashboard', [
+                'pembina' => $pembina,
+                'jumlahSiswa' => 0,
+                'jadwalTerdekat' => null,
+                'absensiHariIni' => 0
+            ]);
         }
 
         $ekskulId = $pembina->ekstrakurikuler_id;
 
-        // 2. Hitung jumlah siswa di ekskul tersebut
+        // 2. Hitung jumlah siswa
         $jumlahSiswa = Siswa::where('ekstrakurikuler_id', $ekskulId)->count();
 
-        // 3. Ambil jadwal terdekat (berdasarkan hari ini)
-        $daftarHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-        $hariIni = $daftarHari[date('N') - 1];
-        
-        $jadwalTerdekat = Jadwal::where('ekstrakurikuler_id', $ekskulId)
-            ->where('hari', $hariIni)
+        // =========================
+        // 3. LOGIC JADWAL FIX FINAL (STABIL + BENAR + URUT)
+        // =========================
+
+        $daftarHari = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+
+        $now = Carbon::now();
+        $hariSekarangIndex = date('N');
+        $hariSekarang = $daftarHari[$hariSekarangIndex - 1];
+        $jamSekarang = $now->format('H:i:s');
+
+        // =========================
+        // 1. CEK APAKAH MASIH ADA JADWAL AKTIF HARI INI
+        // =========================
+        $jadwalAktifHariIni = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+            ->where('hari', $hariSekarang)
+            ->where('jam_selesai', '>', $jamSekarang)
+            ->orderBy('jam_mulai', 'asc')
             ->first();
 
-        // 4. Ambil ringkasan absensi hari ini (opsional untuk tambahan info)
-        $absensiHariIni = Absensi::whereHas('siswa', function($q) use ($ekskulId) {
+        // =========================
+        // 2. JIKA MASIH ADA → PAKAI ITU
+        // =========================
+        if ($jadwalAktifHariIni) {
+            $jadwalTerdekat = $jadwalAktifHariIni;
+        } 
+        // =========================
+        // 3. JIKA SUDAH HABIS → CARI HARI BERIKUTNYA
+        // =========================
+        else {
+
+            $urutanHari = [
+                'Senin' => 1,
+                'Selasa' => 2,
+                'Rabu' => 3,
+                'Kamis' => 4,
+                'Jumat' => 5,
+                'Sabtu' => 6,
+                'Minggu' => 7,
+            ];
+
+            $jadwalTerdekat = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+                ->get()
+                ->sortBy(function ($item) use ($urutanHari, $hariSekarangIndex, $jamSekarang) {
+
+                    $hariIndex = $urutanHari[$item->hari];
+
+                    $diff = $hariIndex - $hariSekarangIndex;
+
+                    // kalau sudah lewat → masuk minggu depan
+                    if ($diff < 0) {
+                        $diff += 7;
+                    }
+
+                    // bonus: kalau hari sama tapi jam sudah lewat → dorong ke belakang
+                    if ($diff == 0 && $item->jam_mulai <= $jamSekarang) {
+                        $diff = 7;
+                    }
+
+                    return $diff;
+                })
+                ->sortBy('jam_mulai')
+                ->first();
+        }
+
+        // 4. Absensi hari ini
+        $absensiHariIni = Absensi::whereHas('siswa', function ($q) use ($ekskulId) {
                 $q->where('ekstrakurikuler_id', $ekskulId);
             })
             ->whereDate('tanggal', Carbon::today())
             ->count();
 
-        return view('pembina.dashboard', compact('pembina', 'jumlahSiswa', 'jadwalTerdekat', 'absensiHariIni'));
+        return view('pembina.dashboard', compact(
+            'pembina',
+            'jumlahSiswa',
+            'jadwalTerdekat',
+            'absensiHariIni'
+        ));
     }
 
     public function kirimWa()
@@ -58,37 +124,68 @@ class DashboardController extends Controller
             return back()->with('error', 'Ekskul tidak ditemukan.');
         }
 
-        // Ambil semua siswa sesuai ekskul pembina
         $siswaList = Siswa::with('user')
             ->where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
             ->get();
 
-        // Ambil jadwal ekskul
+        $daftarHari = [
+            'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'
+        ];
+
+        $urutanHari = [
+            'Senin' => 1,
+            'Selasa' => 2,
+            'Rabu' => 3,
+            'Kamis' => 4,
+            'Jumat' => 5,
+            'Sabtu' => 6,
+            'Minggu' => 7,
+        ];
+
+        $now = Carbon::now();
+        $hariSekarangIndex = $now->dayOfWeekIso; // 1-7
+
         $jadwal = Jadwal::where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
+            ->get()
+            ->map(function ($item) use ($urutanHari, $hariSekarangIndex, $now) {
+
+                $hariIndex = $urutanHari[$item->hari];
+
+                $diff = $hariIndex - $hariSekarangIndex;
+
+                if ($diff < 0) {
+                    $diff += 7;
+                }
+
+                // ⛔ kalau hari sama tapi jam sudah lewat → dorong ke minggu depan
+                if ($diff == 0 && $item->jam_mulai <= $now->format('H:i:s')) {
+                    $diff = 7;
+                }
+
+                $item->ranking = $diff;
+
+                return $item;
+            })
+            ->sortBy('ranking')
             ->first();
 
+        // =========================
+        // KIRIM WA
+        // =========================
         foreach ($siswaList as $siswa) {
 
-            // =========================
-            // FORMAT PESAN
-            // =========================
-
             $pesan = "📢 *INFORMASI EKSKUL*\n\n";
-
             $pesan .= "🏫 Ekskul: " . $pembina->ekstrakurikuler->nama . "\n";
             $pesan .= "👤 Siswa: " . $siswa->user->name . "\n\n";
 
             if ($jadwal) {
-
                 $pesan .= "📅 Jadwal Kegiatan\n";
                 $pesan .= "Hari : {$jadwal->hari}\n";
-
                 $pesan .= "Jam : "
                     . date('H:i', strtotime($jadwal->jam_mulai))
                     . " - "
                     . date('H:i', strtotime($jadwal->jam_selesai))
                     . " WIB\n";
-
                 $pesan .= "📍 Lokasi : {$jadwal->lokasi}\n";
 
                 if ($jadwal->keterangan) {
@@ -101,12 +198,8 @@ class DashboardController extends Controller
             $pesan .= "Jangan lupa mengikuti kegiatan ekskul sesuai jadwal.\n\n";
             $pesan .= "Terima kasih.";
 
-            // =========================
-            // KIRIM KE SISWA
-            // =========================
-
+            // kirim ke siswa
             if ($siswa->no_telp_siswa) {
-
                 Http::withHeaders([
                     'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
                 ])->post(env('WA_API_URL'), [
@@ -114,16 +207,11 @@ class DashboardController extends Controller
                     'message' => $pesan,
                 ]);
 
-                // Delay 2 detik
                 sleep(2);
             }
 
-            // =========================
-            // KIRIM KE AYAH
-            // =========================
-
+            // kirim ke ayah
             if ($siswa->no_telp_ayah) {
-
                 Http::withHeaders([
                     'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
                 ])->post(env('WA_API_URL'), [
@@ -131,16 +219,11 @@ class DashboardController extends Controller
                     'message' => $pesan,
                 ]);
 
-                // Delay 2 detik
                 sleep(2);
             }
 
-            // =========================
-            // KIRIM KE IBU
-            // =========================
-
+            // kirim ke ibu
             if ($siswa->no_telp_ibu) {
-
                 Http::withHeaders([
                     'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
                 ])->post(env('WA_API_URL'), [
@@ -148,7 +231,6 @@ class DashboardController extends Controller
                     'message' => $pesan,
                 ]);
 
-                // Delay 2 detik
                 sleep(2);
             }
         }
