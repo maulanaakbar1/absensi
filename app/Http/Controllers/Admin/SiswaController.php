@@ -23,19 +23,23 @@ class SiswaController extends Controller
         // Filter kelas
         $selectedKelas = $request->get('kelas');
 
+        // FILTER JURUSAN (BARU)
+        $selectedJurusan = $request->get('jurusan');
+
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
             : null;
 
         $query = Siswa::with(['user', 'ekstrakurikuler']);
 
-        // Filter tahun ajaran
+        // =========================
+        // FILTER TAHUN AJARAN
+        // =========================
         if ($selectedTahunStart) {
 
             $query->where(function ($q) use ($selectedTahunStart) {
 
                 $q->whereNull('tahun_masuk')
-
                 ->orWhere(function ($q2) use ($selectedTahunStart) {
 
                     $q2->whereRaw(
@@ -47,6 +51,13 @@ class SiswaController extends Controller
 
             });
 
+        }
+
+        // =========================
+        // FILTER JURUSAN (BARU)
+        // =========================
+        if ($selectedJurusan) {
+            $query->where('jurusan', $selectedJurusan);
         }
 
         $anggota = $query
@@ -75,13 +86,13 @@ class SiswaController extends Controller
                 return $siswa;
             });
 
-        // Filter kelas
+        // =========================
+        // FILTER KELAS (AFTER TRANSFORM)
+        // =========================
         if ($selectedKelas) {
 
             $anggota = $anggota->filter(function ($siswa) use ($selectedKelas) {
-
                 return $siswa->tingkat_display == $selectedKelas;
-
             })->values();
 
         }
@@ -94,9 +105,7 @@ class SiswaController extends Controller
             $selectedTahun !== 'semua'
             && !in_array($selectedTahun, $tahunAjaranList)
         ) {
-
             $tahunAjaranList[] = $selectedTahun;
-
         }
 
         $ekskul = Ekstrakurikuler::all();
@@ -107,7 +116,8 @@ class SiswaController extends Controller
             'tahunAjaranList',
             'selectedTahun',
             'selectedTahunStart',
-            'selectedKelas'
+            'selectedKelas',
+            'selectedJurusan' 
         ));
     }
 

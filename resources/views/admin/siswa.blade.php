@@ -70,10 +70,11 @@
 
         {{-- FILTER --}}
         <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-            <form method="GET" class="flex flex-col md:flex-row gap-4 items-end">
 
-                {{-- Filter Tahun Ajaran --}}
-                <div class="w-full md:w-56">
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+
+                {{-- Tahun Ajaran --}}
+                <div class="md:col-span-3">
                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">
                         Tahun Ajaran
                     </label>
@@ -83,26 +84,19 @@
                         onchange="this.form.submit()"
                         class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700"
                     >
-                        <option value="semua">
-                            Semua Tahun Ajaran
-                        </option>
+                        <option value="semua">Semua Tahun Ajaran</option>
 
                         @foreach($tahunAjaranList as $tahun)
-
-                            <option
-                                value="{{ $tahun }}"
-                                {{ $selectedTahun == $tahun ? 'selected' : '' }}
-                            >
+                            <option value="{{ $tahun }}"
+                                {{ $selectedTahun == $tahun ? 'selected' : '' }}>
                                 {{ $tahun }}
                             </option>
-
                         @endforeach
-
                     </select>
                 </div>
 
-                {{-- Filter Kelas --}}
-                <div class="w-full md:w-44">
+                {{-- Kelas --}}
+                <div class="md:col-span-2">
                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">
                         Kelas
                     </label>
@@ -112,49 +106,46 @@
                         onchange="this.form.submit()"
                         class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700"
                     >
-                        <option value="">
-                            Semua Kelas
-                        </option>
-
-                        <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>
-                            X
-                        </option>
-
-                        <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>
-                            XI
-                        </option>
-
-                        <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>
-                            XII
-                        </option>
+                        <option value="">Semua Kelas</option>
+                        <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>X</option>
+                        <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>XI</option>
+                        <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>XII</option>
                     </select>
                 </div>
 
-                {{-- Cari Nama --}}
-                <div class="flex-1 w-full">
+                {{-- Jurusan --}}
+                <div class="md:col-span-3">
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                        Jurusan
+                    </label>
+
+                    <select
+                        name="jurusan"
+                        onchange="this.form.submit()"
+                        class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700"
+                    >
+                        <option value="">Semua Jurusan</option>
+
+                        @foreach($anggota->pluck('jurusan')->unique()->filter() as $jur)
+                            <option value="{{ $jur }}" {{ $selectedJurusan == $jur ? 'selected' : '' }}>
+                                {{ $jur }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Search --}}
+                <div class="md:col-span-3">
                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">
                         Cari Nama
                     </label>
 
                     <div class="relative mt-1">
-
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-
-                            <svg
-                                class="w-4 h-4 text-slate-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                ></path>
-
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-
                         </span>
 
                         <input
@@ -164,26 +155,24 @@
                             placeholder="Masukkan nama siswa..."
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm"
                         >
-
                     </div>
                 </div>
 
                 {{-- Reset --}}
-                <div class="w-full md:w-auto">
+                <div class="md:col-span-1 flex justify-end">
 
                     @if(
                         request('search') ||
                         request('kelas') ||
+                        request('jurusan') ||
                         (request('tahun_ajaran') && request('tahun_ajaran') !== 'semua')
                     )
-
                         <a
                             href="{{ route('admin.siswa.index') }}"
-                            class="block bg-slate-100 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition text-sm text-center whitespace-nowrap"
+                            class="w-full md:w-auto bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition text-sm text-center whitespace-nowrap"
                         >
-                            Reset Filter
+                            Reset
                         </a>
-
                     @endif
 
                 </div>
