@@ -2,11 +2,24 @@
        class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:flex">
     
     <div class="p-6 flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-blue-600">EskulMate</h1>
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
-                {{ Auth::user()->role }} Panel
-            </p>
+
+        {{-- LOGO + TITLE --}}
+        <div class="flex items-center gap-3">
+
+            <div class="h-12 w-12 rounded-xl overflow-hidden shadow-lg shadow-blue-200 bg-white border border-slate-100">
+                <img 
+                    src="{{ asset('images/logo_smk.jpg') }}" 
+                    alt="Logo Sekolah"
+                    class="h-full w-full object-cover">
+            </div>
+
+            <div>
+                <h1 class="text-2xl font-bold text-blue-600">EskulMate</h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                    {{ Auth::user()->role }} Panel
+                </p>
+            </div>
+
         </div>
         <button @click="sidebarOpen = false" class="md:hidden text-slate-400 hover:text-red-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
