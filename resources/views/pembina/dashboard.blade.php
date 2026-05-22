@@ -129,7 +129,15 @@
                 </svg>
             </div>
             <div>
-                <h5 class="font-bold text-slate-800">Jadwal Latihan</h5>
+                <div class="flex items-center gap-2">
+                    <h5 class="font-bold text-slate-800">Jadwal Latihan</h5>
+
+                    @if($labelJadwal)
+                        <span class="text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                            {{ $labelJadwal }}
+                        </span>
+                    @endif
+                </div>
                 @if($jadwalTerdekat)
                     <p class="text-sm text-blue-700 mt-1 font-semibold">
                         {{ $jadwalTerdekat->hari }}, 

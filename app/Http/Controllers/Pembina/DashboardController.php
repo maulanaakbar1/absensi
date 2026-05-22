@@ -25,7 +25,8 @@ class DashboardController extends Controller
                 'pembina' => $pembina,
                 'jumlahSiswa' => 0,
                 'jadwalTerdekat' => null,
-                'absensiHariIni' => 0
+                'absensiHariIni' => 0,
+                'labelJadwal' => null,
             ]);
         }
 
@@ -35,7 +36,7 @@ class DashboardController extends Controller
         $jumlahSiswa = Siswa::where('ekstrakurikuler_id', $ekskulId)->count();
 
         // =========================
-        // 3. LOGIC JADWAL FIX FINAL (STABIL + BENAR + URUT)
+        // 3. LOGIC JADWAL FIX FINAL
         // =========================
 
         $daftarHari = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
@@ -45,25 +46,16 @@ class DashboardController extends Controller
         $hariSekarang = $daftarHari[$hariSekarangIndex - 1];
         $jamSekarang = $now->format('H:i:s');
 
-        // =========================
-        // 1. CEK APAKAH MASIH ADA JADWAL AKTIF HARI INI
-        // =========================
+        // 1. CEK JADWAL AKTIF HARI INI
         $jadwalAktifHariIni = Jadwal::where('ekstrakurikuler_id', $ekskulId)
             ->where('hari', $hariSekarang)
             ->where('jam_selesai', '>', $jamSekarang)
             ->orderBy('jam_mulai', 'asc')
             ->first();
 
-        // =========================
-        // 2. JIKA MASIH ADA → PAKAI ITU
-        // =========================
         if ($jadwalAktifHariIni) {
             $jadwalTerdekat = $jadwalAktifHariIni;
-        } 
-        // =========================
-        // 3. JIKA SUDAH HABIS → CARI HARI BERIKUTNYA
-        // =========================
-        else {
+        } else {
 
             $urutanHari = [
                 'Senin' => 1,
@@ -83,12 +75,10 @@ class DashboardController extends Controller
 
                     $diff = $hariIndex - $hariSekarangIndex;
 
-                    // kalau sudah lewat → masuk minggu depan
                     if ($diff < 0) {
                         $diff += 7;
                     }
 
-                    // bonus: kalau hari sama tapi jam sudah lewat → dorong ke belakang
                     if ($diff == 0 && $item->jam_mulai <= $jamSekarang) {
                         $diff = 7;
                     }
@@ -97,6 +87,38 @@ class DashboardController extends Controller
                 })
                 ->sortBy('jam_mulai')
                 ->first();
+        }
+
+        // =========================
+        // LABEL JADWAL (INI YANG KAMU TAMBAH)
+        // =========================
+        $labelJadwal = null;
+
+        if ($jadwalTerdekat) {
+
+            if ($jadwalTerdekat->hari == $hariSekarang) {
+                $labelJadwal = 'Jadwal Latihan Hari Ini';
+            } else {
+
+                // hitung selisih hari (0-6)
+                $urutanHari = [
+                    'Senin' => 1,
+                    'Selasa' => 2,
+                    'Rabu' => 3,
+                    'Kamis' => 4,
+                    'Jumat' => 5,
+                    'Sabtu' => 6,
+                    'Minggu' => 7,
+                ];
+
+                $selisih = $urutanHari[$jadwalTerdekat->hari] - $hariSekarangIndex;
+
+                if ($selisih == 1 || $selisih == -6) {
+                    $labelJadwal = 'Jadwal Latihan Besok';
+                } else {
+                    $labelJadwal = 'Jadwal Latihan Hari ' . $jadwalTerdekat->hari;
+                }
+            }
         }
 
         // 4. Absensi hari ini
@@ -110,7 +132,8 @@ class DashboardController extends Controller
             'pembina',
             'jumlahSiswa',
             'jadwalTerdekat',
-            'absensiHariIni'
+            'absensiHariIni',
+            'labelJadwal'
         ));
     }
 
