@@ -89,6 +89,28 @@
                     </select>
                 </div>
 
+                {{-- Jurusan --}}
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">
+                        Jurusan
+                    </label>
+
+                    <select
+                        name="jurusan"
+                        onchange="this.form.submit()"
+                        class="w-full border-slate-200 rounded-xl focus:ring-cyan-500">
+
+                        <option value="">Semua Jurusan</option>
+
+                        @foreach($jurusanList as $jur)
+                            <option value="{{ $jur }}" {{ $selectedJurusan == $jur ? 'selected' : '' }}>
+                                {{ $jur }}
+                            </option>
+                        @endforeach
+
+                    </select>
+                </div>
+
                 {{-- Bulan --}}
                 <div class="flex-1 min-w-[200px]">
                     <label class="block text-sm font-semibold text-slate-600 mb-2">
