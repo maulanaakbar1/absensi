@@ -122,36 +122,25 @@ class SiswaController extends Controller
     }
 
     public function show($id)
-    {
-        $siswa = Siswa::with(['user', 'ekstrakurikuler'])->findOrFail($id);
+{
+    $siswa = Siswa::with(['user', 'ekstrakurikuler'])
+        ->findOrFail($id);
 
-        // hitung tingkat & kelas display (biar konsisten dengan index)
-        $tahunSekarang = now()->month >= 7
-            ? now()->year
-            : now()->year - 1;
+    $tahunAjaran = $this->getCurrentTahunAjaran();
 
-        $tingkat = null;
+    $tahunStart = $this->parseTahunAjaranStart($tahunAjaran);
 
-        if ($siswa->tahun_masuk && $siswa->tingkat_awal) {
-            $tingkat = ($tahunSekarang - $siswa->tahun_masuk) + $siswa->tingkat_awal;
-        }
+    $kelasDisplay = $this->getKelasDisplay(
+        $siswa,
+        $tahunStart
+    );
 
-        $label = match ($tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
-            default => '-',
-        };
-
-        $jurusan = preg_replace('/^(X|XI|XII)\s+/i', '', $siswa->jurusan ?? '');
-        $kelasDisplay = trim($label . ' ' . $jurusan);
-
-        return view('admin.siswa-show', compact(
-            'siswa',
-            'kelasDisplay',
-            'tingkat'
-        ));
-    }
+    return view('admin.siswa-show', compact(
+        'siswa',
+        'tahunAjaran',
+        'kelasDisplay'
+    ));
+}
 
     public function store(Request $request)
     {
