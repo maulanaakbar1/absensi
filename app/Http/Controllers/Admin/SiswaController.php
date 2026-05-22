@@ -122,25 +122,25 @@ class SiswaController extends Controller
     }
 
     public function show($id)
-{
-    $siswa = Siswa::with(['user', 'ekstrakurikuler'])
-        ->findOrFail($id);
+    {
+        $siswa = Siswa::with(['user', 'ekstrakurikuler'])
+            ->findOrFail($id);
 
-    $tahunAjaran = $this->getCurrentTahunAjaran();
+        $tahunAjaran = $this->getCurrentTahunAjaran();
 
-    $tahunStart = $this->parseTahunAjaranStart($tahunAjaran);
+        $tahunStart = $this->parseTahunAjaranStart($tahunAjaran);
 
-    $kelasDisplay = $this->getKelasDisplay(
-        $siswa,
-        $tahunStart
-    );
+        $kelasDisplay = $this->getKelasDisplay(
+            $siswa,
+            $tahunStart
+        );
 
-    return view('admin.siswa-show', compact(
-        'siswa',
-        'tahunAjaran',
-        'kelasDisplay'
-    ));
-}
+        return view('admin.siswa-show', compact(
+            'siswa',
+            'tahunAjaran',
+            'kelasDisplay'
+        ));
+    }
 
     public function store(Request $request)
     {
