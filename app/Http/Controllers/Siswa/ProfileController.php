@@ -22,11 +22,22 @@ class ProfileController extends Controller
             $tahunAjaranStart
         );
 
+        $isProfileComplete =
+            !empty($siswa->no_telp_siswa) &&
+            !empty($siswa->tempat_lahir) &&
+            !empty($siswa->tanggal_lahir) &&
+            !empty($siswa->alamat) &&
+            !empty($siswa->nama_ayah) &&
+            !empty($siswa->no_telp_ayah) &&
+            !empty($siswa->nama_ibu) &&
+            !empty($siswa->no_telp_ibu);
+
         return view('siswa.profile', compact(
             'user',
             'siswa',
             'tahunAjaran',
-            'kelasDisplay'
+            'kelasDisplay',
+            'isProfileComplete'
         ));
     }
 
@@ -73,7 +84,9 @@ class ProfileController extends Controller
             'no_telp_siswa' => $request->no_telp_siswa,
         ]);
 
-        return back()->with('success', 'Profil dan data personal berhasil diperbarui!');
+        return redirect()
+            ->route('siswa.profile')
+            ->with('success', 'Profil dan data personal berhasil diperbarui!');
     }
 
     private function getCurrentTahunAjaran(): string

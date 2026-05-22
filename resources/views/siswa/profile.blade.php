@@ -2,6 +2,30 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto py-8 px-4">
+
+    {{-- ALERT PROFIL --}}
+    @if(!$isProfileComplete)
+    <div class="mb-6 p-5 rounded-3xl border border-yellow-200 bg-yellow-50 flex items-center justify-between gap-4">
+        
+        <div>
+            <h4 class="font-bold text-yellow-800">
+                Perhatian!
+            </h4>
+
+            <p class="text-sm text-yellow-700">
+                Biodata Anda belum lengkap! Silahkan lengkapi profil agar bisa melakukan absensi.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="px-5 py-2 rounded-2xl bg-yellow-500 text-white font-bold text-sm">
+            Lengkapi Sekarang
+        </button>
+
+    </div>
+    @endif
+
     <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
         
         {{-- HEADER DENGAN TOMBOL KEMBALI --}}
