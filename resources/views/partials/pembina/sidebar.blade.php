@@ -3,21 +3,66 @@
     
     <div class="p-6 flex items-center justify-between">
 
+        @php
+            $pembina = \App\Models\Pembina::with('ekstrakurikuler')
+                ->where('user_id', Auth::id())
+                ->first();
+
+            $ekskul = $pembina?->ekstrakurikuler;
+
+            $logo = $ekskul?->foto
+                ? asset('storage/' . $ekskul->foto)
+                : asset('images/braga1.jpeg');
+
+            $namaSatuan = $ekskul?->nama_satuan
+                ?? 'BRAGA';
+
+            // WARNA DINAMIS
+            $warna = match(strtolower($namaSatuan)) {
+                'pramuka' => [
+                    'text' => 'text-amber-700',
+                    'shadow' => 'shadow-amber-200',
+                ],
+
+                'pmr' => [
+                    'text' => 'text-red-700',
+                    'shadow' => 'shadow-red-200',
+                ],
+
+                'paskibra' => [
+                    'text' => 'text-slate-800',
+                    'shadow' => 'shadow-slate-200',
+                ],
+
+                default => [
+                    'text' => 'text-blue-700',
+                    'shadow' => 'shadow-blue-200',
+                ],
+            };
+        @endphp
+
         {{-- LOGO + TITLE --}}
         <div class="flex items-center gap-3">
 
-            <div class="h-12 w-12 rounded-xl overflow-hidden shadow-lg shadow-blue-200 bg-white border border-slate-100">
+            <div class="h-12 w-12 rounded-xl overflow-hidden shadow-lg {{ $warna['shadow'] }} bg-white border border-slate-100">
+
                 <img 
-                    src="{{ asset('images/braga1.jpeg') }}" 
-                    alt="Logo Sekolah"
+                    src="{{ $logo }}"
+                    alt="{{ $namaSatuan }}"
                     class="h-full w-full object-cover">
+
             </div>
 
             <div>
-                <h1 class="text-2xl font-bold text-red-800">BRAGA</h1>
+
+                <h1 class="text-2xl font-bold {{ $warna['text'] }}">
+                    {{ $namaSatuan }}
+                </h1>
+
                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
                     {{ Auth::user()->role }} Panel
                 </p>
+
             </div>
 
         </div>
