@@ -31,22 +31,49 @@
         @include('partials.' . Auth::user()->role . '.navbar')
         
         <div class="p-8">
+            @php
+                $siswa = Auth::user()->siswa ?? null;
+
+                $isProfileComplete = $siswa &&
+                    !empty($siswa->no_telp_siswa) &&
+                    !empty($siswa->tempat_lahir) &&
+                    !empty($siswa->tanggal_lahir) &&
+                    !empty($siswa->alamat) &&
+                    !empty($siswa->nama_ayah) &&
+                    !empty($siswa->no_telp_ayah) &&
+                    !empty($siswa->nama_ibu) &&
+                    !empty($siswa->no_telp_ibu);
+            @endphp
+
             {{-- Alert Warning Data Belum Lengkap --}}
-            @if(session('warning_data'))
-                <div class="mb-6 flex items-center justify-between gap-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="h-10 w-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-amber-600"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-amber-900">Perhatian!</p>
-                            <p class="text-xs text-amber-700 opacity-90">{{ session('warning_data') }}</p>
-                        </div>
+            @if(Auth::user()->role == 'siswa' && !$isProfileComplete)
+
+            <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm">
+
+                <div class="flex items-start gap-3 w-full">
+                    <div class="h-10 w-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-amber-600"></i>
                     </div>
-                    <a href="{{ route('siswa.profile') }}" class="px-4 py-2 bg-amber-600 text-white text-xs font-bold rounded-xl hover:bg-amber-700 transition flex-shrink-0">
+
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-amber-900">
+                            Perhatian!
+                        </p>
+                        <p class="text-xs text-amber-700 leading-relaxed mt-0.5">
+                            Biodata Anda belum lengkap! Silahkan lengkapi profil agar bisa melakukan absensi.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-auto flex-shrink-0">
+                    <a href="{{ route('siswa.profile') }}"
+                        class="block w-full md:w-auto text-center px-4 py-2.5 bg-amber-600 text-white text-xs font-bold rounded-xl hover:bg-amber-700 transition">
                         Lengkapi Sekarang
                     </a>
                 </div>
+
+            </div>
+
             @endif
 
             @yield('content')
