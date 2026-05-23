@@ -131,6 +131,26 @@
                                 class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 font-bold">
                         </div>
                         <div class="space-y-2">
+
+                            <label class="text-sm font-bold text-slate-700">
+                                Tingkatan
+                            </label>
+
+                            @php
+                                $tingkatanColor = match($siswa->tingkatan) {
+                                    'junior' => 'bg-blue-50 text-blue-600 border-blue-100',
+                                    'senior' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                                    'purna' => 'bg-purple-50 text-purple-600 border-purple-100',
+                                    default => 'bg-slate-50 text-slate-600 border-slate-200',
+                                };
+                            @endphp
+
+                            <div class="px-4 py-3 rounded-xl border font-bold capitalize {{ $tingkatanColor }}">
+                                {{ $siswa->tingkatan ?? '-' }}
+                            </div>
+
+                        </div>
+                        <div class="space-y-2">
                             <label class="text-[11px] font-bold text-slate-500 uppercase">
                                 No. Telp Siswa
                             </label>
