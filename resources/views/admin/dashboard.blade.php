@@ -6,8 +6,8 @@
     {{-- Header Admin --}}
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h3 class="text-2xl font-bold text-slate-800">Panel Utama 🚀</h3>
-            <p class="text-slate-500 text-sm mt-1">Ringkasan aktivitas sistem AbsensiPro hari ini.</p>
+            <h3 class="text-2xl font-bold text-slate-800">Panel Admin 🚀</h3>
+            <p class="text-slate-500 text-sm mt-1">Ringkasan aktivitas sistem manajemen hari ini.</p>
         </div>
 
         <div class="bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
@@ -24,9 +24,9 @@
     </div>
 
     {{-- Statistik Cards --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {{-- Card Total Siswa --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm transition-all">
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
             <div class="flex justify-between items-start mb-4">
                 <div class="h-12 w-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
                     <i class="fas fa-users text-xl"></i>
@@ -37,7 +37,7 @@
         </div>
 
         {{-- Card Total Ekskul --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm transition-all">
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
             <div class="flex justify-between items-start mb-4">
                 <div class="h-12 w-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center">
                     <i class="fas fa-running text-xl"></i>
@@ -48,7 +48,7 @@
         </div>
 
         {{-- Card Total Pembina --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm transition-all">
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
             <div class="flex justify-between items-start mb-4">
                 <div class="h-12 w-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center">
                     <i class="fas fa-user-tie text-xl"></i>
@@ -59,7 +59,7 @@
         </div>
 
         {{-- Card Kehadiran --}}
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm transition-all">
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
             <div class="flex justify-between items-start mb-4">
                 <div class="h-12 w-12 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center">
                     <i class="fas fa-check-circle text-xl"></i>
@@ -70,30 +70,15 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {{-- Diagram Grafik --}}
-        <div class="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-            <div class="flex items-center justify-between mb-6">
-                <h4 class="font-bold text-slate-800">Tren Kehadiran (7 Hari Terakhir)</h4>
+    {{-- Diagram Grafik Full Width Tanpa Tombol --}}
+    <div class="grid grid-cols-1 gap-8 mb-8">
+        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+            <div class="mb-6">
+                <h4 class="font-bold text-slate-800 text-lg">Grafik Kehadiran (7 Hari Terakhir)</h4>
+                <p class="text-slate-400 text-xs mt-0.5">Visualisasi data tingkat kehadiran siswa secara real-time</p>
             </div>
-            <div class="h-[300px]">
+            <div class="h-[350px] w-full">
                 <canvas id="attendanceChart"></canvas>
-            </div>
-        </div>
-
-        {{-- Banner / Info Cepat --}}
-        <div class="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-3xl p-8 text-white relative overflow-hidden flex flex-col justify-between">
-            <div class="relative z-10">
-                <h2 class="text-2xl font-bold italic mb-4">AbsensiPro v2.0</h2>
-                <p class="text-blue-100 text-sm leading-relaxed">
-                    Sistem otomatisasi kehadiran ekstrakurikuler SMKN 1 Talaga. Pantau data kapan saja secara akurat.
-                </p>
-            </div>
-            <button class="relative z-10 mt-6 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white py-3 rounded-2xl font-bold transition-all text-sm border border-white/30">
-                Download Laporan PDF
-            </button>
-            <div class="absolute -right-8 -bottom-8 opacity-10">
-                <i class="fas fa-bolt text-[12rem]"></i>
             </div>
         </div>
     </div>
@@ -104,8 +89,8 @@
 <script>
     const ctx = document.getElementById('attendanceChart').getContext('2d');
     
-    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(94, 114, 228, 0.2)'); 
+    const gradient = ctx.createLinearGradient(0, 0, 0, 350);
+    gradient.addColorStop(0, 'rgba(94, 114, 228, 0.24)'); 
     gradient.addColorStop(1, 'rgba(94, 114, 228, 0)');  
 
     new Chart(ctx, {
@@ -120,8 +105,9 @@
                 fill: true,
                 backgroundColor: gradient,
                 tension: 0.4,           
-                pointRadius: 0,         
-                pointHoverRadius: 5,    
+                pointRadius: 4,         
+                pointBackgroundColor: '#5e72e4',
+                pointHoverRadius: 6,    
             }]
         },
         options: {
@@ -139,7 +125,9 @@
                         borderDash: [5, 5]  
                     },
                     ticks: {
-                        stepSize: 1 
+                        stepSize: 1,
+                        color: '#adb5bd',
+                        font: { size: 11 }
                     }
                 },
                 x: {
