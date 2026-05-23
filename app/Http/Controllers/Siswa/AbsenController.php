@@ -189,7 +189,9 @@ class AbsenController extends Controller
         };
 
         $pesan =
-            "📢 *NOTIFIKASI ABSENSI EKSTRAKURIKULER*\n\n" .
+            $namaEkskul = $siswa->ekstrakurikuler->nama ?? 'Ekstrakurikuler';
+            $pesan =
+                "📢 *ABSENSI {$namaEkskul}*\n\n" .
             "👤 Nama: {$siswa->user->name}\n" .
             "🏫 Kelas: {$kelas}\n" .
             "{$emojiStatus} Status: {$statusText}\n" .
