@@ -179,6 +179,17 @@ class AbsenController extends Controller
         // TEMPLATE PESAN WA
         // ==========================
 
+        $pembina = \App\Models\Pembina::where(
+            'ekstrakurikuler_id',
+            $siswa->ekstrakurikuler_id
+        )->first();
+
+        $namaPembina = $pembina?->user?->name ?? 'Tidak diketahui';
+
+        $noPembina = $pembina?->no_telp
+            ? $this->formatNomor($pembina->no_telp)
+            : '-';
+
         $statusText = strtoupper($status);
 
         $emojiStatus = match ($status) {
@@ -188,17 +199,24 @@ class AbsenController extends Controller
             default => '📌'
         };
 
-        $pesan =
-            $namaEkskul = $siswa->ekstrakurikuler->nama ?? 'Ekstrakurikuler';
+        $namaEkskul = $siswa->ekstrakurikuler->nama ?? 'Ekstrakurikuler';
+
             $pesan =
-                "📢 *ABSENSI {$namaEkskul}*\n\n" .
+            "📢 *ABSENSI {$namaEkskul}*\n\n" .
+
             "👤 Nama: {$siswa->user->name}\n" .
             "🏫 Kelas: {$kelas}\n" .
             "{$emojiStatus} Status: {$statusText}\n" .
             "📅 Tanggal: " . now()->format('d-m-Y') . "\n" .
             "⏰ Jam: " . now()->format('H:i') . " WIB\n\n" .
+
+            "👨‍🏫 Pembina:\n" .
+            "{$namaPembina}\n" .
+            "📞 {$noPembina}\n\n" .
+
             "📝 Keterangan:\n" .
             ($keterangan ?: '-') . "\n\n" .
+
             "📍 Lokasi:\n" .
             "https://maps.google.com/?q={$request->lokasi}";
 
