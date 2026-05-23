@@ -18,7 +18,8 @@
         tingkat_awal: '',
         jurusan: '',
         jk: 'L',
-        ekskul: ''
+        ekskul: '',
+        tingkatan: '',
     }
 }" class="space-y-6">
 
@@ -325,6 +326,7 @@
                         <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Angkatan</th>
                         <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Ekstrakurikuler</th>
                         <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Jenis Kelamin</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Tingkatan</th>
                         <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap text-center w-28">Aksi</th>
                     </tr>
                 </thead>
@@ -447,6 +449,21 @@
 
                         </td>
 
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $tingkatanColor = match($s->tingkatan) {
+                                    'junior' => 'bg-blue-50 text-blue-600',
+                                    'senior' => 'bg-emerald-50 text-emerald-600',
+                                    'purna' => 'bg-purple-50 text-purple-600',
+                                    default => 'bg-slate-50 text-slate-500',
+                                };
+                            @endphp
+
+                            <span class="px-2.5 py-1 rounded-lg text-xs font-bold capitalize {{ $tingkatanColor }}">
+                                {{ $s->tingkatan }}
+                            </span>
+                        </td>
+
                         {{-- AKSI --}}
                         <td class="px-6 py-4">
 
@@ -495,7 +512,8 @@
                                             tingkat_awal: @js($s->tingkat_awal),
                                             jurusan: @js($s->jurusan),
                                             jk: @js($s->jenis_kelamin),
-                                            ekskul: @js($s->ekstrakurikuler_id)
+                                            ekskul: @js($s->ekstrakurikuler_id),
+                                            tingkatan: @js($s->tingkatan),
                                         }
                                     "
                                     class="p-2 text-amber-500 hover:bg-amber-50 rounded-xl transition"
@@ -762,24 +780,25 @@
 
                         </div>
 
-                        {{-- Jenis Kelamin & Ekskul --}}
+                        {{-- Tingkatan & Ekskul --}}
                         <div class="grid grid-cols-2 gap-4">
 
-                            {{-- Jenis Kelamin --}}
+                            {{-- Tingkatan --}}
                             <div>
                                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">
-                                    Jenis Kelamin
+                                    Tingkatan
                                 </label>
 
                                 <select
-                                    name="jenis_kelamin"
-                                    x-model="currentData.jk"
+                                    name="tingkatan"
+                                    x-model="currentData.tingkatan"
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
                                     required
                                 >
-                                    <option value="">Pilih Jenis Kelamin</option>
-                                    <option value="L">Laki-laki</option>
-                                    <option value="P">Perempuan</option>
+                                    <option value="">Pilih Tingkatan</option>
+                                    <option value="junior">Junior</option>
+                                    <option value="senior">Senior</option>
+                                    <option value="purna">Purna</option>
                                 </select>
                             </div>
 
@@ -805,6 +824,24 @@
                                 </select>
                             </div>
 
+                        </div>
+
+                        {{-- Jenis Kelamin --}}
+                        <div>
+                            <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                                Jenis Kelamin
+                            </label>
+
+                            <select
+                                name="jenis_kelamin"
+                                x-model="currentData.jk"
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
+                                required
+                            >
+                                <option value="">Pilih Jenis Kelamin</option>
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
                         </div>
 
                     </div>

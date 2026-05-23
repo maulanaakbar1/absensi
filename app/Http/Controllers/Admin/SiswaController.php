@@ -166,6 +166,7 @@ class SiswaController extends Controller
             'no_telp_ayah' => 'nullable|string|max:15',
             'nama_ibu' => 'nullable|string|max:100',
             'no_telp_ibu' => 'nullable|string|max:15',
+            'tingkatan' => 'required|in:junior,senior,purna',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -194,6 +195,7 @@ class SiswaController extends Controller
                 'no_telp_ayah' => $request->no_telp_ayah,
                 'nama_ibu' => $request->nama_ibu,
                 'no_telp_ibu' => $request->no_telp_ibu,
+                'tingkatan' => $request->tingkatan,
             ]);
         });
 
@@ -225,7 +227,8 @@ class SiswaController extends Controller
             'nama_ayah' => 'nullable|string|max:100',
             'no_telp_ayah' => 'nullable|string|max:15',
             'nama_ibu' => 'nullable|string|max:100',
-            'no_telp_ibu' => 'nullable|string|max:15'
+            'no_telp_ibu' => 'nullable|string|max:15',
+            'tingkatan' => 'required|in:junior,senior,purna',
         ]);
 
         DB::transaction(function () use (
@@ -262,6 +265,7 @@ class SiswaController extends Controller
                 'no_telp_ayah' => $request->no_telp_ayah,
                 'nama_ibu' => $request->nama_ibu,
                 'no_telp_ibu' => $request->no_telp_ibu,
+                'tingkatan' => $request->tingkatan,
             ]);
         });
 
