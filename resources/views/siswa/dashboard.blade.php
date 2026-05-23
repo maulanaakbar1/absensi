@@ -180,7 +180,7 @@
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
                 <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
                     <i class="fas fa-calendar-alt text-blue-600"></i>
-                    Jadwal Latihan Saat Ini
+                    Jadwal Ekstrakurikuler
                 </h4>
             </div>
 
@@ -204,9 +204,25 @@
                             </p>
                         </div>
 
+                        @if($statusJadwal == 'Sedang Berlangsung')
+
                         <span class="bg-emerald-500 text-white text-[10px] px-3 py-1 rounded-full font-bold">
                             Sedang Berlangsung
                         </span>
+
+                        @elseif($statusJadwal == 'Segera Hadir')
+
+                        <span class="bg-amber-500 text-white text-[10px] px-3 py-1 rounded-full font-bold">
+                            Segera Hadir
+                        </span>
+
+                        @else
+
+                        <span class="bg-blue-500 text-white text-[10px] px-3 py-1 rounded-full font-bold">
+                            Akan Datang
+                        </span>
+
+                        @endif
 
                     </div>
 

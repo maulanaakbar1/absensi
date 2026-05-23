@@ -64,13 +64,62 @@ class DashboardController extends Controller
         // Jam sekarang
         $jamSekarang = Carbon::now()->format('H:i:s');
 
-        // Jadwal yang sedang berlangsung
+        // =========================
+        // CEK JADWAL BERLANGSUNG
+        // =========================
         $jadwalEkskul = Jadwal::where('ekstrakurikuler_id', $ekskulId)
             ->where('hari', $hariIni)
             ->where('jam_mulai', '<=', $jamSekarang)
             ->where('jam_selesai', '>=', $jamSekarang)
             ->orderBy('jam_mulai', 'asc')
             ->get();
+
+        // =========================
+        // JIKA TIDAK ADA JADWAL HARI INI
+        // MAKA TAMPILKAN JADWAL BERIKUTNYA
+        // =========================
+        $statusJadwal = 'Sedang Berlangsung';
+
+        if ($jadwalEkskul->isEmpty()) {
+
+            // Urutan hari
+            $urutanHari = [
+                'Senin',
+                'Selasa',
+                'Rabu',
+                'Kamis',
+                'Jumat',
+                'Sabtu',
+                'Minggu'
+            ];
+
+            $indexHariIni = array_search($hariIni, $urutanHari);
+
+            // Cari jadwal terdekat
+            for ($i = 1; $i <= 7; $i++) {
+
+                $nextIndex = ($indexHariIni + $i) % 7;
+                $hariBerikutnya = $urutanHari[$nextIndex];
+
+                $jadwalBesok = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+                    ->where('hari', $hariBerikutnya)
+                    ->orderBy('jam_mulai', 'asc')
+                    ->get();
+
+                if ($jadwalBesok->isNotEmpty()) {
+
+                    $jadwalEkskul = $jadwalBesok;
+
+                    if ($i == 1) {
+                        $statusJadwal = 'Segera Hadir';
+                    } else {
+                        $statusJadwal = 'Akan Datang';
+                    }
+
+                    break;
+                }
+            }
+        }
 
         // Data Pembina
         $pembina = Pembina::where('ekstrakurikuler_id', $ekskulId)->first();
@@ -81,7 +130,8 @@ class DashboardController extends Controller
             'namaEkskul',
             'riwayatAbsensi',
             'jadwalEkskul',
-            'pembina'
+            'pembina',
+            'statusJadwal'
         ));
     }
 }
