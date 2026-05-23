@@ -7,7 +7,12 @@
     openAdd: false, 
     openEdit: false, 
     search: '', 
-    editData: { id: '', nama: '', deskripsi: '' } 
+    editData: {
+        id: '',
+        nama: '',
+        nama_satuan: '',
+        deskripsi: ''
+    } 
 }">
     
     {{-- Header: Disesuaikan agar sama dengan Data Pembina --}}
@@ -63,7 +68,7 @@
                 </div>
                 <div class="flex gap-1">
                     {{-- Tombol Edit --}}
-                    <button @click="editData = { id: '{{ $e->id }}', nama: '{{ $e->nama }}', deskripsi: '{{ $e->deskripsi }}' }; openEdit = true" class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition">
+                    <button @click="editData = {id: '{{ $e->id }}',nama: '{{ $e->nama }}',nama_satuan: '{{ $e->nama_satuan }}',deskripsi: '{{ $e->deskripsi }}'}; openEdit = true">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </button>
                     
@@ -77,6 +82,11 @@
                 </div>
             </div>
             <h4 class="text-lg font-bold text-slate-800">{{ $e->nama }}</h4>
+            @if($e->nama_satuan)
+                <p class="text-xs font-bold uppercase tracking-wider text-blue-500 mt-1">
+                    {{ $e->nama_satuan }}
+                </p>
+            @endif
             <p class="text-slate-500 text-sm mt-2 line-clamp-2 leading-relaxed">{{ $e->deskripsi ?? 'Tidak ada deskripsi.' }}</p>
         </div>
         @empty
@@ -102,6 +112,18 @@
                     <input type="text" name="nama" placeholder="Contoh: Paskibra" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition" required>
                 </div>
                 <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">
+                        Nama Satuan
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nama_satuan"
+                        placeholder="Contoh: Ambalan, Rayon, Regu"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                    >
+                </div>
+                <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Deskripsi Singkat</label>
                     <textarea name="deskripsi" placeholder="Jelaskan visi atau kegiatan ekskul..." class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition" rows="3"></textarea>
                 </div>
@@ -119,11 +141,11 @@
 
     {{-- Modal Edit --}}
     <div x-show="openEdit" 
-         class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" 
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-         x-cloak>
+            class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" 
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-cloak>
         <div @click.away="openEdit = false" class="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative">
             <h4 class="text-xl font-bold mb-6 text-slate-800">Edit Data Ekskul</h4>
             <form :action="`{{ url('admin/ekskul') }}/${editData.id}`" method="POST" enctype="multipart/form-data" class="space-y-4">
@@ -132,6 +154,18 @@
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Nama Ekskul</label>
                     <input type="text" name="nama" x-model="editData.nama" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition" required>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">
+                        Nama Satuan
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nama_satuan"
+                        x-model="editData.nama_satuan"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition"
+                    >
                 </div>
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Deskripsi Singkat</label>
@@ -175,8 +209,8 @@
             text: "Data ekskul yang dihapus tidak bisa dikembalikan!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444', // Merah Tailwind (bg-red-500)
-            cancelButtonColor: '#64748b',  // Slate Tailwind (bg-slate-500)
+            confirmButtonColor: '#ef4444', 
+            cancelButtonColor: '#64748b',  
             confirmButtonText: 'Ya, Hapus!',
             cancelButtonText: 'Batal',
             customClass: {

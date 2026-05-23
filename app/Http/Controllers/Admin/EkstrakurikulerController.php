@@ -17,13 +17,15 @@ class EkstrakurikulerController extends Controller {
     public function store(Request $request) {
         $request->validate([
             'nama' => 'required|unique:ekstrakurikulers,nama',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048' // Tambahan validasi keamanan file
+            'nama_satuan' => 'nullable|string|max:255',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048' 
         ]);
         
         $path = $request->file('foto') ? $request->file('foto')->store('ekskul', 'public') : null;
 
         Ekstrakurikuler::create([
             'nama' => $request->nama,
+            'nama_satuan' => $request->nama_satuan,
             'deskripsi' => $request->deskripsi,
             'foto' => $path
         ]);
@@ -35,7 +37,8 @@ class EkstrakurikulerController extends Controller {
         $ekskul = Ekstrakurikuler::findOrFail($id);
         
         $request->validate([
-            'nama' => 'required|unique:ekstrakurikulers,nama,' . $id, // Mengabaikan ID saat ini agar tidak error saat ganti deskripsi saja
+            'nama' => 'required|unique:ekstrakurikulers,nama,' . $id, 
+            'nama_satuan' => 'nullable|string|max:255',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
         
@@ -43,7 +46,6 @@ class EkstrakurikulerController extends Controller {
         $path = $ekskul->foto;
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama jika ada
             if ($ekskul->foto && Storage::disk('public')->exists($ekskul->foto)) {
                 Storage::disk('public')->delete($ekskul->foto);
             }
@@ -51,9 +53,9 @@ class EkstrakurikulerController extends Controller {
             $path = $request->file('foto')->store('ekskul', 'public');
         }
 
-        // Jalankan update sekaligus dalam satu query
         $ekskul->update([
             'nama' => $request->nama,
+            'nama_satuan' => $request->nama_satuan,
             'deskripsi' => $request->deskripsi,
             'foto' => $path, 
         ]);
