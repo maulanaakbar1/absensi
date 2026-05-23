@@ -6,19 +6,68 @@
         {{-- HEADER SIDEBAR MOBILE --}}
         <div class="flex items-center justify-between">
             
+            @php
+                $siswaLogin = \App\Models\Siswa::with('ekstrakurikuler')
+                    ->where('user_id', Auth::id())
+                    ->first();
+
+                $ekskul = $siswaLogin?->ekstrakurikuler;
+
+                $logo = $ekskul?->foto
+                    ? asset('storage/' . $ekskul->foto)
+                    : asset('images/braga1.jpeg');
+
+                $namaSatuan = $ekskul?->nama_satuan
+                    ?? 'BRAGA';
+
+                // WARNA DINAMIS
+                $warna = match(strtolower($namaSatuan)) {
+
+                    'pramuka' => [
+                        'text' => 'text-amber-700',
+                        'shadow' => 'shadow-amber-200',
+                    ],
+
+                    'pmr' => [
+                        'text' => 'text-red-700',
+                        'shadow' => 'shadow-red-200',
+                    ],
+
+                    'paskibra' => [
+                        'text' => 'text-slate-800',
+                        'shadow' => 'shadow-slate-300',
+                    ],
+
+                    default => [
+                        'text' => 'text-blue-700',
+                        'shadow' => 'shadow-blue-200',
+                    ],
+                };
+            @endphp
+
             {{-- LOGO --}}
             <div class="flex items-center gap-3">
                 
-                <div class="h-12 w-12 rounded-xl overflow-hidden shadow-lg shadow-blue-200 bg-white border border-slate-100">
+                <div class="h-12 w-12 rounded-xl overflow-hidden shadow-lg {{ $warna['shadow'] }} bg-white border border-slate-100">
+
                     <img 
-                        src="{{ asset('images/braga1.jpeg') }}" 
-                        alt="Logo Sekolah"
+                        src="{{ $logo }}"
+                        alt="{{ $namaSatuan }}"
                         class="h-full w-full object-cover">
+
                 </div>
 
-                <span class="text-xl font-bold text-red-800 tracking-tight">
-                    BRAGA
-                </span>
+                <div class="leading-tight">
+
+                    <h1 class="text-xl font-extrabold tracking-tight {{ $warna['text'] }}">
+                        {{ $namaSatuan }}
+                    </h1>
+
+                    <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mt-1">
+                        Siswa Panel
+                    </p>
+
+                </div>
 
             </div>
 
