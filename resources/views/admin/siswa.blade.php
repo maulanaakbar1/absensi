@@ -180,47 +180,119 @@
             </form>
         </div>
 
-        {{-- Info Tahun Ajaran --}}
-        <div class="flex items-center gap-2 text-sm text-slate-500 px-1">
+        {{-- Info Tahun Ajaran + Export Import --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
 
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4 text-blue-500 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-            </svg>
+            {{-- INFO --}}
+            <div class="flex items-center gap-2 text-sm text-slate-500">
 
-            <span class="leading-relaxed">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-blue-500 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                </svg>
 
-                @if($selectedTahun === 'semua')
+                <span class="leading-relaxed">
 
-                    Menampilkan
-                    <span class="font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded-lg">
-                        semua siswa
-                    </span>
-                    dari seluruh tahun ajaran.
+                    @if($selectedTahun === 'semua')
 
-                @else
+                        Menampilkan
+                        <span class="font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded-lg">
+                            semua siswa
+                        </span>
+                        dari seluruh tahun ajaran.
 
-                    Menampilkan siswa aktif di tahun ajaran
+                    @else
 
-                    <span class="font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded-lg">
-                        {{ $selectedTahun }}
-                    </span>
+                        Menampilkan siswa aktif di tahun ajaran
 
-                    — tingkat kelas disesuaikan otomatis.
+                        <span class="font-bold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded-lg">
+                            {{ $selectedTahun }}
+                        </span>
 
-                @endif
+                        — tingkat kelas disesuaikan otomatis.
 
-            </span>
+                    @endif
+
+                </span>
+
+            </div>
+
+            {{-- IMPORT EXPORT --}}
+            <div class="flex items-center gap-2 flex-wrap">
+
+                {{-- IMPORT --}}
+                <form
+                    action="{{ route('admin.siswa.import') }}"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    class="flex items-center gap-2"
+                >
+                    @csrf
+
+                    <input
+                        type="file"
+                        name="file"
+                        id="importFile"
+                        required
+                        class="hidden"
+                        onchange="this.form.submit()"
+                    >
+
+                    <label
+                        for="importFile"
+                        class="cursor-pointer bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-1"
+                    >
+
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            class="h-3.5 w-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor">
+
+                            <path stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4-4m0 0l-4 4m4-4v12" />
+
+                        </svg>
+
+                        Import
+                    </label>
+                </form>
+
+                {{-- EXPORT --}}
+                <a
+                    href="{{ route('admin.siswa.export') }}"
+                    class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-1"
+                >
+
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-3.5 w-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor">
+
+                        <path stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 4v12m0 0l-4-4m4 4l4-4m6 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2" />
+
+                    </svg>
+
+                    Export
+                </a>
+
+            </div>
 
         </div>
 

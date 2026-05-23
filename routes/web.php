@@ -41,6 +41,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/siswa', [AdminSiswa::class, 'store'])->name('admin.siswa.store');
         Route::put('/siswa/{id}', [AdminSiswa::class, 'update'])->name('admin.siswa.update');
         Route::delete('/siswa/{id}', [AdminSiswa::class, 'destroy'])->name('admin.siswa.destroy');
+        Route::get('/siswa-export', [AdminSiswa::class, 'export'])->name('admin.siswa.export');
+        Route::post('/siswa-import', [AdminSiswa::class, 'import'])->name('admin.siswa.import');
 
         Route::get('/ekskul', [EkstrakurikulerController::class, 'index'])->name('admin.ekskul.index');
         Route::post('/ekskul', [EkstrakurikulerController::class, 'store'])->name('admin.ekskul.store');

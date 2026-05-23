@@ -9,6 +9,9 @@ use App\Models\Ekstrakurikuler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use App\Exports\SiswaExport;
+use App\Imports\SiswaImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SiswaController extends Controller
 {
@@ -283,6 +286,31 @@ class SiswaController extends Controller
         return back()->with(
             'success',
             'Data siswa berhasil dihapus.'
+        );
+    }
+
+    public function export()
+    {
+        return Excel::download(
+            new SiswaExport,
+            'data-siswa.xlsx'
+        );
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        Excel::import(
+            new SiswaImport,
+            $request->file('file')
+        );
+
+        return back()->with(
+            'success',
+            'Import data siswa berhasil.'
         );
     }
 
