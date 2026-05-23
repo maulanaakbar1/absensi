@@ -507,11 +507,11 @@
                             </div>
                         </div>
 
-                        {{-- Tahun Masuk, Tingkat, Jurusan & Tingkatan --}}
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {{-- Tahun Masuk, Tingkat Awal, Jurusan & Tingkatan --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                             {{-- Tahun Masuk --}}
-                            <div>
+                            <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">
                                     Tahun Masuk
                                 </label>
@@ -527,13 +527,13 @@
                                     required
                                 >
 
-                                <p class="text-[10px] text-slate-400 mt-1 ml-1">
-                                    Tahun pertama siswa masuk
+                                <p class="text-[11px] text-slate-400 ml-1">
+                                    Tahun pertama siswa terdaftar
                                 </p>
                             </div>
 
-                            {{-- Tingkat Awal --}}
-                            <div>
+                            {{-- Kelas Saat Masuk --}}
+                            <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">
                                     Kelas Saat Masuk
                                 </label>
@@ -544,19 +544,19 @@
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm text-slate-700"
                                     required
                                 >
-                                    <option value="">Pilih Tingkat</option>
+                                    <option value="">Pilih Kelas</option>
                                     <option value="10">X</option>
                                     <option value="11">XI</option>
                                     <option value="12">XII</option>
                                 </select>
 
-                                <p class="text-[10px] text-slate-400 mt-1 ml-1">
-                                    Kelas siswa saat pertama didaftarkan
+                                <p class="text-[11px] text-slate-400 ml-1">
+                                    Kelas awal saat siswa masuk
                                 </p>
                             </div>
 
                             {{-- Jurusan --}}
-                            <div>
+                            <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">
                                     Jurusan
                                 </label>
@@ -565,18 +565,18 @@
                                     type="text"
                                     name="jurusan"
                                     x-model="currentData.jurusan"
-                                    placeholder="Contoh: RPL 1"
+                                    placeholder="Contoh: RPL / TKJ / AKL"
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
                                     required
                                 >
 
-                                <p class="text-[10px] text-slate-400 mt-1 ml-1">
-                                    Tanpa tingkat (X/XI/XII)
+                                <p class="text-[11px] text-slate-400 ml-1">
+                                    Tidak perlu menulis X / XI / XII
                                 </p>
                             </div>
 
                             {{-- Tingkatan --}}
-                            <div>
+                            <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">
                                     Tingkatan
                                 </label>
@@ -593,8 +593,8 @@
                                     <option value="purna">Purna</option>
                                 </select>
 
-                                <p class="text-[10px] text-slate-400 mt-1 ml-1">
-                                    Status tingkatan anggota
+                                <p class="text-[11px] text-slate-400 ml-1">
+                                    Status keanggotaan siswa
                                 </p>
                             </div>
 
