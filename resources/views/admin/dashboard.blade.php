@@ -6,7 +6,7 @@
     {{-- Header Admin --}}
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h3 class="text-2xl font-bold text-slate-800">Panel Admin 🚀</h3>
+            <h3 class="text-2xl font-bold text-slate-800">Panel Admin </h3>
             <p class="text-slate-500 text-sm mt-1">Ringkasan aktivitas sistem manajemen hari ini.</p>
         </div>
 

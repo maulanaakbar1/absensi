@@ -7,7 +7,7 @@
 <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
         <h3 class="text-2xl font-bold text-slate-800">
-            Halo, {{ $user->name }}! 👋
+            Halo, {{ $user->name }}!
         </h3>
 
         <p class="text-slate-500 text-sm">
