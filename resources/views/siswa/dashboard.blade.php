@@ -172,7 +172,39 @@
     </div>
 
     {{-- Sidebar --}}
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6">   
+
+        {{-- Pembina --}}
+        @if($pembina)
+
+        <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
+
+            <div class="relative z-10 flex items-center gap-4">
+
+                <div class="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-100">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+
+                <div>
+                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">
+                        Pembina Ekskul
+                    </p>
+
+                    <h5 class="text-sm font-bold text-slate-800 leading-tight">
+                        {{ $pembina->nama ?? $pembina->user->name }}
+                    </h5>
+                </div>
+
+            </div>
+
+            <div class="absolute -right-4 -bottom-4 opacity-5">
+                <i class="fas fa-users text-8xl transform -rotate-12"></i>
+            </div>
+
+        </div>
+
+        @endif
+
 
         {{-- Jadwal --}}
         <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
@@ -266,37 +298,6 @@
 
             </div>
         </div>
-
-        {{-- Pembina --}}
-        @if($pembina)
-
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
-
-            <div class="relative z-10 flex items-center gap-4">
-
-                <div class="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-100">
-                    <i class="fas fa-user-tie"></i>
-                </div>
-
-                <div>
-                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">
-                        Pembina Ekskul
-                    </p>
-
-                    <h5 class="text-sm font-bold text-slate-800 leading-tight">
-                        {{ $pembina->nama ?? $pembina->user->name }}
-                    </h5>
-                </div>
-
-            </div>
-
-            <div class="absolute -right-4 -bottom-4 opacity-5">
-                <i class="fas fa-users text-8xl transform -rotate-12"></i>
-            </div>
-
-        </div>
-
-        @endif
 
     </div>
 </div>
