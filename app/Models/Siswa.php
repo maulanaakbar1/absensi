@@ -23,7 +23,8 @@ class Siswa extends Model
         'nama_ibu',
         'no_telp_ayah',
         'no_telp_ibu',
-        'no_telp_siswa'
+        'no_telp_siswa',
+        'tingkatan'
     ];
 
     protected $casts = [

@@ -13,7 +13,7 @@
 
         <div class="flex justify-start sm:justify-end">
             <button
-                @click="openModal = true; editMode = false; currentData = {}"
+                @click="openModal = true;editMode = false;currentData = {tingkatan: 'junior'};"
                 class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-blue-100 hover:bg-blue-700 transition flex items-center gap-2 w-fit">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
@@ -254,6 +254,7 @@
                         <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Tahun Ajaran</th>
                         <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Angkatan</th>
                         <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Jenis Kelamin</th>
+                        <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Tingkatan</th>
                         <th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap text-center w-28">Aksi</th>
                     </tr>
                 </thead>
@@ -322,6 +323,23 @@
                         </td>
 
                         <td class="px-6 py-4 whitespace-nowrap">
+
+                                @php
+                                    $tingkatanColor = match($s->tingkatan) {
+                                        'junior' => 'bg-blue-50 text-blue-600',
+                                        'senior' => 'bg-amber-50 text-amber-600',
+                                        'purna' => 'bg-purple-50 text-purple-600',
+                                        default => 'bg-slate-100 text-slate-600',
+                                    };
+                                @endphp
+
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold uppercase {{ $tingkatanColor }}">
+                                    {{ ucfirst($s->tingkatan ?? '-') }}
+                                </span>
+
+                            </td>
+
+                        <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex justify-center items-center gap-1">
 
                                 <a href="{{ route('pembina.anggota.show', $s->id) }}"
@@ -356,7 +374,8 @@
                                             tahun_masuk: @js($s->tahun_masuk),
                                             tingkat_awal: @js($s->tingkat_awal),
                                             jurusan: @js($s->jurusan),
-                                            jk: @js($s->jenis_kelamin)
+                                            jk: @js($s->jenis_kelamin),
+                                            tingkatan: @js($s->tingkatan)
                                         };
                                     "
                                     class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition"
@@ -488,8 +507,8 @@
                             </div>
                         </div>
 
-                        {{-- Tahun Masuk, Tingkat & Jurusan --}}
-                        <div class="grid grid-cols-3 gap-4">
+                        {{-- Tahun Masuk, Tingkat, Jurusan & Tingkatan --}}
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 
                             {{-- Tahun Masuk --}}
                             <div>
@@ -553,6 +572,29 @@
 
                                 <p class="text-[10px] text-slate-400 mt-1 ml-1">
                                     Tanpa tingkat (X/XI/XII)
+                                </p>
+                            </div>
+
+                            {{-- Tingkatan --}}
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                                    Tingkatan
+                                </label>
+
+                                <select
+                                    name="tingkatan"
+                                    x-model="currentData.tingkatan"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm text-slate-700"
+                                    required
+                                >
+                                    <option value="">Pilih Tingkatan</option>
+                                    <option value="junior">Junior</option>
+                                    <option value="senior">Senior</option>
+                                    <option value="purna">Purna</option>
+                                </select>
+
+                                <p class="text-[10px] text-slate-400 mt-1 ml-1">
+                                    Status tingkatan anggota
                                 </p>
                             </div>
 

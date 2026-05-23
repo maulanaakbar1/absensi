@@ -164,6 +164,7 @@ class AnggotaController extends Controller
             'tingkat_awal'   => 'required|in:10,11,12',
             'jurusan'        => 'required|string|max:50',
             'jenis_kelamin'  => 'required|in:L,P',
+            'tingkatan'      => 'required|in:junior,senior,purna',
         ]);
 
         $user = User::create([
@@ -188,6 +189,7 @@ class AnggotaController extends Controller
             'nis' => $request->nis,
             'nisn' => $request->nisn,
             'jenis_kelamin' => $request->jenis_kelamin,
+            'tingkatan' => $request->tingkatan,
         ]);
 
         return back()->with('success', 'Anggota berhasil ditambahkan ke ekstrakurikuler Anda!');
@@ -207,6 +209,7 @@ class AnggotaController extends Controller
             'tingkat_awal'   => 'required|in:10,11,12',
             'jurusan'        => 'required|string|max:50',
             'jenis_kelamin'  => 'required|in:L,P',
+            'tingkatan'      => 'required|in:junior,senior,purna',
         ]);
 
         $user->update([
@@ -233,6 +236,7 @@ class AnggotaController extends Controller
             'nis' => $request->nis,
             'nisn' => $request->nisn,
             'jenis_kelamin' => $request->jenis_kelamin,
+            'tingkatan' => $request->tingkatan,
         ]);
 
         return back()->with('success', 'Data anggota berhasil diperbarui!');
