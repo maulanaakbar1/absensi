@@ -35,9 +35,24 @@
                 </div>
 
                 <div>
-                    <h2 class="text-2xl font-bold text-slate-800">
-                        {{ $siswa->user->name }}
-                    </h2>
+                    @php
+                        $tingkatanColor = match($siswa->tingkatan) {
+                            'junior' => 'bg-blue-50 text-blue-600',
+                            'senior' => 'bg-emerald-50 text-emerald-600',
+                            'purna' => 'bg-purple-50 text-purple-600',
+                            default => 'bg-slate-100 text-slate-500',
+                        };
+                    @endphp
+
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h2 class="text-2xl font-bold text-slate-800">
+                            {{ $siswa->user->name }}
+                        </h2>
+
+                        <span class="px-3 py-1 rounded-xl text-xs font-bold capitalize {{ $tingkatanColor }}">
+                            {{ $siswa->tingkatan ?? '-' }}
+                        </span>
+                    </div>
 
                     <p class="text-slate-500">
                         {{ $siswa->user->email }}
