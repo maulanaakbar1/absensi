@@ -71,6 +71,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/anggota', [AnggotaController::class, 'store'])->name('pembina.anggota.store');
         Route::put('/anggota/{id}', [AnggotaController::class, 'update'])->name('pembina.anggota.update');
         Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])->name('pembina.anggota.destroy');
+        Route::get('/anggota-export', [AnggotaController::class, 'export'])->name('pembina.anggota.export');
+        Route::post('/anggota-import', [AnggotaController::class, 'import'])->name('pembina.anggota.import');
 
         Route::get('/absensi/manage', [PembinaRekap::class, 'manage'])->name('pembina.absensi.manage');
         Route::post('/absensi/update', [PembinaRekap::class, 'updateStatus'])->name('pembina.absensi.update');

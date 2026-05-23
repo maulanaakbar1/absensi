@@ -9,6 +9,9 @@ use App\Models\Pembina;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\SiswaExport;
+use App\Imports\SiswaImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AnggotaController extends Controller
 {
@@ -265,6 +268,35 @@ class AnggotaController extends Controller
         $siswa->user->delete();
 
         return back()->with('success', 'Anggota berhasil dihapus!');
+    }
+
+    public function export()
+    {
+        $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
+
+        return Excel::download(
+            new SiswaExport($pembina->ekstrakurikuler_id),
+            'anggota-ekskul.xlsx'
+        );
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
+
+        Excel::import(
+            new SiswaImport($pembina->ekstrakurikuler_id),
+            $request->file('file')
+        );
+
+        return back()->with(
+            'success',
+            'Data anggota berhasil diimport!'
+        );
     }
 
     private function parseTahunAjaranStart(string $tahunAjaran): int

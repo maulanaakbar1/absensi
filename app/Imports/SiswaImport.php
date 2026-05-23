@@ -42,6 +42,24 @@ class SiswaImport implements ToModel, WithHeadingRow
         )->first();
 
         // =========================
+        // AMBIL TINGKAT AWAL
+        // =========================
+        $tingkatAwal = (int) ($row['tingkat_awal'] ?? 10);
+
+        // =========================
+        // AMBIL JURUSAN
+        // =========================
+        $jurusan = $row['jurusan'] ?? '';
+
+        // =========================
+        // GENERATE KELAS OTOMATIS
+        // =========================
+        $kelas = $this->generateKelas(
+            $tingkatAwal,
+            $jurusan
+        );
+
+        // =========================
         // CREATE USER
         // =========================
         $user = User::create([
@@ -61,10 +79,11 @@ class SiswaImport implements ToModel, WithHeadingRow
             'nis'                 => $row['nis'] ?? null,
             'nisn'                => $row['nisn'] ?? null,
 
-            // kelas tidak dipakai lagi
-            'jurusan'             => $row['jurusan'] ?? null,
+            // AUTO GENERATE
+            'kelas'               => $kelas,
 
-            'tingkat_awal'        => $row['tingkat_awal'] ?? 10,
+            'jurusan'             => $jurusan,
+            'tingkat_awal'        => $tingkatAwal,
             'tahun_masuk'         => $row['tahun_masuk'] ?? null,
 
             'jenis_kelamin'       => $row['jenis_kelamin'] ?? 'L',
@@ -80,5 +99,27 @@ class SiswaImport implements ToModel, WithHeadingRow
             'no_telp_ibu'         => $row['no_telp_ibu'] ?? null,
             'no_telp_siswa'       => $row['no_telp_siswa'] ?? null,
         ]);
+    }
+
+    // =========================
+    // GENERATE KELAS
+    // =========================
+    private function generateKelas($tingkat, $jurusan)
+    {
+        $label = match ((int) $tingkat) {
+            10 => 'X',
+            11 => 'XI',
+            12 => 'XII',
+            default => '',
+        };
+
+        // HAPUS PREFIX X/XI/XII JIKA ADA
+        $jurusan = preg_replace(
+            '/^(X|XI|XII)\s+/i',
+            '',
+            $jurusan
+        );
+
+        return trim($label . ' ' . $jurusan);
     }
 }

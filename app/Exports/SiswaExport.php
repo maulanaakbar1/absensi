@@ -8,10 +8,23 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class SiswaExport implements FromCollection, WithHeadings
 {
+    protected $ekskulId;
+
+    public function __construct($ekskulId = null)
+    {
+        $this->ekskulId = $ekskulId;
+    }
+
     public function collection()
     {
-        return Siswa::with(['user', 'ekstrakurikuler'])
-            ->get()
+        $query = Siswa::with(['user', 'ekstrakurikuler']);
+
+        // FILTER KHUSUS PEMBINA
+        if ($this->ekskulId) {
+            $query->where('ekstrakurikuler_id', $this->ekskulId);
+        }
+
+        return $query->get()
             ->map(function ($siswa) {
                 return [
                     'nama'                => $siswa->user->name ?? '-',
@@ -19,7 +32,6 @@ class SiswaExport implements FromCollection, WithHeadings
                     'nis'                 => $siswa->nis,
                     'nisn'                => $siswa->nisn,
 
-                    // AUTO GENERATE KELAS
                     'kelas'               => $this->generateKelas($siswa),
 
                     'jurusan'             => $siswa->jurusan,
@@ -63,9 +75,6 @@ class SiswaExport implements FromCollection, WithHeadings
         ];
     }
 
-    // =========================
-    // GENERATE KELAS OTOMATIS
-    // =========================
     private function generateKelas($siswa)
     {
         if (!$siswa->tahun_masuk || !$siswa->tingkat_awal) {
