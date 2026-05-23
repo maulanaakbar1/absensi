@@ -8,13 +8,13 @@
 
             <div class="h-12 w-12 rounded-xl overflow-hidden shadow-lg shadow-blue-200 bg-white border border-slate-100">
                 <img 
-                    src="{{ asset('images/logo_smk.jpg') }}" 
+                    src="{{ asset('images/braga1.jpeg') }}" 
                     alt="Logo Sekolah"
                     class="h-full w-full object-cover">
             </div>
 
             <div>
-                <h1 class="text-2xl font-bold text-blue-600">EskulMate</h1>
+                <h1 class="text-2xl font-bold text-red-800">BRAGA</h1>
                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
                     {{ Auth::user()->role }} Panel
                 </p>

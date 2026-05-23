@@ -11,13 +11,13 @@
                 
                 <div class="h-12 w-12 rounded-xl overflow-hidden shadow-lg shadow-blue-200 bg-white border border-slate-100">
                     <img 
-                        src="{{ asset('images/logo_smk.jpg') }}" 
+                        src="{{ asset('images/braga1.jpeg') }}" 
                         alt="Logo Sekolah"
                         class="h-full w-full object-cover">
                 </div>
 
-                <span class="text-xl font-bold text-slate-800 tracking-tight">
-                    EskulMate
+                <span class="text-xl font-bold text-red-800 tracking-tight">
+                    BRAGA
                 </span>
 
             </div>
