@@ -51,7 +51,7 @@
                     <div id="controls" class="px-0 sm:px-2">
                         <div id="live-buttons">
                             <button type="button" onclick="captureImage()" id="btn-capture" 
-                                @if(!$isComplete || $absenHariIni || !$adaJadwal || $isLibur) disabled @endif
+                                @if(!$isComplete || $absenHariIni || !$adaJadwal || $isLibur || $sudahTutup) disabled @endif
                                 class="w-full py-4 sm:py-5 bg-slate-800 text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-slate-900 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 transition-all duration-300 shadow-xl shadow-slate-200 flex items-center justify-center gap-3">
                                 
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,6 +65,8 @@
                                     Tidak Ada Jadwal Hari Ini
                                 @elseif($isLibur)
                                     Hari Libur
+                                @elseif($sudahTutup)
+                                    Absensi Ditutup
                                 @else
                                     Ambil Foto
                                 @endif
@@ -140,6 +142,11 @@
                                     Hari ini adalah hari libur latihan.
                                 </div>
                             @endif
+                            @if($sudahTutup)
+                                <div class="p-4 bg-red-100 text-red-700 rounded-xl border border-red-200 mb-4 text-sm">
+                                    Waktu absensi sudah berakhir karena jadwal latihan telah selesai.
+                                </div>
+                            @endif
                             
                             <div class="space-y-4">
                                 <div>
@@ -203,6 +210,7 @@
     const adaJadwal = {{ $adaJadwal ? 'true' : 'false' }};
     const isLibur = {{ $isLibur ? 'true' : 'false' }};
     const sudahAbsen = {{ $absenHariIni ? 'true' : 'false' }};
+    const sudahTutup = {{ $sudahTutup ? 'true' : 'false' }};
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
@@ -217,7 +225,7 @@
             locationBox.classList.add('border-blue-200', 'bg-blue-50/50');
 
             // HANYA aktifkan tombol jika lokasi OK DAN biodata LENGKAP
-            if (isComplete && adaJadwal && !isLibur && !sudahAbsen) {
+            if (isComplete && adaJadwal && !isLibur && !sudahAbsen && !sudahTutup) {
                 btnCapture.disabled = false;
             } else {
                 btnCapture.disabled = true;

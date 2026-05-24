@@ -27,10 +27,24 @@ class AbsenController extends Controller
 
         $ekskulId = $siswa->ekstrakurikuler_id;
 
-        // CEK JADWAL
-        $adaJadwal = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+        // AMBIL JADWAL HARI INI
+        $jadwalHariIni = Jadwal::where('ekstrakurikuler_id', $ekskulId)
             ->where('hari', $hariIni)
-            ->exists();
+            ->first();
+
+        $adaJadwal = $jadwalHariIni ? true : false;
+
+        // CEK APAKAH SUDAH LEWAT JAM SELESAI
+        $sudahTutup = false;
+
+        if ($jadwalHariIni) {
+
+            $jamSekarang = Carbon::now()->format('H:i:s');
+
+            if ($jamSekarang > $jadwalHariIni->jam_selesai) {
+                $sudahTutup = true;
+            }
+        }
 
         // CEK LIBUR
         $isLibur = HariLibur::where('ekstrakurikuler_id', $ekskulId)
@@ -46,7 +60,8 @@ class AbsenController extends Controller
             'absenHariIni',
             'isComplete',
             'adaJadwal',
-            'isLibur'
+            'isLibur',
+            'sudahTutup'
         ));
     }
 
@@ -63,13 +78,20 @@ class AbsenController extends Controller
         $today = Carbon::today();
         $hariIni = $today->translatedFormat('l');
 
-        // CEK JADWAL
-        $adaJadwal = Jadwal::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
+        // CEK JADWAL HARI INI
+        $jadwalHariIni = Jadwal::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
             ->where('hari', $hariIni)
-            ->exists();
+            ->first();
 
-        if (!$adaJadwal) {
+        if (!$jadwalHariIni) {
             return back()->with('error', 'Tidak ada jadwal latihan hari ini!');
+        }
+
+        // CEK APAKAH ABSENSI SUDAH DITUTUP
+        $jamSekarang = Carbon::now()->format('H:i:s');
+
+        if ($jamSekarang > $jadwalHariIni->jam_selesai) {
+            return back()->with('error', 'Absensi sudah ditutup karena jadwal latihan telah selesai!');
         }
 
         // CEK LIBUR
