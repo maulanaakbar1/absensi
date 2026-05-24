@@ -41,7 +41,9 @@
         </button>
 
         {{-- Dropdown Menu (Seperti gambar image_24b58e.png) --}}
-        <div x-show="userMenu" 
+        <div
+            x-cloak
+            x-show="userMenu"
             x-transition:enter="transition ease-out duration-100"
             x-transition:enter-start="transform opacity-0 scale-95"
             x-transition:enter-end="transform opacity-100 scale-100"

@@ -47,11 +47,16 @@
         </button>
 
         {{-- Dropdown Menu (Seperti gambar image_24b58e.png) --}}
-        <div x-show="userMenu" 
-                x-transition:enter="transition ease-out duration-100"
-                x-transition:enter-start="transform opacity-0 scale-95"
-                x-transition:enter-end="transform opacity-100 scale-100"
-                class="absolute right-0 top-full mt-3 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+        <div
+            x-cloak
+            x-show="userMenu"
+            x-transition:enter="transition ease-out duration-100"
+            x-transition:enter-start="transform opacity-0 scale-95"
+            x-transition:enter-end="transform opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-75"
+            x-transition:leave-start="transform opacity-100 scale-100"
+            x-transition:leave-end="transform opacity-0 scale-95"
+            class="absolute right-0 top-full mt-3 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
                 
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
