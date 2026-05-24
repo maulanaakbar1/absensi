@@ -1,5 +1,7 @@
-<aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-        class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:flex">
+<aside 
+    x-cloak
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
+    class="fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:flex">
     
     <div class="p-6 flex items-center justify-between">
 
