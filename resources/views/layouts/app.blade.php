@@ -20,7 +20,10 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex"x-data="{ sidebarOpen: false }"x-init="sidebarOpen = false">
+<body 
+    class="bg-slate-50 min-h-screen flex"
+    x-data="{ sidebarOpen: false }"
+    x-init="sidebarOpen = false">
 
     <div x-show="sidebarOpen" 
             x-transition:enter="transition ease-out duration-300"
