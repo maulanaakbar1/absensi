@@ -175,36 +175,61 @@
     <div class="flex flex-col gap-6">   
 
         {{-- Pembina --}}
-        @if($pembina)
+        @if($pembinas->count())
 
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
+            <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm relative overflow-hidden">
 
-            <div class="relative z-10 flex items-center gap-4">
+                <div class="flex items-center justify-between mb-5 relative z-10">
 
-                <div class="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-100">
-                    <i class="fas fa-user-tie"></i>
+                    <div>
+                        <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">
+                            Pembina Ekskul
+                        </p>
+
+                        <h4 class="text-sm font-bold text-slate-800">
+                            Total {{ $pembinas->count() }} Pembina
+                        </h4>
+                    </div>
+
+                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-100">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+
                 </div>
 
-                <div>
-                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">
-                        Pembina Ekskul
-                    </p>
+                <div class="space-y-3 relative z-10">
 
-                    <h5 class="text-sm font-bold text-slate-800 leading-tight">
-                        {{ $pembina->nama ?? $pembina->user->name }}
-                    </h5>
+                    @foreach($pembinas as $pembina)
+
+                    <div class="flex items-center gap-3 p-3 rounded-2xl bg-emerald-50 border border-emerald-100">
+
+                        <div class="h-10 w-10 rounded-xl bg-white text-emerald-600 flex items-center justify-center shadow-sm">
+                            <i class="fas fa-user"></i>
+                        </div>
+
+                        <div>
+                            <h5 class="text-sm font-bold text-slate-700 leading-none mb-1">
+                                {{ $pembina->nama ?? $pembina->user->name }}
+                            </h5>
+
+                            <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">
+                                Pembina {{ $namaEkskul }}
+                            </p>
+                        </div>
+
+                    </div>
+
+                    @endforeach
+
+                </div>
+
+                <div class="absolute -right-4 -bottom-4 opacity-5">
+                    <i class="fas fa-users text-8xl transform -rotate-12"></i>
                 </div>
 
             </div>
 
-            <div class="absolute -right-4 -bottom-4 opacity-5">
-                <i class="fas fa-users text-8xl transform -rotate-12"></i>
-            </div>
-
-        </div>
-
-        @endif
-
+            @endif
 
         {{-- Jadwal --}}
         <div class="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">

@@ -122,7 +122,7 @@ class DashboardController extends Controller
         }
 
         // Data Pembina
-        $pembina = Pembina::where('ekstrakurikuler_id', $ekskulId)->first();
+        $pembinas = Pembina::where('ekstrakurikuler_id', $ekskulId)->get();
 
         return view('siswa.dashboard', compact(
             'user',
@@ -130,7 +130,7 @@ class DashboardController extends Controller
             'namaEkskul',
             'riwayatAbsensi',
             'jadwalEkskul',
-            'pembina',
+            'pembinas',
             'statusJadwal'
         ));
     }
