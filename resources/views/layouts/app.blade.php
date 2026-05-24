@@ -10,9 +10,17 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex" x-data="{ sidebarOpen: false }">
+<body class="bg-slate-50 min-h-screen flex"x-data="{ sidebarOpen: false }"x-init="sidebarOpen = false">
 
     <div x-show="sidebarOpen" 
             x-transition:enter="transition ease-out duration-300"

@@ -10,8 +10,10 @@
         ?? 'Ekstrakurikuler';
 @endphp
 
-<aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-        class="fixed md:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200 z-50 transition-transform duration-300 md:translate-x-0 flex flex-col">
+<aside 
+    x-cloak
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
+    class="fixed md:static inset-y-0 left-0 w-72 bg-white border-r border-slate-200 z-50 transition-transform duration-300 md:translate-x-0 flex flex-col">
 
     {{-- HEADER --}}
     <div class="p-8">
