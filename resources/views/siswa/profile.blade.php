@@ -5,10 +5,30 @@
 @section('content')
 <div class="max-w-5xl mx-auto py-8 px-4">
 
+    {{-- TOMBOL KEMBALI DI LUAR CARD --}}
+    <div class="mb-5">
+        <a href="{{ route('siswa.dashboard') }}"
+           class="group inline-flex items-center gap-2 px-5 py-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:text-blue-600 hover:border-blue-100 hover:bg-blue-50 transition-all duration-300 shadow-sm">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 class="h-5 w-5 group-hover:-translate-x-1 transition-transform"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor">
+                <path stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+
+            <span class="font-bold text-sm">Kembali</span>
+        </a>
+    </div>
+
     <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
         
-        {{-- HEADER DENGAN TOMBOL KEMBALI --}}
-        <div class="p-8 border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {{-- HEADER --}}
+        <div class="p-8 border-b border-slate-100 bg-slate-50/50">
             <div>
                 <h3 class="text-xl font-extrabold text-slate-800">Profil Saya</h3>
                 <p class="text-sm text-slate-500">Kelola informasi pribadi, data orang tua, dan keamanan akun Anda</p>
