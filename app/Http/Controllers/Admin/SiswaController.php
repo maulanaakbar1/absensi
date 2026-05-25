@@ -64,7 +64,11 @@ class SiswaController extends Controller
         }
 
         $anggota = $query
-            ->latest()
+            ->join('users', 'siswas.user_id', '=', 'users.id')
+            ->orderBy('siswas.jurusan', 'asc')
+            ->orderBy('siswas.kelas', 'asc')
+            ->orderBy('users.name', 'asc')
+            ->select('siswas.*')
             ->get()
             ->transform(function ($siswa) use ($selectedTahunStart) {
 
