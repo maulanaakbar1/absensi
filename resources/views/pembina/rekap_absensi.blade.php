@@ -244,7 +244,8 @@
 
                                     $absen = $siswa->absensis->firstWhere('tanggal', $fullDate);
 
-                                    $statusColor = '';
+                                    $statusColor = 'bg-slate-50';
+                                    $tooltip = 'Belum ada absensi';
 
                                     if ($isLibur) {
                                         $statusColor = 'bg-red-500 border-red-600';
@@ -267,9 +268,56 @@
                                     }
                                 @endphp
 
+                                @php
+                                    $tooltip = 'Tidak ada jadwal';
+
+                                    if ($isLibur) {
+                                        $tooltip = 'Hari Libur';
+                                    } elseif (!$adaJadwal) {
+                                        $tooltip = 'Tidak ada jadwal';
+                                    } elseif ($absen) {
+
+                                        if ($absen->status == 'hadir') {
+                                            $tooltip = 'Hadir';
+                                        } elseif ($absen->status == 'sakit') {
+                                            $tooltip = 'Sakit';
+                                        } elseif ($absen->status == 'izin') {
+                                            $tooltip = 'Izin';
+                                        } elseif ($absen->status == 'alpa') {
+                                            $tooltip = 'Alpa';
+                                        }
+
+                                    }
+                                @endphp
+
                                 <td class="border p-0 w-10 h-10">
-                                    <div class="w-full h-full flex items-center justify-center {{ $statusColor }}">
-                                        {{-- Biarkan kosong atau isi huruf jika perlu --}}
+                                    <div class="relative group w-full h-full">
+
+                                        {{-- Kotak Absensi --}}
+                                        <div
+                                            class="w-full h-full flex items-center justify-center cursor-pointer transition duration-200 hover:scale-105 rounded-sm {{ $statusColor }}">
+                                        </div>
+
+                                        {{-- Tooltip --}}
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2
+                                                opacity-0 group-hover:opacity-100
+                                                pointer-events-none
+                                                transition-all duration-200
+                                                scale-95 group-hover:scale-100
+                                                z-50">
+
+                                            <div class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold shadow-xl whitespace-nowrap">
+                                                {{ $tooltip }}
+
+                                                {{-- Arrow bawah --}}
+                                                <div class="absolute left-1/2 top-full -translate-x-1/2
+                                                            border-4 border-transparent border-t-slate-900">
+                                                </div>
+                                            </div>
+
+                                        </div>
+
                                     </div>
                                 </td>
                             @endfor
