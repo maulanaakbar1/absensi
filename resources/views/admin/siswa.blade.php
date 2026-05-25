@@ -452,9 +452,8 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             @php
                                 $tingkatanColor = match($s->tingkatan) {
-                                    'junior' => 'bg-blue-50 text-blue-600',
-                                    'senior' => 'bg-emerald-50 text-emerald-600',
-                                    'purna' => 'bg-purple-50 text-purple-600',
+                                    'balonpas' => 'bg-blue-50 text-blue-600',
+                                    'instruktur' => 'bg-emerald-50 text-emerald-600',
                                     default => 'bg-slate-50 text-slate-500',
                                 };
                             @endphp
@@ -793,12 +792,9 @@
                                     name="tingkatan"
                                     x-model="currentData.tingkatan"
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
-                                    required
-                                >
-                                    <option value="">Pilih Tingkatan</option>
-                                    <option value="junior">Junior</option>
-                                    <option value="senior">Senior</option>
-                                    <option value="purna">Purna</option>
+                                    required>
+                                    <option value="balonpas">Balonpas</option>
+                                    <option value="instruktur">Instruktur</option>
                                 </select>
                             </div>
 

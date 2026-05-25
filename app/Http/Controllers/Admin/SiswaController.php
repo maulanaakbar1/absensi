@@ -166,7 +166,7 @@ class SiswaController extends Controller
             'no_telp_ayah' => 'nullable|string|max:15',
             'nama_ibu' => 'nullable|string|max:100',
             'no_telp_ibu' => 'nullable|string|max:15',
-            'tingkatan' => 'required|in:junior,senior,purna',
+            'tingkatan' => 'required|in:balonpas,instruktur',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -228,7 +228,7 @@ class SiswaController extends Controller
             'no_telp_ayah' => 'nullable|string|max:15',
             'nama_ibu' => 'nullable|string|max:100',
             'no_telp_ibu' => 'nullable|string|max:15',
-            'tingkatan' => 'required|in:junior,senior,purna',
+            'tingkatan' => 'required|in:balonpas,instruktur',
         ]);
 
         DB::transaction(function () use (
