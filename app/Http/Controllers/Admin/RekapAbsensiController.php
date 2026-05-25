@@ -98,7 +98,11 @@ class RekapAbsensiController extends Controller
             $query->where('jurusan', $selectedJurusan);
         }
 
-        $siswas = $query->get();
+        $siswas = $query
+            ->orderBy('tingkat_awal', 'asc')
+            ->orderBy('jurusan', 'asc')
+            ->orderBy('nis', 'asc')
+            ->get();$siswas = $query->get();
 
         // =========================
         // TRANSFORM KELAS DISPLAY
