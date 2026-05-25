@@ -5,25 +5,39 @@
 @section('content')
 <div class="max-w-5xl mx-auto py-8 px-4">
 
+    {{-- Tombol Kembali --}}
+    <div class="mb-5">
+        <a href="{{ route('pembina.anggota.index') }}"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 transition font-bold text-sm shadow-sm">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+
+                <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 19l-7-7 7-7" />
+            </svg>
+
+            Kembali
+        </a>
+    </div>
+
+    {{-- Card Utama --}}
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
 
         {{-- Header --}}
-        <div class="p-8 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-extrabold text-slate-800">
-                    Detail Siswa
-                </h1>
+        <div class="p-8 border-b border-slate-100 bg-slate-50">
+            <h1 class="text-2xl font-extrabold text-slate-800">
+                Detail Siswa
+            </h1>
 
-                <p class="text-slate-500 text-sm mt-1">
-                    Informasi lengkap anggota ekstrakurikuler
-                </p>
-            </div>
-
-            <a href="{{ route('pembina.anggota.index') }}"
-                class="px-5 py-2.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-100 transition font-bold text-sm">
-
-                Kembali
-            </a>
+            <p class="text-slate-500 text-sm mt-1">
+                Informasi lengkap anggota ekstrakurikuler
+            </p>
         </div>
 
         <div class="p-8 space-y-10">
