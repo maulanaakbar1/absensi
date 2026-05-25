@@ -283,8 +283,61 @@
                                     }
                                 @endphp
 
-                                <td class="border p-0 w-10 h-10">
-                                    <div class="w-full h-full flex items-center justify-center {{ $statusColor }}"></div>
+                                <td class="border p-0 w-10 h-10 overflow-visible">
+                                    @php
+                                        $tooltip = 'Belum ada absensi';
+
+                                        if ($isLibur) {
+                                            $tooltip = 'Hari Libur';
+                                        } elseif (!$adaJadwal) {
+                                            $tooltip = 'Tidak ada jadwal';
+                                        } elseif ($absen) {
+
+                                            if ($absen->status == 'hadir') {
+                                                $tooltip = 'Hadir';
+                                            } elseif ($absen->status == 'sakit') {
+                                                $tooltip = 'Sakit';
+                                            } elseif ($absen->status == 'izin') {
+                                                $tooltip = 'Izin';
+                                            } elseif ($absen->status == 'alpa') {
+                                                $tooltip = 'Alpa';
+                                            }
+
+                                        }
+                                    @endphp
+
+                                    <div class="relative group w-full h-full flex items-center justify-center">
+
+                                        {{-- Kotak Absensi --}}
+                                        <div
+                                            class="w-full h-full rounded-sm border transition-all duration-200
+                                                hover:scale-110 hover:shadow-md cursor-pointer
+                                                {{ $statusColor }}">
+                                        </div>
+
+                                        {{-- Tooltip --}}
+                                        <div
+                                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3
+                                                opacity-0 invisible
+                                                group-hover:opacity-100 group-hover:visible
+                                                transition-all duration-200 ease-out
+                                                z-[9999]">
+
+                                            <div class="relative px-3 py-1.5 rounded-xl
+                                                        bg-slate-900 text-white text-[11px]
+                                                        font-semibold shadow-2xl whitespace-nowrap">
+
+                                                {{ $tooltip }}
+
+                                                {{-- Arrow --}}
+                                                <div class="absolute left-1/2 top-full -translate-x-1/2
+                                                            border-[6px] border-transparent
+                                                            border-t-slate-900">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
                                 </td>
                             @endfor
 
