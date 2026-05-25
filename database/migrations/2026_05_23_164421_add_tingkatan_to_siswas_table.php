@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::table('siswas', function (Blueprint $table) {
 
             $table->enum('tingkatan', [
-                'junior',
-                'senior',
-                'purna'
-            ])->default('junior')->after('jurusan');
+                'balonpas',
+                'instruktur'
+            ])->default('balonpas')->after('jurusan');
 
         });
     }
