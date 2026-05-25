@@ -79,7 +79,13 @@ class AnggotaController extends Controller
 
         }
 
-        $anggota = $query->latest()->get();
+        $anggota = $query
+            ->join('users', 'siswas.user_id', '=', 'users.id')
+            ->orderBy('siswas.tingkat_awal', 'asc')
+            ->orderBy('siswas.jurusan', 'asc')
+            ->orderBy('users.name', 'asc')
+            ->select('siswas.*')
+            ->get();
 
         // Transform data kelas otomatis
         $anggota->transform(function ($siswa) use ($selectedTahunStart) {
