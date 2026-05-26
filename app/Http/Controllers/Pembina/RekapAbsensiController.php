@@ -326,13 +326,11 @@ class RekapAbsensiController extends Controller
         // FILTER JURUSAN
         // =========================
         if ($selectedJurusan) {
-
             $query->where('jurusan', $selectedJurusan);
-
         }
 
-        $siswas = $query->get();
-
+        $siswas = $query->paginate(15)->withQueryString();
+        
         // =========================
         // LIST JURUSAN
         // =========================

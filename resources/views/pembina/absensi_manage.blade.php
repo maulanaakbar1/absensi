@@ -197,7 +197,7 @@
 
                             {{-- NO --}}
                             <td class="px-6 py-5 text-center font-medium text-slate-500">
-                                {{ $index + 1 }}
+                                {{ ($siswas->currentPage() - 1) * $siswas->perPage() + $index + 1 }}
                             </td>
 
                             {{-- NISN --}}
@@ -330,6 +330,81 @@
                 </tbody>
             </table>
         </div>
+        {{-- Pagination --}}
+        @if($siswas->hasPages())
+            <div class="bg-white px-6 py-5 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+                
+                {{-- Info Text --}}
+                <div class="text-sm text-slate-500 text-center sm:text-left">
+                    Menampilkan 
+                    <span class="font-bold text-slate-800">{{ $siswas->firstItem() }}</span> 
+                    sampai 
+                    <span class="font-bold text-slate-800">{{ $siswas->lastItem() }}</span> 
+                    dari 
+                    <span class="font-bold text-slate-800">{{ $siswas->total() }}</span> siswa
+                </div>
+
+                {{-- Pagination Buttons --}}
+                <nav class="inline-flex flex-wrap items-center gap-1.5 justify-center" aria-label="Pagination">
+                    
+                    {{-- Previous Page Link --}}
+                    @if ($siswas->onFirstPage())
+                        <span class="p-2.5 rounded-xl border border-slate-100 bg-slate-50/50 text-slate-300 cursor-not-allowed">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </span>
+                    @else
+                        <a href="{{ $siswas->previousPageUrl() }}" class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </a>
+                    @endif
+
+                    {{-- Pagination Elements --}}
+                    @foreach ($siswas->links()->elements as $element)
+                        {{-- "Three Dots" Separator --}}
+                        @if (is_string($element))
+                            <span class="px-3 py-1.5 text-sm font-bold text-slate-400 cursor-default">
+                                {{ $element }}
+                            </span>
+                        @endif
+
+                        {{-- Array Of Links --}}
+                        @if (is_array($element))
+                            @foreach ($element as $page => $url)
+                                @if ($page == $siswas->currentPage())
+                                    <span class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-md shadow-blue-100 cursor-default">
+                                        {{ $page }}
+                                    </span>
+                                @else
+                                    <a href="{{ $url }}" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 text-sm font-bold transition shadow-sm">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
+                        @endif
+                    @endforeach
+
+                    {{-- Next Page Link --}}
+                    @if ($siswas->hasMorePages())
+                        <a href="{{ $siswas->nextPageUrl() }}" class="p-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    @else
+                        <span class="p-2.5 rounded-xl border border-slate-100 bg-slate-50/50 text-slate-300 cursor-not-allowed">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </span>
+                    @endif
+
+                </nav>
+            </div>
+        @endif
     </div>
 </div>
 @endsection
