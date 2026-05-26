@@ -25,7 +25,12 @@
 
     {{-- Filter --}}
     <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
-        <form action="{{ route('pembina.anggota.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
+        <form 
+                id="filterForm"
+                action="{{ route('pembina.anggota.index') }}"
+                method="GET"
+                class="flex flex-col md:flex-row gap-4 items-end"
+            >
 
             {{-- Filter Tahun Ajaran --}}
             <div class="w-full md:w-56">
@@ -97,11 +102,13 @@
                 <label class="text-xs font-bold text-slate-400 uppercase ml-1 whitespace-nowrap">
                     Cari Nama
                 </label>
+
                 <input
                     type="text"
                     name="search"
                     value="{{ request('search') }}"
                     placeholder="Masukkan nama siswa..."
+                    oninput="debounceSearch()"
                     class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm"
                 >
             </div>
@@ -172,12 +179,11 @@
         <div class="flex items-center gap-2 flex-wrap">
 
             {{-- IMPORT --}}
-            <form
-                action="{{ route('pembina.anggota.import') }}"
-                method="POST"
-                enctype="multipart/form-data"
-                class="flex items-center gap-2"
-            >
+            <form 
+                id="filterForm"
+                action="{{ route('pembina.anggota.index') }}"
+                method="GET"
+                class="flex flex-col md:flex-row gap-4 items-end">
                 @csrf
 
                 <input
@@ -456,28 +462,23 @@
                 @endif
 
                 {{-- Pagination Elements --}}
-                @foreach ($anggota->links()->elements as $element)
-                    {{-- "Three Dots" Separator --}}
-                    @if (is_string($element))
+                @foreach ($anggota->linkCollection() as $link)
+
+                    @if ($link['url'] === null)
                         <span class="px-3 py-1.5 text-sm font-bold text-slate-400 cursor-default">
-                            {{ $element }}
+                            {!! $link['label'] !!}
                         </span>
+                    @elseif ($link['active'])
+                        <span class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-md shadow-blue-100 cursor-default">
+                            {!! $link['label'] !!}
+                        </span>
+                    @else
+                        <a href="{{ $link['url'] }}"
+                        class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 text-sm font-bold transition shadow-sm">
+                            {!! $link['label'] !!}
+                        </a>
                     @endif
 
-                    {{-- Array Of Links --}}
-                    @if (is_array($element))
-                        @foreach ($element as $page => $url)
-                            @if ($page == $anggota->currentPage())
-                                <span class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-md shadow-blue-100 cursor-default">
-                                    {{ $page }}
-                                </span>
-                            @else
-                                <a href="{{ $url }}" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 text-sm font-bold transition shadow-sm">
-                                    {{ $page }}
-                                </a>
-                            @endif
-                        @endforeach
-                    @endif
                 @endforeach
 
                 {{-- Next Page Link --}}
@@ -714,6 +715,20 @@
 
 @push('scripts')
 <script>
+    let searchTimer;
+
+    function debounceSearch() {
+
+        clearTimeout(searchTimer);
+
+        searchTimer = setTimeout(() => {
+
+            document.getElementById('filterForm').submit();
+
+        }, 500);
+
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         
         @if(session('success'))
@@ -730,7 +745,6 @@
             });
         @endif
 
-        // 2. Konfirmasi Interaktif Sebelum Menghapus Data Siswa
         const deleteButtons = document.querySelectorAll('.btn-delete');
         
         deleteButtons.forEach(button => {
@@ -743,8 +757,8 @@
                     text: `Data dari ${namaSiswa} beserta seluruh riwayatnya akan dihapus permanen!`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#ef4444', // Red-500
-                    cancelButtonColor: '#64748b',  // Slate-500
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#64748b',
                     confirmButtonText: 'Ya, Hapus!',
                     cancelButtonText: 'Batal',
                     customClass: {
