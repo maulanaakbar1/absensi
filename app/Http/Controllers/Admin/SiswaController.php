@@ -26,83 +26,64 @@ class SiswaController extends Controller
         // Filter kelas
         $selectedKelas = $request->get('kelas');
 
-        // FILTER JURUSAN (BARU)
+        // FILTER JURUSAN
         $selectedJurusan = $request->get('jurusan');
 
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
-            : null;
+            : $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
         $query = Siswa::with(['user', 'ekstrakurikuler']);
 
         // =========================
         // FILTER TAHUN AJARAN
         // =========================
-        if ($selectedTahunStart) {
-
+        if ($selectedTahun !== 'semua') {
             $query->where(function ($q) use ($selectedTahunStart) {
-
                 $q->whereNull('tahun_masuk')
                 ->orWhere(function ($q2) use ($selectedTahunStart) {
-
                     $q2->whereRaw(
                         '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
                         [$selectedTahunStart]
                     );
-
                 });
-
             });
-
         }
 
         // =========================
-        // FILTER JURUSAN (BARU)
+        // FILTER JURUSAN
         // =========================
         if ($selectedJurusan) {
             $query->where('jurusan', $selectedJurusan);
         }
 
+        // =========================
+        // PERBAIKAN FILTER KELAS: Langsung di Query Database
+        // =========================
+        if ($selectedKelas) {
+            $query->where(function ($q) use ($selectedTahunStart, $selectedKelas) {
+                $q->whereRaw('(? - tahun_masuk) + tingkat_awal = ?', [$selectedTahunStart, $selectedKelas]);
+            });
+        }
+
+        // Ambil Data dengan Paginate & Pertahankan Filter di URL
         $anggota = $query
             ->join('users', 'siswas.user_id', '=', 'users.id')
             ->orderBy('siswas.jurusan', 'asc')
-            ->orderBy('siswas.kelas', 'asc')
+            ->orderBy('siswas.tingkat_awal', 'asc')
             ->orderBy('users.name', 'asc')
             ->select('siswas.*')
-            ->get()
-            ->transform(function ($siswa) use ($selectedTahunStart) {
+            ->paginate(10)
+            ->withQueryString();
 
-                $tahunDisplay = $selectedTahunStart
-                    ?? $this->parseTahunAjaranStart(
-                        $this->getCurrentTahunAjaran()
-                    );
+        // Transform data display teks kelas untuk setiap item halaman
+        $anggota->getCollection()->transform(function ($siswa) use ($selectedTahunStart) {
+            $tingkat = $this->getTingkat($siswa, $selectedTahunStart);
+            $siswa->kelas_display = $this->getKelasDisplay($siswa, $selectedTahunStart);
+            $siswa->tingkat_display = $tingkat;
 
-                $tingkat = $this->getTingkat(
-                    $siswa,
-                    $tahunDisplay
-                );
-
-                $kelasDisplay = $this->getKelasDisplay(
-                    $siswa,
-                    $tahunDisplay
-                );
-
-                $siswa->kelas_display = $kelasDisplay;
-                $siswa->tingkat_display = $tingkat;
-
-                return $siswa;
-            });
-
-        // =========================
-        // FILTER KELAS (AFTER TRANSFORM)
-        // =========================
-        if ($selectedKelas) {
-
-            $anggota = $anggota->filter(function ($siswa) use ($selectedKelas) {
-                return $siswa->tingkat_display == $selectedKelas;
-            })->values();
-
-        }
+            return $siswa;
+        });
 
         // Dropdown tahun ajaran
         $tahunAjaranList = $this->getTahunAjaranList();
