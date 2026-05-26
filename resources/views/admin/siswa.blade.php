@@ -154,6 +154,7 @@
                             name="search"
                             value="{{ request('search') }}"
                             placeholder="Masukkan nama siswa..."
+                            oninput="clearTimeout(this.delay); this.delay = setTimeout(() => this.form.submit(), 500)"
                             class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm"
                         >
                     </div>

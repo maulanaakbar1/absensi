@@ -56,6 +56,18 @@ class SiswaController extends Controller
         if ($selectedJurusan) {
             $query->where('jurusan', $selectedJurusan);
         }
+        
+        // =========================
+        // FILTER SEARCH NAMA
+        // =========================
+        if ($request->filled('search')) {
+
+            $search = $request->search;
+
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        }
 
         // =========================
         // PERBAIKAN FILTER KELAS: Langsung di Query Database
