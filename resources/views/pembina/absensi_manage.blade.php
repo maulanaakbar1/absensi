@@ -107,6 +107,22 @@
                     class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm">
             </div>
 
+            {{-- Cari Nama --}}
+            <div class="w-full md:flex-1 min-w-[220px]">
+                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                    Cari Nama
+                </label>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Masukkan nama siswa..."
+                    oninput="debounceSearch(this)"
+                    class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm"
+                >
+            </div>
+
             {{-- Reset Filter --}}
             <div class="w-full md:w-auto">
                 @if(
@@ -363,28 +379,25 @@
                     @endif
 
                     {{-- Pagination Elements --}}
-                    @foreach ($siswas->links()->elements as $element)
-                        {{-- "Three Dots" Separator --}}
-                        @if (is_string($element))
+                    @foreach ($siswas->linkCollection() as $link)
+
+                        @if ($link['url'] === null)
                             <span class="px-3 py-1.5 text-sm font-bold text-slate-400 cursor-default">
-                                {{ $element }}
+                                {!! $link['label'] !!}
                             </span>
+
+                        @elseif ($link['active'])
+                            <span class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-md shadow-blue-100 cursor-default">
+                                {!! $link['label'] !!}
+                            </span>
+
+                        @else
+                            <a href="{{ $link['url'] }}"
+                            class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 text-sm font-bold transition shadow-sm">
+                                {!! $link['label'] !!}
+                            </a>
                         @endif
 
-                        {{-- Array Of Links --}}
-                        @if (is_array($element))
-                            @foreach ($element as $page => $url)
-                                @if ($page == $siswas->currentPage())
-                                    <span class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-md shadow-blue-100 cursor-default">
-                                        {{ $page }}
-                                    </span>
-                                @else
-                                    <a href="{{ $url }}" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:border-blue-500 hover:text-blue-600 text-sm font-bold transition shadow-sm">
-                                        {{ $page }}
-                                    </a>
-                                @endif
-                            @endforeach
-                        @endif
                     @endforeach
 
                     {{-- Next Page Link --}}
@@ -408,3 +421,21 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    let searchTimer;
+
+    function debounceSearch(element) {
+
+        clearTimeout(searchTimer);
+
+        searchTimer = setTimeout(() => {
+
+            element.form.submit();
+
+        }, 500);
+
+    }
+</script>
+@endpush

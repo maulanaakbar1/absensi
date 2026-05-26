@@ -286,6 +286,11 @@ class RekapAbsensiController extends Controller
         // =========================
         $selectedJurusan = $request->get('jurusan');
 
+        // =========================
+        // SEARCH
+        // =========================
+        $search = $request->get('search');
+
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
             : null;
@@ -326,10 +331,52 @@ class RekapAbsensiController extends Controller
         // FILTER JURUSAN
         // =========================
         if ($selectedJurusan) {
-            $query->where('jurusan', $selectedJurusan);
+
+            $query->where(
+                'jurusan',
+                $selectedJurusan
+            );
+
         }
 
-        $siswas = $query->paginate(15)->withQueryString();
+        // =========================
+        // SEARCH NAMA
+        // =========================
+        if ($search) {
+
+            $query->whereHas('user', function ($q) use ($search) {
+
+                $q->where(
+                    'name',
+                    'like',
+                    '%' . $search . '%'
+                );
+
+            });
+
+        }
+
+        // =========================
+        // FILTER KELAS
+        // =========================
+        if ($selectedKelas && $selectedTahunStart) {
+
+            $query->whereRaw(
+                '(? - tahun_masuk) + tingkat_awal = ?',
+                [
+                    $selectedTahunStart,
+                    $selectedKelas
+                ]
+            );
+
+        }
+
+        // =========================
+        // PAGINATE
+        // =========================
+        $siswas = $query
+            ->paginate(15)
+            ->withQueryString();
 
         // =========================
         // LIST JURUSAN
@@ -346,9 +393,9 @@ class RekapAbsensiController extends Controller
             ->toArray();
 
         // =========================
-        // TRANSFORM KELAS DISPLAY
+        // TRANSFORM DISPLAY
         // =========================
-        $siswas->transform(function ($siswa) use ($selectedTahunStart) {
+        $siswas->getCollection()->transform(function ($siswa) use ($selectedTahunStart) {
 
             $tahunDisplay = $selectedTahunStart
                 ?? $this->parseTahunAjaranStart(
@@ -370,19 +417,6 @@ class RekapAbsensiController extends Controller
 
             return $siswa;
         });
-
-        // =========================
-        // FILTER KELAS
-        // =========================
-        if ($selectedKelas) {
-
-            $siswas = $siswas->filter(function ($siswa) use ($selectedKelas) {
-
-                return $siswa->tingkat_display == $selectedKelas;
-
-            })->values();
-
-        }
 
         // =========================
         // LIST TAHUN AJARAN
