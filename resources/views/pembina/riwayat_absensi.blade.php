@@ -134,6 +134,24 @@
                     </select>
                 </div>
 
+                {{-- SEARCH NAMA --}}
+                <div class="w-full md:w-64">
+
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                        Cari Nama
+                    </label>
+
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Cari..."
+                        oninput="debounceSearch()"
+                        class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:border-blue-500 focus:ring-0"
+                    >
+
+                </div>
+
                 {{-- RESET --}}
                 @if(
                     request('kelas') ||
@@ -329,6 +347,20 @@ function closeImage() {
     const modal = document.getElementById('imageModal');
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+}
+
+let searchTimer;
+
+function debounceSearch() {
+
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(() => {
+
+        document.querySelector('form').submit();
+
+    }, 500);
+
 }
 </script>
 @endsection

@@ -330,7 +330,7 @@ class RekapAbsensiController extends Controller
         }
 
         $siswas = $query->paginate(15)->withQueryString();
-        
+
         // =========================
         // LIST JURUSAN
         // =========================
@@ -417,6 +417,7 @@ class RekapAbsensiController extends Controller
 
         $selectedKelas = $request->get('kelas');
         $selectedJurusan = $request->get('jurusan');
+        $search = $request->get('search');
 
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
@@ -428,14 +429,25 @@ class RekapAbsensiController extends Controller
         $query = Absensi::whereHas('siswa', function ($q) use (
             $ekskulId,
             $selectedTahunStart,
-            $selectedJurusan
+            $selectedJurusan,
+            $search
         ) {
 
             $q->where('ekstrakurikuler_id', $ekskulId);
 
-            // FILTER JURUSAN
-            if ($selectedJurusan) {
-                $q->where('jurusan', $selectedJurusan);
+            // FILTER SEARCH NAMA
+            if ($search) {
+
+                $q->whereHas('user', function ($userQuery) use ($search) {
+
+                    $userQuery->where(
+                        'name',
+                        'like',
+                        '%' . $search . '%'
+                    );
+
+                });
+
             }
 
             // FILTER TAHUN AJARAN
