@@ -21,10 +21,7 @@ class AnggotaController extends Controller
         $ekskulId = $pembina->ekstrakurikuler_id;
 
         // Default: tampilkan tahun ajaran sekarang
-        $selectedTahun = $request->get(
-            'tahun_ajaran',
-            $this->getCurrentTahunAjaran()
-        );
+        $selectedTahun = $request->get('tahun_ajaran', $this->getCurrentTahunAjaran());
 
         // Filter
         $selectedKelas = $request->get('kelas');
@@ -32,100 +29,64 @@ class AnggotaController extends Controller
 
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
-            : null;
+            : $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
         $query = Siswa::with(['user', 'ekstrakurikuler'])
             ->where('ekstrakurikuler_id', $ekskulId);
 
-        // Filter berdasarkan tahun ajaran
-        if ($selectedTahunStart) {
-
+        // Filter berdasarkan tahun ajaran (jika bukan 'semua')
+        if ($selectedTahun !== 'semua') {
             $query->where(function ($q) use ($selectedTahunStart) {
-
                 $q->whereNull('tahun_masuk')
-
                 ->orWhere(function ($q2) use ($selectedTahunStart) {
-
                     $q2->whereRaw(
                         '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
                         [$selectedTahunStart]
                     );
-
                 });
-
             });
-
         }
 
-        // Search nama siswa
+        // PERBAIKAN FILTER KELAS: Dihitung langsung di query database
+        if ($selectedKelas) {
+            $query->where(function($q) use ($selectedTahunStart, $selectedKelas) {
+                $q->whereRaw('(? - tahun_masuk) + tingkat_awal = ?', [$selectedTahunStart, $selectedKelas]);
+            });
+        }
+
+        // Search nama siswa - SUDAH DIPERBAIKI (menggunakan 'use')
         if ($request->filled('search')) {
-
             $query->whereHas('user', function ($q) use ($request) {
-
-                $q->where(
-                    'name',
-                    'like',
-                    '%' . $request->search . '%'
-                );
-
+                $q->where('name', 'like', '%' . $request->search . '%');
             });
-
         }
 
-        // FILTER JURUSAN
+        // Filter Jurusan
         if ($selectedJurusan) {
-
             $query->where('jurusan', $selectedJurusan);
-
         }
 
+        // Urutkan dan Paginate
         $anggota = $query
             ->join('users', 'siswas.user_id', '=', 'users.id')
             ->orderBy('siswas.tingkat_awal', 'asc')
             ->orderBy('siswas.jurusan', 'asc')
             ->orderBy('users.name', 'asc')
             ->select('siswas.*')
-            ->get();
+            ->paginate(10)
+            ->withQueryString();
 
-        // Transform data kelas otomatis
-        $anggota->transform(function ($siswa) use ($selectedTahunStart) {
-
-            $tahunDisplay = $selectedTahunStart
-                ?? $this->parseTahunAjaranStart(
-                    $this->getCurrentTahunAjaran()
-                );
-
-            $tingkat = $this->getTingkat(
-                $siswa,
-                $tahunDisplay
-            );
-
-            $kelasDisplay = $this->getKelasDisplay(
-                $siswa,
-                $tahunDisplay
-            );
-
-            $siswa->kelas_display = $kelasDisplay;
+        // Transform data display teks kelas
+        $anggota->getCollection()->transform(function ($siswa) use ($selectedTahunStart) {
+            $tingkat = $this->getTingkat($siswa, $selectedTahunStart);
+            $siswa->kelas_display = $this->getKelasDisplay($siswa, $selectedTahunStart);
             $siswa->tingkat_display = $tingkat;
 
             return $siswa;
         });
 
-        // FILTER KELAS
-        if ($selectedKelas) {
-
-            $anggota = $anggota->filter(function ($siswa) use ($selectedKelas) {
-
-                return $siswa->tingkat_display == $selectedKelas;
-
-            })->values();
-
-        }
-
-        // Dropdown tahun ajaran
+        // Dropdown data pendukung
         $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
-
-        // Dropdown jurusan
         $jurusanList = Siswa::where('ekstrakurikuler_id', $ekskulId)
             ->whereNotNull('jurusan')
             ->select('jurusan')
@@ -134,21 +95,14 @@ class AnggotaController extends Controller
             ->pluck('jurusan')
             ->toArray();
 
-        // Pastikan selected tetap ada di dropdown
-        if (
-            $selectedTahun !== 'semua'
-            && !in_array($selectedTahun, $tahunAjaranList)
-        ) {
-
+        if ($selectedTahun !== 'semua' && !in_array($selectedTahun, $tahunAjaranList)) {
             $tahunAjaranList[] = $selectedTahun;
-
         }
 
         return view('pembina.anggota', compact(
             'anggota',
             'tahunAjaranList',
             'selectedTahun',
-            'selectedTahunStart',
             'selectedKelas',
             'selectedJurusan',
             'jurusanList'
