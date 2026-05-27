@@ -959,7 +959,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Swal.fire({
             icon: 'success',
             title: 'Berhasil!',
-            text: "{{ session('success') }}",
+            text: @json(session('success')),
             showConfirmButton: false,
             timer: 2000,
             customClass: {

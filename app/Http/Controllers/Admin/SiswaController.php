@@ -228,6 +228,32 @@ class SiswaController extends Controller
             'tingkatan' => 'required|in:balonpas,instruktur',
         ]);
 
+        // =========================
+        // DATA LAMA
+        // =========================
+        $oldEkskul = $siswa->ekstrakurikuler->nama ?? '-';
+
+        $oldData = [
+            'Nama' => $user->name,
+            'Email' => $user->email,
+            'NIS' => $siswa->nis,
+            'NISN' => $siswa->nisn,
+            'Tahun Masuk' => $siswa->tahun_masuk,
+            'Tingkat Awal' => $siswa->tingkat_awal,
+            'Jurusan' => $siswa->jurusan,
+            'Jenis Kelamin' => $siswa->jenis_kelamin,
+            'No Telp Siswa' => $siswa->no_telp_siswa,
+            'Tempat Lahir' => $siswa->tempat_lahir,
+            'Tanggal Lahir' => $siswa->tanggal_lahir,
+            'Alamat' => $siswa->alamat,
+            'Nama Ayah' => $siswa->nama_ayah,
+            'No Telp Ayah' => $siswa->no_telp_ayah,
+            'Nama Ibu' => $siswa->nama_ibu,
+            'No Telp Ibu' => $siswa->no_telp_ibu,
+            'Tingkatan' => $siswa->tingkatan,
+            'Ekskul' => $oldEkskul,
+        ];
+
         DB::transaction(function () use (
             $request,
             $user,
@@ -266,9 +292,67 @@ class SiswaController extends Controller
             ]);
         });
 
+        // =========================
+        // DATA BARU
+        // =========================
+        $newEkskul = Ekstrakurikuler::find($request->ekstrakurikuler_id)?->nama ?? '-';
+
+        $newData = [
+            'Nama' => $request->name,
+            'Email' => $request->email,
+            'NIS' => $request->nis,
+            'NISN' => $request->nisn,
+            'Tahun Masuk' => $request->tahun_masuk,
+            'Tingkat Awal' => $request->tingkat_awal,
+            'Jurusan' => $request->jurusan,
+            'Jenis Kelamin' => $request->jenis_kelamin,
+            'No Telp Siswa' => $request->no_telp_siswa,
+            'Tempat Lahir' => $request->tempat_lahir,
+            'Tanggal Lahir' => $request->tanggal_lahir,
+            'Alamat' => $request->alamat,
+            'Nama Ayah' => $request->nama_ayah,
+            'No Telp Ayah' => $request->no_telp_ayah,
+            'Nama Ibu' => $request->nama_ibu,
+            'No Telp Ibu' => $request->no_telp_ibu,
+            'Tingkatan' => $request->tingkatan,
+            'Ekskul' => $newEkskul,
+        ];
+
+        // =========================
+        // DETEKSI PERUBAHAN
+        // =========================
+        $changes = [];
+
+        foreach ($oldData as $field => $oldValue) {
+
+            $newValue = $newData[$field] ?? null;
+
+            if ($oldValue != $newValue) {
+
+                $changes[] = "{$field}: {$oldValue} → {$newValue}";
+            }
+        }
+
+        if ($request->filled('password')) {
+            $changes[] = "Password berhasil diperbarui";
+        }
+
+        // =========================
+        // FORMAT PESAN
+        // =========================
+        if (count($changes) > 0) {
+
+            $message = "Data siswa berhasil diperbarui:\n- "
+                . implode("\n- ", $changes);
+
+        } else {
+
+            $message = "Tidak ada data yang diubah";
+        }
+
         return back()->with(
             'success',
-            'Data siswa berhasil diperbarui.'
+            $message
         );
     }
 
