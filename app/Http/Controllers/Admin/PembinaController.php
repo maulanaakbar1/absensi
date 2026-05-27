@@ -55,25 +55,74 @@ class PembinaController extends Controller {
             'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
         ]);
 
+        // SIMPAN DATA LAMA
+        $oldName = $user->name;
+        $oldEmail = $user->email;
+        $oldNip = $pembina->nip;
+        $oldTelp = $pembina->no_telp;
+
+        $oldEkskul = $pembina->ekstrakurikuler
+            ? $pembina->ekstrakurikuler->nama
+            : '-';
+
+        // UPDATE USER
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
         ]);
 
-        // update password jika diisi
+        // UPDATE PASSWORD JIKA DIISI
         if ($request->filled('password')) {
             $user->update([
                 'password' => Hash::make($request->password)
             ]);
         }
 
+        // UPDATE PEMBINA
         $pembina->update([
             'nip' => $request->nip,
             'no_telp' => $request->no_telp,
             'ekstrakurikuler_id' => $request->ekstrakurikuler_id
         ]);
 
-        return back()->with('success', 'Data pembina berhasil diperbarui');
+        // AMBIL DATA EKSKUL BARU
+        $newEkskul = Ekstrakurikuler::find($request->ekstrakurikuler_id)?->nama ?? '-';
+
+        // DETEKSI PERUBAHAN
+        $changes = [];
+
+        if ($oldName != $request->name) {
+            $changes[] = "Nama: {$oldName} → {$request->name}";
+        }
+
+        if ($oldEmail != $request->email) {
+            $changes[] = "Email: {$oldEmail} → {$request->email}";
+        }
+
+        if ($oldNip != $request->nip) {
+            $changes[] = "NIP: {$oldNip} → {$request->nip}";
+        }
+
+        if ($oldTelp != $request->no_telp) {
+            $changes[] = "No WA: {$oldTelp} → {$request->no_telp}";
+        }
+
+        if ($oldEkskul != $newEkskul) {
+            $changes[] = "Ekskul: {$oldEkskul} → {$newEkskul}";
+        }
+
+        if ($request->filled('password')) {
+            $changes[] = "Password berhasil diperbarui";
+        }
+
+        // FORMAT PESAN
+        if (count($changes) > 0) {
+            $message = "Data pembina berhasil diperbarui:\n- " . implode("\n- ", $changes);
+        } else {
+            $message = "Tidak ada data yang diubah";
+        }
+
+        return back()->with('success', $message);
     }
 
     public function destroy($id) {

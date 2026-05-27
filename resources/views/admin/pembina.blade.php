@@ -334,7 +334,7 @@
         @if(session('success'))
             Swal.fire({
                 title: 'Berhasil!',
-                text: "{{ session('success') }}",
+                html: `{!! nl2br(session('success')) !!}`,
                 icon: 'success',
                 showConfirmButton: false,
                 timer: 2500,
