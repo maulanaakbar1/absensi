@@ -31,17 +31,44 @@ class ProfileController extends Controller
             'email' => 'required|email|unique:users,email,' . $user->id,
             'nip' => 'nullable|unique:pembinas,nip,' . $pembina->id,
             'no_telp' => 'nullable|max:15',
-            'password' => 'nullable|min:8|confirmed',
+            'password' => 'nullable|min:6|confirmed',
         ]);
 
+        $changes = [];
+
+        // Cek perubahan user
+        if ($user->name !== $request->name) {
+            $changes[] = 'Nama';
+        }
+
+        if ($user->email !== $request->email) {
+            $changes[] = 'Email';
+        }
+
+        if (!empty($request->password)) {
+            $changes[] = 'Password';
+        }
+
+        // Cek perubahan pembina
+        if (($pembina->nip ?? '') !== $request->nip) {
+            $changes[] = 'NIP';
+        }
+
+        if (($pembina->no_telp ?? '') !== $request->no_telp) {
+            $changes[] = 'Nomor Telepon';
+        }
+
         // Update user
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->filled('password') 
-                ? Hash::make($request->password) 
-                : $user->password,
-        ]);
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        if (!empty($request->password)) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        $user->save();
 
         // Update pembina
         $pembina->update([
@@ -49,6 +76,13 @@ class ProfileController extends Controller
             'no_telp' => $request->no_telp,
         ]);
 
-        return back()->with('success', 'Profil berhasil diperbarui!');
+        // Pesan alert
+        if (count($changes)) {
+            $message = implode(', ', $changes) . ' berhasil diperbarui!';
+        } else {
+            $message = 'Tidak ada perubahan data.';
+        }
+
+        return back()->with('success', $message);
     }
 }
