@@ -43,19 +43,37 @@ class PembinaController extends Controller {
         return back()->with('success', 'Pembina berhasil ditambahkan');
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $pembina = Pembina::findOrFail($id);
         $user = $pembina->user;
 
-        $user->update(['name' => $request->name]);
-        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6',
+            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+        ]);
+
+        // update password jika diisi
+        if ($request->filled('password')) {
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+        }
+
         $pembina->update([
             'nip' => $request->nip,
             'no_telp' => $request->no_telp,
-            'ekstrakurikuler_id' => $request->ekstrakurikuler_id 
+            'ekstrakurikuler_id' => $request->ekstrakurikuler_id
         ]);
 
-        return back()->with('success', 'Data diperbarui');
+        return back()->with('success', 'Data pembina berhasil diperbarui');
     }
 
     public function destroy($id) {

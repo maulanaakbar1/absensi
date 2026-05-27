@@ -101,7 +101,14 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center justify-center gap-2">
                                 {{-- Tombol Edit --}}
-                                <button @click="editData = { id: '{{ $p->id }}', name: '{{ $p->user->name }}', nip: '{{ $p->nip }}', no_telp: '{{ $p->no_telp }}', ekskul_id: '{{ $p->ekstrakurikuler_id }}' }; openEdit = true"
+                                <button @click="editData = { 
+                                    id: '{{ $p->id }}',
+                                    name: @js($p->user->name),
+                                    email: @js($p->user->email),
+                                    nip: @js($p->nip),
+                                    no_telp: @js($p->no_telp),
+                                    ekskul_id: @js($p->ekstrakurikuler_id)
+                                }; openEdit = true"
                                         class="p-2 text-amber-500 hover:bg-amber-50 rounded-xl transition-colors"
                                         title="Edit Pembina">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,9 +165,9 @@
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block ml-1">Informasi Akun</label>
                     <div class="space-y-3">
-                        <input type="text" name="name" placeholder="Nama Lengkap" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition" required>
-                        <input type="email" name="email" placeholder="Email (untuk login)" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition" required>
-                        <input type="password" name="password" placeholder="Password" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition" required>
+                        <input type="text" name="name" placeholder="Nama Lengkap" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition" required>
+                        <input type="email" name="email" placeholder="Email (untuk login)" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition" required>
+                        <input type="password" name="password" placeholder="Password" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition" required>
                     </div>
                 </div>
 
@@ -172,7 +179,7 @@
                     </div>
                 </div>
 
-                <select name="ekstrakurikuler_id" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition" required>
+                <select name="ekstrakurikuler_id" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition" required>
                     <option value="">Pilih Ekskul</option>
                     @foreach($ekskuls as $e)
                         <option value="{{ $e->id }}">{{ $e->nama }}</option>
@@ -188,75 +195,131 @@
     </div>
 
     {{-- MODAL EDIT --}}
-    <div x-show="openEdit" 
-     class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-     x-transition:enter="transition ease-out duration-300"
-     x-transition:enter-start="opacity-0 scale-95"
-     x-transition:enter-end="opacity-100 scale-100"
-     x-cloak>
-    
-    <div @click.away="openEdit = false" class="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl">
-        <div class="mb-6">
-            <h4 class="text-xl font-bold text-slate-800">Perbarui Data Pembina</h4>
-            <p class="text-slate-500 text-xs mt-1">Pastikan data NIP dan kontak sudah benar.</p>
+    <div x-show="openEdit"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-cloak>
+
+        <div
+            @click.away="openEdit = false"
+            class="bg-white rounded-[2rem] w-full max-w-md p-8 shadow-2xl relative"
+        >
+
+            {{-- HEADER --}}
+            <div class="mb-6">
+                <h4 class="text-xl font-bold text-slate-800">
+                    Perbarui Data Pembina
+                </h4>
+
+                <p class="text-slate-500 text-xs mt-1">
+                    Pastikan data pembina sudah benar.
+                </p>
+            </div>
+
+            <form :action="'{{ url('admin/pembina') }}/' + editData.id"
+                method="POST"
+                class="space-y-4">
+
+                @csrf
+                @method('PUT')
+
+                {{-- INFORMASI AKUN --}}
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block ml-1">
+                        Informasi Akun
+                    </label>
+
+                    <div class="space-y-3">
+                        <input
+                            type="text"
+                            name="name"
+                            x-model="editData.name"
+                            placeholder="Nama Lengkap"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition"
+                            required
+                        >
+
+                        <input
+                            type="email"
+                            name="email"
+                            x-model="editData.email"
+                            placeholder="Email"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition"
+                            required
+                        >
+
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Password Baru (Kosongkan jika tidak diubah)"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition"
+                        >
+                    </div>
+                </div>
+
+                {{-- DETAIL --}}
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block ml-1">
+                        Detail Tambahan
+                    </label>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <input
+                            type="text"
+                            name="nip"
+                            x-model="editData.nip"
+                            placeholder="NIP"
+                            class="px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition"
+                        >
+
+                        <input
+                            type="text"
+                            name="no_telp"
+                            x-model="editData.no_telp"
+                            placeholder="No HP"
+                            class="px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition"
+                        >
+                    </div>
+                </div>
+
+                {{-- EKSKUL --}}
+                <select
+                    name="ekstrakurikuler_id"
+                    x-model="editData.ekskul_id"
+                    class="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none focus:border-blue-500 transition"
+                    required
+                >
+                    <option value="">Pilih Ekskul</option>
+
+                    @foreach($ekskuls as $e)
+                        <option value="{{ $e->id }}">
+                            {{ $e->nama }}
+                        </option>
+                    @endforeach
+                </select>
+
+                {{-- BUTTON --}}
+                <div class="flex gap-3 pt-4">
+                    <button
+                        type="button"
+                        @click="openEdit = false"
+                        class="flex-1 px-4 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition"
+                    >
+                        Batal
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="flex-[2] bg-amber-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-amber-200 hover:bg-amber-600 transition"
+                    >
+                        Update Data
+                    </button>
+                </div>
+
+            </form>
         </div>
-        
-        <form :action="'{{ url('admin/pembina') }}/' + editData.id" method="POST" class="space-y-4">
-            @csrf 
-            @method('PUT')
-            
-            <div class="space-y-4">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Nama Lengkap</label>
-                    <input type="text" name="name" x-model="editData.name" 
-                           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition" 
-                           required>
-                </div>
-                
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Nomor Induk Pegawai (NIP)</label>
-                    <input type="text" name="nip" x-model="editData.nip" 
-                           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition"
-                           placeholder="Masukkan NIP">
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Nomor Telepon / WA</label>
-                    <input type="text" name="no_telp" x-model="editData.no_telp" 
-                           class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition"
-                           placeholder="Contoh: 08123456789">
-                </div>
-
-                <div class="space-y-1">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Penugasan Ekstrakurikuler</label>
-                    <select name="ekstrakurikuler_id" 
-                            x-model="editData.ekskul_id" 
-                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 outline-none transition appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1em_1em]"
-                            style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E');"
-                            required>
-                        <option value="">Pilih Ekskul</option>
-                        @foreach($ekskuls as $e)
-                            <option value="{{ $e->id }}">{{ $e->nama }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <div class="flex gap-3 pt-6">
-                <button type="button" @click="openEdit = false" 
-                        class="flex-1 px-4 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-50 transition border border-slate-100">
-                    Batal
-                </button>
-                <button type="submit" 
-                        class="flex-[2] bg-amber-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-amber-200 hover:bg-amber-600 transition flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/xl" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-                        <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
-                    </svg>
-                    Update Data
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 
