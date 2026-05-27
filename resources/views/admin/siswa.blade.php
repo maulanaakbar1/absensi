@@ -872,9 +872,15 @@
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
                                     required
                                 >
-                                    <option value="">Pilih Tingkatan</option>
-                                    <option value="balonpas">Balonpas</option>
-                                    <option value="instruktur">Instruktur</option>
+                                    <option value="" disabled>Pilih Tingkatan</option>
+
+                                    <option value="balonpas">
+                                        Balonpas
+                                    </option>
+
+                                    <option value="instruktur">
+                                        Instruktur
+                                    </option>
                                 </select>
                             </div>
 
