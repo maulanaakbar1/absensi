@@ -60,19 +60,86 @@ class ProfileController extends Controller
             'no_telp_ayah' => 'nullable|string|max:15',
             'no_telp_ibu' => 'nullable|string|max:15',
             'no_telp_siswa' => 'nullable|string|max:15',
-            'password' => 'nullable|min:8|confirmed',
+            'password' => 'nullable|min:6|confirmed',
         ]);
 
+        $changes = [];
+
+        // USER
+        if ($user->name !== $request->name) {
+            $changes[] = 'Nama';
+        }
+
+        if ($user->email !== $request->email) {
+            $changes[] = 'Email';
+        }
+
+        if (!empty($request->password)) {
+            $changes[] = 'Password';
+        }
+
+        // SISWA
+        if ($siswa->nis !== $request->nis) {
+            $changes[] = 'NIS';
+        }
+
+        if ($siswa->nisn !== $request->nisn) {
+            $changes[] = 'NISN';
+        }
+
+        if (($siswa->alamat ?? '') !== $request->alamat) {
+            $changes[] = 'Alamat';
+        }
+
+        if (($siswa->tempat_lahir ?? '') !== $request->tempat_lahir) {
+            $changes[] = 'Tempat Lahir';
+        }
+
+        if (
+            optional($siswa->tanggal_lahir)->format('Y-m-d')
+            !== $request->tanggal_lahir
+        ) {
+            $changes[] = 'Tanggal Lahir';
+        }
+
+        if (($siswa->jenis_kelamin ?? '') !== $request->jenis_kelamin) {
+            $changes[] = 'Jenis Kelamin';
+        }
+
+        if (($siswa->nama_ayah ?? '') !== $request->nama_ayah) {
+            $changes[] = 'Nama Ayah';
+        }
+
+        if (($siswa->nama_ibu ?? '') !== $request->nama_ibu) {
+            $changes[] = 'Nama Ibu';
+        }
+
+        if (($siswa->no_telp_ayah ?? '') !== $request->no_telp_ayah) {
+            $changes[] = 'No. Telp Ayah';
+        }
+
+        if (($siswa->no_telp_ibu ?? '') !== $request->no_telp_ibu) {
+            $changes[] = 'No. Telp Ibu';
+        }
+
+        if (($siswa->no_telp_siswa ?? '') !== $request->no_telp_siswa) {
+            $changes[] = 'No. Telp Siswa';
+        }
+
+        // UPDATE USER
         $user->name = $request->name;
         $user->email = $request->email;
+
         if ($request->password) {
             $user->password = Hash::make($request->password);
         }
+
         $user->save();
 
+        // UPDATE SISWA
         $siswa->update([
-            'nis' => $request->nis, 
-            'jenis_kelamin' => $request->jenis_kelamin, 
+            'nis' => $request->nis,
+            'jenis_kelamin' => $request->jenis_kelamin,
             'nisn' => $request->nisn,
             'alamat' => $request->alamat,
             'tempat_lahir' => $request->tempat_lahir,
@@ -84,9 +151,16 @@ class ProfileController extends Controller
             'no_telp_siswa' => $request->no_telp_siswa,
         ]);
 
+        // ALERT MESSAGE
+        if (count($changes)) {
+            $message = implode(', ', $changes) . ' berhasil diperbarui!';
+        } else {
+            $message = 'Tidak ada perubahan data.';
+        }
+
         return redirect()
             ->route('siswa.profile')
-            ->with('success', 'Profil dan data personal berhasil diperbarui!');
+            ->with('success', $message);
     }
 
     private function getCurrentTahunAjaran(): string
