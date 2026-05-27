@@ -160,6 +160,19 @@ class AnggotaController extends Controller
         $siswa = Siswa::findOrFail($id);
         $user  = $siswa->user;
 
+        // Simpan data lama
+        $oldData = [
+            'Nama'            => $user->name,
+            'Email'           => $user->email,
+            'NIS'             => $siswa->nis,
+            'NISN'            => $siswa->nisn,
+            'Tahun Masuk'     => $siswa->tahun_masuk,
+            'Kelas Awal'      => $siswa->tingkat_awal,
+            'Jurusan'         => $siswa->jurusan,
+            'Jenis Kelamin'   => $siswa->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan',
+            'Tingkatan'       => ucfirst($siswa->tingkatan),
+        ];
+
         $request->validate([
             'name'           => 'required|string|max:255',
             'email'          => 'required|email|unique:users,email,' . $user->id,
@@ -169,7 +182,7 @@ class AnggotaController extends Controller
             'tingkat_awal'   => 'required|in:10,11,12',
             'jurusan'        => 'required|string|max:50',
             'jenis_kelamin'  => 'required|in:L,P',
-            'tingkatan' => 'required|in:balonpas,instruktur',
+            'tingkatan'      => 'required|in:balonpas,instruktur',
         ]);
 
         $user->update([
@@ -184,22 +197,48 @@ class AnggotaController extends Controller
         }
 
         $siswa->update([
-            'tahun_masuk' => $request->tahun_masuk,
-            'tingkat_awal' => $request->tingkat_awal,
-            'jurusan' => $request->jurusan,
+            'tahun_masuk'   => $request->tahun_masuk,
+            'tingkat_awal'  => $request->tingkat_awal,
+            'jurusan'       => $request->jurusan,
 
             'kelas' => $this->generateKelas(
                 $request->tingkat_awal,
                 $request->jurusan
             ),
 
-            'nis' => $request->nis,
-            'nisn' => $request->nisn,
-            'jenis_kelamin' => $request->jenis_kelamin,
-            'tingkatan' => $request->tingkatan,
+            'nis'            => $request->nis,
+            'nisn'           => $request->nisn,
+            'jenis_kelamin'  => $request->jenis_kelamin,
+            'tingkatan'      => $request->tingkatan,
         ]);
 
-        return back()->with('success', 'Data anggota berhasil diperbarui!');
+        // Data baru
+        $newData = [
+            'Nama'            => $request->name,
+            'Email'           => $request->email,
+            'NIS'             => $request->nis,
+            'NISN'            => $request->nisn,
+            'Tahun Masuk'     => $request->tahun_masuk,
+            'Kelas Awal'      => $request->tingkat_awal,
+            'Jurusan'         => $request->jurusan,
+            'Jenis Kelamin'   => $request->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan',
+            'Tingkatan'       => ucfirst($request->tingkatan),
+        ];
+
+        $changes = [];
+
+        foreach ($oldData as $field => $oldValue) {
+            $newValue = $newData[$field];
+
+            if ((string)$oldValue !== (string)$newValue) {
+                $changes[] = "$field: $oldValue → $newValue";
+            }
+        }
+
+        return back()->with([
+            'success' => 'Data anggota berhasil diperbarui!',
+            'changes' => $changes
+        ]);
     }
 
     public function show($id)

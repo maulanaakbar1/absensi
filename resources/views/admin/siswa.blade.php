@@ -44,8 +44,17 @@
                     editMode = false;
 
                     currentData = {
+                        id: '',
+                        name: '',
+                        email: '',
+                        nis: '',
+                        nisn: '',
+                        tahun_masuk: '',
+                        tingkat_awal: '',
+                        jurusan: '',
                         jk: 'L',
-                        ekskul: '{{ $ekskul->first()->id ?? '' }}'
+                        ekskul: '{{ $ekskul->first()->id ?? '' }}',
+                        tingkatan: '',
                     }
                 "
                 class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md shadow-blue-100 hover:bg-blue-700 transition flex items-center gap-2 w-fit"
@@ -861,7 +870,9 @@
                                     name="tingkatan"
                                     x-model="currentData.tingkatan"
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
-                                    required>
+                                    required
+                                >
+                                    <option value="">Pilih Tingkatan</option>
                                     <option value="balonpas">Balonpas</option>
                                     <option value="instruktur">Instruktur</option>
                                 </select>
