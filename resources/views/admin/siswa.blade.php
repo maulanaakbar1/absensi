@@ -298,14 +298,6 @@
 
         </div>
 
-    @if(session('success'))
-
-        <div class="bg-blue-50 border border-blue-200 text-blue-600 px-6 py-4 rounded-2xl font-bold">
-            {{ session('success') }}
-        </div>
-
-    @endif
-
     {{-- TABLE --}}
     <div class="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
 
