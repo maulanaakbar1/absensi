@@ -42,7 +42,9 @@
             </div>
 
             {{-- FILTER --}}
-            <form method="GET"
+            <form 
+                id="filterForm"
+                method="GET"
                 action="{{ route('pembina.riwayat.index') }}"
                 class="mt-5 flex flex-col md:flex-row gap-4">
 
@@ -357,7 +359,7 @@ function debounceSearch() {
 
     searchTimer = setTimeout(() => {
 
-        document.querySelector('form').submit();
+        document.getElementById('filterForm').submit();
 
     }, 500);
 
