@@ -503,6 +503,13 @@ class RekapAbsensiController extends Controller
 
             }
 
+            // FILTER JURUSAN
+            if ($selectedJurusan) {
+
+                $q->where('jurusan', $selectedJurusan);
+
+            }
+
         })
         ->with(['siswa.user'])
         ->latest('tanggal')
