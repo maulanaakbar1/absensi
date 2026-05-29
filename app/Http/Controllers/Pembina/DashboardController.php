@@ -202,13 +202,16 @@ class DashboardController extends Controller
             $pesan .= "👤 Siswa: " . $siswa->user->name . "\n\n";
 
             if ($jadwal) {
+
                 $pesan .= "📅 Jadwal Kegiatan\n";
                 $pesan .= "Hari : {$jadwal->hari}\n";
+
                 $pesan .= "Jam : "
                     . date('H:i', strtotime($jadwal->jam_mulai))
                     . " - "
                     . date('H:i', strtotime($jadwal->jam_selesai))
                     . " WIB\n";
+
                 $pesan .= "📍 Lokasi : {$jadwal->lokasi}\n";
 
                 if ($jadwal->keterangan) {
@@ -221,40 +224,34 @@ class DashboardController extends Controller
             $pesan .= "Jangan lupa mengikuti kegiatan ekskul sesuai jadwal.\n\n";
             $pesan .= "Terima kasih.";
 
-            // kirim ke siswa
+            // siswa
             if ($siswa->no_telp_siswa) {
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
-                ])->post(env('WA_API_URL'), [
-                    'phone' => $this->formatNomor($siswa->no_telp_siswa),
-                    'message' => $pesan,
-                ]);
 
-                sleep(2);
+                \App\Jobs\KirimWaJob::dispatch(
+                    $this->formatNomor($siswa->no_telp_siswa),
+                    $pesan
+                );
+
             }
 
-            // kirim ke ayah
+            // ayah
             if ($siswa->no_telp_ayah) {
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
-                ])->post(env('WA_API_URL'), [
-                    'phone' => $this->formatNomor($siswa->no_telp_ayah),
-                    'message' => $pesan,
-                ]);
 
-                sleep(2);
+                \App\Jobs\KirimWaJob::dispatch(
+                    $this->formatNomor($siswa->no_telp_ayah),
+                    $pesan
+                );
+
             }
 
-            // kirim ke ibu
+            // ibu
             if ($siswa->no_telp_ibu) {
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
-                ])->post(env('WA_API_URL'), [
-                    'phone' => $this->formatNomor($siswa->no_telp_ibu),
-                    'message' => $pesan,
-                ]);
 
-                sleep(2);
+                \App\Jobs\KirimWaJob::dispatch(
+                    $this->formatNomor($siswa->no_telp_ibu),
+                    $pesan
+                );
+
             }
         }
 

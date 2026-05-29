@@ -118,7 +118,7 @@ class AbsenController extends Controller
             'foto' => 'required',
             'lokasi' => 'required',
             'status' => 'required|in:hadir,izin,sakit',
-            'keterangan' => 'nullable|string|max:255'
+            'keterangan' => 'required|string|max:255'
         ]);
 
         // ==========================

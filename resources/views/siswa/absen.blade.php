@@ -159,8 +159,14 @@
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Catatan / Keterangan</label>
-                                    <textarea name="keterangan" rows="2" placeholder="Contoh: Hadir tepat waktu di sekolah" 
-                                        class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none text-slate-600"></textarea>
+                                    <textarea 
+                                        id="keterangan"
+                                        name="keterangan"
+                                        rows="2" 
+                                        required
+                                        placeholder="Contoh: Hadir tepat waktu di sekolah" 
+                                        class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none text-slate-600">
+                                    </textarea>
                                 </div>
                             </div>
                         @else
@@ -183,6 +189,34 @@
 
         </div>
     </form>
+</div>
+
+<div id="custom-alert"
+    class="fixed top-5 right-5 z-50 hidden translate-x-[120%] transition-all duration-500">
+    
+    <div class="bg-white border border-red-200 shadow-2xl rounded-2xl p-4 min-w-[320px] flex items-start gap-4">
+        
+        <div class="h-12 w-12 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+            </svg>
+        </div>
+
+        <div class="flex-1">
+            <h4 class="font-black text-slate-800 text-sm">
+                Keterangan Wajib Diisi
+            </h4>
+
+            <p class="text-sm text-slate-500 mt-1">
+                Silakan isi catatan atau keterangan terlebih dahulu sebelum mengirim absensi.
+            </p>
+        </div>
+
+        <button onclick="closeAlert()" class="text-slate-400 hover:text-slate-700">
+            ✕
+        </button>
+    </div>
 </div>
 
 <script>
@@ -289,5 +323,54 @@
 
     setInterval(updateClock, 1000);
     updateClock(); 
+
+
+    document.getElementById('absen-form').addEventListener('submit', function(e) {
+
+        const keterangan = document.getElementById('keterangan').value.trim();
+
+        if (keterangan === '') {
+
+            e.preventDefault();
+
+            showAlert();
+
+            document.getElementById('keterangan').focus();
+
+            document.getElementById('keterangan').classList.add(
+                'border-red-500',
+                'ring-2',
+                'ring-red-200'
+            );
+
+        }
+
+    });
+
+    function showAlert() {
+
+        const alertBox = document.getElementById('custom-alert');
+
+        alertBox.classList.remove('hidden');
+
+        setTimeout(() => {
+            alertBox.classList.remove('translate-x-[120%]');
+        }, 10);
+
+        setTimeout(() => {
+            closeAlert();
+        }, 4000);
+    }
+
+    function closeAlert() {
+
+        const alertBox = document.getElementById('custom-alert');
+
+        alertBox.classList.add('translate-x-[120%]');
+
+        setTimeout(() => {
+            alertBox.classList.add('hidden');
+        }, 500);
+    }
 </script>
 @endsection
