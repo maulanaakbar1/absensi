@@ -33,11 +33,7 @@ class SiswaController extends Controller
             ? $this->parseTahunAjaranStart($selectedTahun)
             : $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
-        $query = Siswa::with([
-            'user',
-            'ekstrakurikuler',
-            'ekstrakurikulers'
-        ]);
+        $query = Siswa::with(['user', 'ekstrakurikuler']);
 
         // =========================
         // FILTER TAHUN AJARAN
@@ -158,10 +154,7 @@ class SiswaController extends Controller
             'tingkat_awal' => 'required|in:10,11,12',
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
-
-            'ekstrakurikuler_ids' => 'required|array|min:1',
-            'ekstrakurikuler_ids.*' => 'exists:ekstrakurikulers,id',
-
+            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
             'no_telp_siswa' => 'nullable|string|max:15',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
@@ -182,12 +175,9 @@ class SiswaController extends Controller
                 'role' => 'siswa',
             ]);
 
-            $siswa = Siswa::create([
+            Siswa::create([
                 'user_id' => $user->id,
-
-                // sementara tetap dipakai untuk kompatibilitas
-                'ekstrakurikuler_id' => $request->ekstrakurikuler_ids[0] ?? null,
-
+                'ekstrakurikuler_id' => $request->ekstrakurikuler_id,
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
                 'tahun_masuk' => $request->tahun_masuk,
@@ -204,10 +194,6 @@ class SiswaController extends Controller
                 'no_telp_ibu' => $request->no_telp_ibu,
                 'tingkatan' => $request->tingkatan,
             ]);
-
-            $siswa->ekstrakurikulers()->sync(
-                $request->ekstrakurikuler_ids
-            );
         });
 
         return back()->with(
@@ -230,8 +216,7 @@ class SiswaController extends Controller
             'tingkat_awal' => 'required|in:10,11,12',
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
-            'ekstrakurikuler_ids' => 'required|array|min:1',
-            'ekstrakurikuler_ids.*' => 'exists:ekstrakurikulers,id',
+            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
             'no_telp_siswa' => 'nullable|string|max:15',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
@@ -246,7 +231,7 @@ class SiswaController extends Controller
         // =========================
         // DATA LAMA
         // =========================
-        $oldEkskul = $siswa->ekstrakurikulers->pluck('nama')->implode(', ');
+        $oldEkskul = $siswa->ekstrakurikuler->nama ?? '-';
 
         $oldData = [
             'Nama' => $user->name,
@@ -294,6 +279,7 @@ class SiswaController extends Controller
                 'tingkat_awal' => $request->tingkat_awal,
                 'jurusan' => $request->jurusan,
                 'jenis_kelamin' => $request->jenis_kelamin,
+                'ekstrakurikuler_id' => $request->ekstrakurikuler_id,
                 'no_telp_siswa' => $request->no_telp_siswa,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
@@ -303,18 +289,13 @@ class SiswaController extends Controller
                 'nama_ibu' => $request->nama_ibu,
                 'no_telp_ibu' => $request->no_telp_ibu,
                 'tingkatan' => $request->tingkatan,
-                'ekstrakurikuler_id' => $request->ekstrakurikuler_ids[0] ?? null,
             ]);
-
-            $siswa->ekstrakurikulers()->sync(
-                $request->ekstrakurikuler_ids
-            );
         });
 
         // =========================
         // DATA BARU
         // =========================
-        $newEkskul = Ekstrakurikuler::whereIn('id',$request->ekstrakurikuler_ids)->pluck('nama')->implode(', ');
+        $newEkskul = Ekstrakurikuler::find($request->ekstrakurikuler_id)?->nama ?? '-';
 
         $newData = [
             'Nama' => $request->name,
@@ -380,8 +361,6 @@ class SiswaController extends Controller
         $siswa = Siswa::findOrFail($id);
 
         $user = $siswa->user;
-
-        $siswa->ekstrakurikulers()->detach();
 
         $siswa->delete();
 

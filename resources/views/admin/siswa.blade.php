@@ -18,10 +18,9 @@
         tingkat_awal: '',
         jurusan: '',
         jk: 'L',
-        ekskuls: [],
+        ekskul: '',
         tingkatan: '',
     }
-        
 }" class="space-y-6">
 
     {{-- HEADER --}}
@@ -54,7 +53,7 @@
                         tingkat_awal: '',
                         jurusan: '',
                         jk: 'L',
-                        ekskuls: [],
+                        ekskul: '{{ $ekskul->first()->id ?? '' }}',
                         tingkatan: '',
                     }
                 "
@@ -435,11 +434,7 @@
 
                             <span class="px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-bold">
 
-                                @foreach($s->ekstrakurikulers as $eskul)
-                                    <span class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700">
-                                        {{ $eskul->nama }}
-                                    </span>
-                                @endforeach
+                                {{ $s->ekstrakurikuler->nama ?? 'Belum Pilih' }}
 
                             </span>
 
@@ -518,13 +513,10 @@
                                             tingkat_awal: @js($s->tingkat_awal),
                                             jurusan: @js($s->jurusan),
                                             jk: @js($s->jenis_kelamin),
-
-                                            ekskuls: @js(
-                                                $s->ekstrakurikulers->pluck('id')->toArray()
-                                            ),
-
+                                            ekskul: @js($s->ekstrakurikuler_id),
                                             tingkatan: @js($s->tingkatan),
-                                        }                                    "
+                                        }
+                                    "
                                     class="p-2 text-amber-500 hover:bg-amber-50 rounded-xl transition"
                                 >
 
@@ -898,27 +890,20 @@
                                     Ekstrakurikuler
                                 </label>
 
-                                <div class="mt-2 grid grid-cols-2 gap-2">
+                                <select
+                                    name="ekstrakurikuler_id"
+                                    x-model="currentData.ekskul"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
+                                    required
+                                >
+                                    <option value="">Pilih Ekskul</option>
+
                                     @foreach($ekskul as $e)
-
-                                        <label class="flex items-center gap-2 p-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
-
-                                            <input
-                                                type="checkbox"
-                                                name="ekstrakurikuler_ids[]"
-                                                value="{{ $e->id }}"
-                                                x-model="currentData.ekskuls"
-                                                class="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                            >
-
-                                            <span class="text-sm text-slate-700">
-                                                {{ $e->nama }}
-                                            </span>
-
-                                        </label>
-
+                                        <option value="{{ $e->id }}">
+                                            {{ $e->nama }}
+                                        </option>
                                     @endforeach
-                                </div>
+                                </select>
                             </div>
 
                         </div>

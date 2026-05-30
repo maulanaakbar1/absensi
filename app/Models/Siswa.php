@@ -46,12 +46,4 @@ class Siswa extends Model
     {
         return $this->hasMany(Absensi::class);
     }
-
-    public function ekstrakurikulers()
-    {
-        return $this->belongsToMany(
-            Ekstrakurikuler::class,
-            'siswa_ekstrakurikuler'
-        );
-    }
 }
