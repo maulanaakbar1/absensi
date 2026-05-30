@@ -24,6 +24,8 @@ class DashboardController extends Controller
             return view('pembina.dashboard', [
                 'pembina' => $pembina,
                 'jumlahSiswa' => 0,
+                'jumlahBalonpas' => 0,
+                'jumlahInstruktur' => 0,
                 'jadwalTerdekat' => null,
                 'absensiHariIni' => 0,
                 'labelJadwal' => null,
@@ -34,6 +36,14 @@ class DashboardController extends Controller
 
         // 2. Hitung jumlah siswa
         $jumlahSiswa = Siswa::where('ekstrakurikuler_id', $ekskulId)->count();
+
+        $jumlahBalonpas = Siswa::where('ekstrakurikuler_id', $ekskulId)
+            ->where('tingkatan', 'balonpas')
+            ->count();
+
+        $jumlahInstruktur = Siswa::where('ekstrakurikuler_id', $ekskulId)
+            ->where('tingkatan', 'instruktur')
+            ->count();
 
         // =========================
         // 3. LOGIC JADWAL FIX FINAL
@@ -131,6 +141,8 @@ class DashboardController extends Controller
         return view('pembina.dashboard', compact(
             'pembina',
             'jumlahSiswa',
+            'jumlahBalonpas',
+            'jumlahInstruktur',
             'jadwalTerdekat',
             'absensiHariIni',
             'labelJadwal'
