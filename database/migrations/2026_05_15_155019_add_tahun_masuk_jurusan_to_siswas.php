@@ -10,15 +10,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('siswas', function (Blueprint $table) {
+            if (! Schema::hasColumn('siswas', 'tahun_masuk')) {
+                $table->year('tahun_masuk')
+                    ->nullable()
+                    ->after('kelas');
+            }
 
-            // jurusan
-            if (!Schema::hasColumn('siswas', 'jurusan')) {
+            if (! Schema::hasColumn('siswas', 'jurusan')) {
                 $table->string('jurusan', 50)
                     ->nullable()
                     ->after('tahun_masuk');
             }
 
-            // kelas nullable
             $table->string('kelas', 20)->nullable()->change();
         });
 
