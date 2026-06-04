@@ -204,9 +204,11 @@ class DashboardController extends Controller
             ->sortBy('ranking')
             ->first();
 
-        // =========================
-        // KIRIM WA
-        // =========================
+        $delay = 0;
+
+        // ======================
+        // SISWA
+        // ======================
         foreach ($siswaList as $siswa) {
 
             $pesan = "📢 *INFORMASI EKSKUL*\n\n";
@@ -236,34 +238,106 @@ class DashboardController extends Controller
             $pesan .= "Jangan lupa mengikuti kegiatan ekskul sesuai jadwal.\n\n";
             $pesan .= "Terima kasih.";
 
-            // siswa
             if ($siswa->no_telp_siswa) {
 
                 \App\Jobs\KirimWaJob::dispatch(
                     $this->formatNomor($siswa->no_telp_siswa),
                     $pesan
-                );
+                )->delay(now()->addSeconds($delay));
 
+                $delay += 15;
+            }
+        }
+
+        // jeda siswa -> ibu
+        $delay += 10;
+
+        // ======================
+        // IBU
+        // ======================
+        foreach ($siswaList as $siswa) {
+
+            $pesan = "📢 *INFORMASI EKSKUL*\n\n";
+            $pesan .= "🏫 Ekskul: " . $pembina->ekstrakurikuler->nama . "\n";
+            $pesan .= "👤 Siswa: " . $siswa->user->name . "\n\n";
+
+            if ($jadwal) {
+
+                $pesan .= "📅 Jadwal Kegiatan\n";
+                $pesan .= "Hari : {$jadwal->hari}\n";
+
+                $pesan .= "Jam : "
+                    . date('H:i', strtotime($jadwal->jam_mulai))
+                    . " - "
+                    . date('H:i', strtotime($jadwal->jam_selesai))
+                    . " WIB\n";
+
+                $pesan .= "📍 Lokasi : {$jadwal->lokasi}\n";
+
+                if ($jadwal->keterangan) {
+                    $pesan .= "📝 Keterangan : {$jadwal->keterangan}\n";
+                }
+
+                $pesan .= "\n";
             }
 
-            // ayah
-            if ($siswa->no_telp_ayah) {
+            $pesan .= "Jangan lupa mengikuti kegiatan ekskul sesuai jadwal.\n\n";
+            $pesan .= "Terima kasih.";
 
-                \App\Jobs\KirimWaJob::dispatch(
-                    $this->formatNomor($siswa->no_telp_ayah),
-                    $pesan
-                );
-
-            }
-
-            // ibu
             if ($siswa->no_telp_ibu) {
 
                 \App\Jobs\KirimWaJob::dispatch(
                     $this->formatNomor($siswa->no_telp_ibu),
                     $pesan
-                );
+                )->delay(now()->addSeconds($delay));
 
+                $delay += 15;
+            }
+        }
+
+        // jeda ibu -> ayah
+        $delay += 10;
+
+        // ======================
+        // AYAH
+        // ======================
+        foreach ($siswaList as $siswa) {
+
+            $pesan = "📢 *INFORMASI EKSKUL*\n\n";
+            $pesan .= "🏫 Ekskul: " . $pembina->ekstrakurikuler->nama . "\n";
+            $pesan .= "👤 Siswa: " . $siswa->user->name . "\n\n";
+
+            if ($jadwal) {
+
+                $pesan .= "📅 Jadwal Kegiatan\n";
+                $pesan .= "Hari : {$jadwal->hari}\n";
+
+                $pesan .= "Jam : "
+                    . date('H:i', strtotime($jadwal->jam_mulai))
+                    . " - "
+                    . date('H:i', strtotime($jadwal->jam_selesai))
+                    . " WIB\n";
+
+                $pesan .= "📍 Lokasi : {$jadwal->lokasi}\n";
+
+                if ($jadwal->keterangan) {
+                    $pesan .= "📝 Keterangan : {$jadwal->keterangan}\n";
+                }
+
+                $pesan .= "\n";
+            }
+
+            $pesan .= "Jangan lupa mengikuti kegiatan ekskul sesuai jadwal.\n\n";
+            $pesan .= "Terima kasih.";
+
+            if ($siswa->no_telp_ayah) {
+
+                \App\Jobs\KirimWaJob::dispatch(
+                    $this->formatNomor($siswa->no_telp_ayah),
+                    $pesan
+                )->delay(now()->addSeconds($delay));
+
+                $delay += 15;
             }
         }
 

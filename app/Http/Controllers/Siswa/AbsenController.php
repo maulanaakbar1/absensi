@@ -9,6 +9,7 @@ use App\Models\HariLibur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Jobs\KirimWaJob;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -242,29 +243,30 @@ class AbsenController extends Controller
             "📍 Lokasi:\n" .
             "https://maps.google.com/?q={$request->lokasi}";
 
-        // ==========================
-        // KIRIM KE AYAH
-        // ==========================
-
-        if ($siswa->no_telp_ayah) {
-
-            $nomorAyah = $this->formatNomor($siswa->no_telp_ayah);
-
-            $this->kirimWhatsapp($nomorAyah, $pesan);
-
-            // ⏳ jeda sebelum kirim ke ibu
-            sleep(3);
-        }
+        $delay = 0;
 
         // ==========================
         // KIRIM KE IBU
         // ==========================
-
         if ($siswa->no_telp_ibu) {
 
-            $nomorIbu = $this->formatNomor($siswa->no_telp_ibu);
+            KirimWaJob::dispatch(
+                $this->formatNomor($siswa->no_telp_ibu),
+                $pesan
+            )->delay(now()->addSeconds($delay));
 
-            $this->kirimWhatsapp($nomorIbu, $pesan);
+            $delay += 10;
+        }
+
+        // ==========================
+        // KIRIM KE AYAH
+        // ==========================
+        if ($siswa->no_telp_ayah) {
+
+            KirimWaJob::dispatch(
+                $this->formatNomor($siswa->no_telp_ayah),
+                $pesan
+            )->delay(now()->addSeconds($delay));
         }
 
         return redirect()->route('siswa.absen.riwayat')
