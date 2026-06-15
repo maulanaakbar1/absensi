@@ -131,10 +131,9 @@
 
                             @php
                                 $tingkatanColor = match($siswa->tingkatan) {
-                                    'junior' => 'bg-blue-50 text-blue-600 border-blue-100',
-                                    'senior' => 'bg-emerald-50 text-emerald-600 border-emerald-100',
-                                    'purna' => 'bg-purple-50 text-purple-600 border-purple-100',
-                                    default => 'bg-slate-50 text-slate-600 border-slate-200',
+                                    'balonpas' => 'bg-blue-50 text-blue-600',
+                                    'instruktur' => 'bg-emerald-50 text-emerald-600',
+                                    default => 'bg-slate-100 text-slate-500',
                                 };
                             @endphp
 

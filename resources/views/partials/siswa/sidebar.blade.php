@@ -42,10 +42,9 @@
                         $tingkatan = Auth::user()->siswa->tingkatan ?? 'anggota';
 
                         $tingkatanColor = match($tingkatan) {
-                            'junior' => 'bg-blue-50 text-blue-600 border border-blue-100',
-                            'senior' => 'bg-amber-50 text-amber-600 border border-amber-100',
-                            'purna'  => 'bg-purple-50 text-purple-600 border border-purple-100',
-                            default  => 'bg-slate-100 text-slate-600 border border-slate-200',
+                            'balonpas'   => 'bg-blue-50 text-blue-600 border border-blue-100',
+                            'instruktur' => 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+                            default      => 'bg-slate-100 text-slate-600 border border-slate-200',
                         };
                     @endphp
 
