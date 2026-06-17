@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class HariLibur extends Model
 {
-    protected $fillable = ['ekstrakurikuler_id', 'tanggal', 'keterangan'];
+    protected $fillable = ['ekstrakurikuler_id','tipe', 'hari', 'tanggal', 'keterangan'];
 
     public function ekstrakurikuler()
     {

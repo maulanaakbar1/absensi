@@ -3,28 +3,42 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Pembina;
 use App\Models\Ekstrakurikuler;
+use App\Models\Pembina;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-class PembinaController extends Controller {
-    
-    public function index() {
+class PembinaController extends Controller
+{
+    public function index()
+    {
         $pembinas = Pembina::with(['user', 'ekstrakurikuler'])->latest()->get();
         $ekskuls = Ekstrakurikuler::all();
 
         return view('admin.pembina', compact('pembinas', 'ekskuls'));
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
+        // dd($request->all());
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id', 
-        ]);
+            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
+        ],
+    [
+        'password.min' => 'Password minimal 6 karakter',
+        'email.unique' => 'Email sudah terdaftar',
+        'ekstrakurikuler_id.exists' => 'Ekstrakurikuler tidak ditemukan',
+        'ekstrakurikuler_id.required' => 'Ekstrakurikuler wajib diisi',
+        'password.required' => 'Password wajib diisi',
+        'email.required' => 'Email wajib diisi',
+        'name.required' => 'Nama wajib diisi',
+    ]
+    
+    );
 
         $user = User::create([
             'name' => $request->name,
@@ -33,12 +47,14 @@ class PembinaController extends Controller {
             'role' => 'pembina',
         ]);
 
-        Pembina::create([
-            'user_id' => $user->id,
-            'nip' => $request->nip,
-            'no_telp' => $request->no_telp,
-            'ekstrakurikuler_id' => $request->ekstrakurikuler_id, 
-        ]);
+        if ($user->id) {
+            Pembina::create([
+                'user_id' => $user->id,
+                'nip' => $request->nip,
+                'no_telp' => $request->no_telp,
+                'ekstrakurikuler_id' => $request->ekstrakurikuler_id,
+            ]);
+        }
 
         return back()->with('success', 'Pembina berhasil ditambahkan');
     }
@@ -50,7 +66,7 @@ class PembinaController extends Controller {
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'password' => 'nullable|min:6',
             'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
         ]);
@@ -74,7 +90,7 @@ class PembinaController extends Controller {
         // UPDATE PASSWORD JIKA DIISI
         if ($request->filled('password')) {
             $user->update([
-                'password' => Hash::make($request->password)
+                'password' => Hash::make($request->password),
             ]);
         }
 
@@ -82,7 +98,7 @@ class PembinaController extends Controller {
         $pembina->update([
             'nip' => $request->nip,
             'no_telp' => $request->no_telp,
-            'ekstrakurikuler_id' => $request->ekstrakurikuler_id
+            'ekstrakurikuler_id' => $request->ekstrakurikuler_id,
         ]);
 
         // AMBIL DATA EKSKUL BARU
@@ -112,22 +128,24 @@ class PembinaController extends Controller {
         }
 
         if ($request->filled('password')) {
-            $changes[] = "Password berhasil diperbarui";
+            $changes[] = 'Password berhasil diperbarui';
         }
 
         // FORMAT PESAN
         if (count($changes) > 0) {
-            $message = "Data pembina berhasil diperbarui:\n- " . implode("\n- ", $changes);
+            $message = "Data pembina berhasil diperbarui:\n- ".implode("\n- ", $changes);
         } else {
-            $message = "Tidak ada data yang diubah";
+            $message = 'Tidak ada data yang diubah';
         }
 
         return back()->with('success', $message);
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $pembina = Pembina::findOrFail($id);
-        $pembina->user->delete(); 
+        $pembina->user->delete();
+
         return back()->with('success', 'Pembina dihapus');
     }
 }

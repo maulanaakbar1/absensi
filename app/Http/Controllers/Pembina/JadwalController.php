@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pembina;
 use App\Http\Controllers\Controller;
 use App\Models\Jadwal;
 use App\Models\HariLibur;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class JadwalController extends Controller
@@ -13,7 +14,7 @@ class JadwalController extends Controller
     {
         $user = auth()->user();
         $ekskulId = $user->pembina->ekstrakurikuler_id;
-        
+
         $jadwals = Jadwal::where('ekstrakurikuler_id', $ekskulId)->get();
         $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
@@ -22,22 +23,48 @@ class JadwalController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'hari' => 'required',
-            'jam_mulai' => 'required',
-            'jam_selesai' => 'required',
-            'lokasi' => 'required',
-            'keterangan' => 'nullable|string' 
-        ]);
+        // dd($request->all());
+        Carbon::setLocale('id');
 
-        Jadwal::create([
-            'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
-            'hari' => $request->hari,
-            'jam_mulai' => $request->jam_mulai,
-            'jam_selesai' => $request->jam_selesai,
-            'lokasi' => $request->lokasi,
-            'keterangan' => $request->keterangan, 
-        ]);
+        $hari = Carbon::parse($request->tanggal)->translatedFormat('l');
+
+        if ($request->tipe == 'dadakan') {
+            $request->validate([
+                'tanggal' => 'required',
+                // 'hari' => 'required',
+                'jam_mulai' => 'required',
+                'jam_selesai' => 'required',
+                'lokasi' => 'required',
+                'keterangan' => 'nullable|string'
+            ]);
+
+            Jadwal::create([
+                'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
+                'hari' => $hari,
+                'tanggal' => $request->tanggal,
+                'jam_mulai' => $request->jam_mulai,
+                'jam_selesai' => $request->jam_selesai,
+                'lokasi' => $request->lokasi,
+                'keterangan' => $request->keterangan,
+            ]);
+        } elseif ($request->tipe == 'rutin') {
+            $request->validate([
+                'hari' => 'required',
+                'jam_mulai' => 'required',
+                'jam_selesai' => 'required',
+                'lokasi' => 'required',
+                'keterangan' => 'nullable|string'
+            ]);
+
+            Jadwal::create([
+                'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
+                'hari' => $request->hari,
+                'jam_mulai' => $request->jam_mulai,
+                'jam_selesai' => $request->jam_selesai,
+                'lokasi' => $request->lokasi,
+                'keterangan' => $request->keterangan,
+            ]);
+        }
 
         return back()->with('success', 'Jadwal berhasil ditambahkan');
     }
@@ -59,22 +86,42 @@ class JadwalController extends Controller
     {
         $ekskulId = auth()->user()->pembina->ekstrakurikuler_id;
         $hariLibur = HariLibur::where('ekstrakurikuler_id', $ekskulId)->orderBy('tanggal', 'desc')->get();
-        
+
         return view('pembina.hari_libur', compact('hariLibur'));
     }
 
     public function liburStore(Request $request)
     {
-        $request->validate([
-            'tanggal' => 'required|date',
-            'keterangan' => 'required|string|max:255'
-        ]);
 
-        HariLibur::create([
-            'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
-            'tanggal' => $request->tanggal,
-            'keterangan' => $request->keterangan,
-        ]);
+        if ($request->tipe == 'dadakan') {
+            $request->validate([
+                'tanggal' => 'required|date',
+                'keterangan' => 'required|string|max:255'
+            ]);
+            
+            HariLibur::create([
+                'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
+                'tipe' => $request->tipe,
+                'tanggal' => $request->tanggal,
+                'hari' => null,
+                'keterangan' => $request->keterangan,
+            ]);
+        } elseif ($request->tipe == 'rutin') {
+            // dd($request->all());
+            $request->validate([
+                'hari' => 'required',
+                'keterangan' => 'required|string|max:255'
+            ]);
+
+            HariLibur::create([
+                'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
+                'tipe' => $request->tipe,
+                'tanggal' => null,
+                'hari' => $request->hari,
+                'keterangan' => $request->keterangan,
+            ]);
+        }
+
 
         return back()->with('success', 'Hari libur berhasil ditambahkan');
     }
