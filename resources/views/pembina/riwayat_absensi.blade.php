@@ -136,6 +136,23 @@
                     </select>
                 </div>
 
+                {{-- TANGGAL --}}
+                <div class="w-full md:w-52">
+
+                    <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                        Tanggal
+                    </label>
+
+                    <input
+                        type="date"
+                        name="tanggal"
+                        value="{{ request('tanggal') }}"
+                        onchange="this.form.submit()"
+                        class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus:border-blue-500 focus:ring-0"
+                    >
+
+                </div>
+
                 {{-- SEARCH NAMA --}}
                 <div class="w-full md:w-64">
 
@@ -157,6 +174,9 @@
                 {{-- RESET --}}
                 @if(
                     request('kelas') ||
+                    request('jurusan') ||
+                    request('search') ||
+                    request('tanggal') ||
                     (request('tahun_ajaran') && request('tahun_ajaran') !== 'semua')
                 )
 
