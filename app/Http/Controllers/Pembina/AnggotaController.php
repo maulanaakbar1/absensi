@@ -115,16 +115,19 @@ class AnggotaController extends Controller
         $ekskulId = $pembina->ekstrakurikuler_id;
 
         $request->validate([
-            'name'           => 'required|string|max:255',
-            'email'          => 'required|email|unique:users',
-            'password'       => 'required|min:6',
-            'nis'            => 'required|unique:siswas,nis',
-            'nisn'           => 'required|unique:siswas,nisn',
-            'tahun_masuk'    => 'required|integer|min:2000|max:2100',
-            'tingkat_awal'   => 'required|in:10,11,12',
-            'jurusan'        => 'required|string|max:50',
-            'jenis_kelamin'  => 'required|in:L,P',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6',
+            'nis' => 'required|unique:siswas,nis',
+            'nisn' => 'required|unique:siswas,nisn',
+            'tahun_masuk' => 'required|integer|min:2000|max:2100',
+            'tingkat_awal' => 'required|in:10,11,12',
+            'jurusan' => 'required|string|max:50',
+            'jenis_kelamin' => 'required|in:L,P',
             'tingkatan' => 'required|in:balonpas,instruktur',
+        ], [
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 6 karakter.',
         ]);
 
         $user = User::create([

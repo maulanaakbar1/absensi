@@ -549,11 +549,16 @@
                             </div>
                             <div>
                                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">Password</label>
-                                <input
+                                <<input
                                     type="password"
                                     name="password"
-                                    :placeholder="editMode ? 'Kosongkan jika tidak ubah' : 'Min. 6 karakter'"
-                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
+                                    x-model="password"
+                                    minlength="6"
+                                    :class="{
+                                        'border-red-400': password.length > 0 && password.length < 6,
+                                        'border-emerald-400': password.length >= 6
+                                    }"
+                                    class="w-full px-4 py-3 rounded-xl border focus:ring-0 transition"
                                     :required="!editMode"
                                 >
                             </div>
