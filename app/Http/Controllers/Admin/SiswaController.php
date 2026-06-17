@@ -210,6 +210,7 @@ class SiswaController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6',
             'nis' => 'required|unique:siswas,nis,' . $siswa->id,
             'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
             'tahun_masuk' => 'required|integer|min:2000|max:2100',
@@ -226,6 +227,8 @@ class SiswaController extends Controller
             'nama_ibu' => 'nullable|string|max:100',
             'no_telp_ibu' => 'nullable|string|max:15',
             'tingkatan' => 'required|in:balonpas,instruktur',
+        ], [
+            'password.min' => 'Password minimal 6 karakter.',
         ]);
 
         // =========================

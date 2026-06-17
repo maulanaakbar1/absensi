@@ -547,20 +547,48 @@
                                     required
                                 >
                             </div>
-                            <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">Password</label>
-                                <<input
+                            <div x-data="{ password: '' }">
+
+                                <label class="text-xs font-bold text-slate-400 uppercase ml-1">
+                                    Password
+                                </label>
+
+                                <input
                                     type="password"
                                     name="password"
                                     x-model="password"
                                     minlength="6"
+                                    :placeholder="editMode
+                                        ? 'Kosongkan jika tidak diubah'
+                                        : 'Minimal 6 karakter'"
+                                    :required="!editMode"
                                     :class="{
                                         'border-red-400': password.length > 0 && password.length < 6,
                                         'border-emerald-400': password.length >= 6
                                     }"
-                                    class="w-full px-4 py-3 rounded-xl border focus:ring-0 transition"
-                                    :required="!editMode"
+                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
                                 >
+
+                                <p
+                                    x-show="password.length > 0 && password.length < 6"
+                                    class="mt-1 text-xs text-red-500"
+                                >
+                                    Password minimal 6 karakter
+                                </p>
+
+                                <p
+                                    x-show="password.length >= 6"
+                                    class="mt-1 text-xs text-emerald-500"
+                                >
+                                    ✓ Password sudah valid
+                                </p>
+
+                                @error('password')
+                                    <p class="mt-1 text-xs text-red-500">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+
                             </div>
                         </div>
 
