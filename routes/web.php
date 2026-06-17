@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\SiswaController as AdminSiswa;
 use App\Http\Controllers\Pembina\JadwalController;
 use App\Http\Controllers\Admin\RekapAbsensiController as AdminRekap;
 use App\Http\Controllers\Pembina\RekapAbsensiController as PembinaRekap;
+use App\Http\Controllers\Pembina\JurnalController;
+
 
 Route::get('/', function () { 
     return redirect()->route('login'); 
@@ -93,6 +95,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/rekap-absensi/pdf', [PembinaRekap::class, 'downloadPdf'])->name('pembina.rekap.pdf');
         Route::get('/rekap-absensi/excel', [PembinaRekap::class, 'downloadExcel'])->name('pembina.rekap.excel');
+
+        Route::get('/jurnal', [JurnalController::class, 'index'])->name('pembina.jurnal.index');
 
     });
 

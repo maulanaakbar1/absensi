@@ -279,6 +279,29 @@
 
         </div>
 
+        <a href="{{ route('pembina.jurnal.index') }}"
+            class="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200
+            {{ Request::is('pembina/jurnal*')
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-slate-500 hover:bg-slate-50' }}">
+
+            <svg xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor">
+
+                <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+
+            </svg>
+
+            Jurnal
+
+        </a>
+
     </nav>
 
 </aside>
