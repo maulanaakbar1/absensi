@@ -452,6 +452,7 @@ class RekapAbsensiController extends Controller
         $selectedKelas = $request->get('kelas');
         $selectedJurusan = $request->get('jurusan');
         $search = $request->get('search');
+        $tanggal = $request->get('tanggal');
 
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
@@ -511,9 +512,14 @@ class RekapAbsensiController extends Controller
             }
 
         })
-        ->with(['siswa.user'])
-        ->latest('tanggal')
-        ->latest('jam_masuk');
+        ->with(['siswa.user']);
+
+        if ($tanggal) {
+            $query->whereDate('tanggal', $tanggal);
+        }
+
+        $query->latest('tanggal')
+            ->latest('jam_masuk');
 
         $riwayat = $query->paginate(15);
 
@@ -580,7 +586,8 @@ class RekapAbsensiController extends Controller
             'selectedTahun',
             'selectedKelas',
             'selectedJurusan',
-            'jurusanList'
+            'jurusanList',
+            'tanggal'
         ));
     }
 
