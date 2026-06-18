@@ -121,17 +121,35 @@
 
                         <td class="p-4">
 
-                            {{ $event['keterangan'] ?: '-' }}
+                            @if($event['libur'])
+
+                                <span class="text-slate-700 font-medium">
+                                    {{ $event['keterangan_libur'] }}
+                                </span>
+
+                            @else
+
+                                {{ $event['keterangan'] ?: '-' }}
+
+                            @endif
 
                         </td>
 
                         <td class="p-4 text-center">
 
-                            <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+                            @if($event['libur'])
 
-                                {{ $event['hadir'] }}/{{ $event['total'] }}
+                                <span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-semibold">
+                                    Libur
+                                </span>
 
-                            </span>
+                            @else
+
+                                <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+                                    {{ $event['hadir'] }}/{{ $event['total'] }}
+                                </span>
+
+                            @endif
 
                         </td>
 
