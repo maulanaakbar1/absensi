@@ -73,14 +73,15 @@ class JurnalController extends Controller
 
                 if ($tanggalLoop->dayOfWeek == $targetDay) {
 
-                    $isLibur = $this->isLibur($tanggalLoop, $liburs);
+                    $libur = $this->isLibur($tanggalLoop, $liburs);
 
                     $events->push(
                         $this->buildEvent(
                             $jadwal,
                             $tanggalLoop->copy(),
                             $totalAnggota,
-                            $isLibur
+                            $libur ? true : false,
+                            $libur?->keterangan
                         )
                     );
                 }
@@ -103,16 +104,89 @@ class JurnalController extends Controller
                 $tanggal->year == $tahun
             ) {
 
-                $isLibur = $this->isLibur($tanggal, $liburs);
+                $libur = $this->isLibur($tanggal, $liburs);
 
-                $events->push(
-                    $this->buildEvent(
-                        $jadwal,
-                        $tanggal->copy(),
-                        $totalAnggota,
-                        $isLibur
-                    )
-                );
+                    $events->push(
+                        $this->buildEvent(
+                            $jadwal,
+                            $tanggal->copy(),
+                            $totalAnggota,
+                            $libur ? true : false,
+                            $libur?->keterangan
+                        )
+                    );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hari Libur Dadakan
+        |--------------------------------------------------------------------------
+        */
+        foreach ($liburs->whereNotNull('tanggal') as $libur) {
+
+            $tanggal = Carbon::parse($libur->tanggal);
+
+            if (
+                $tanggal->month == $bulan &&
+                $tanggal->year == $tahun
+            ) {
+
+                $events->push([
+                    'tanggal' => $tanggal,
+                    'jam' => '-',
+                    'lokasi' => '-',
+                    'keterangan' => null,
+                    'hadir' => 0,
+                    'total' => $totalAnggota,
+                    'libur' => true,
+                    'keterangan_libur' => $libur->keterangan,
+                ]);
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hari Libur Rutin
+        |--------------------------------------------------------------------------
+        */
+        foreach ($liburs->whereNull('tanggal') as $libur) {
+
+            $hariMap = [
+                'Minggu' => 0,
+                'Senin'  => 1,
+                'Selasa' => 2,
+                'Rabu'   => 3,
+                'Kamis'  => 4,
+                'Jumat'  => 5,
+                'Sabtu'  => 6,
+            ];
+
+            if (!isset($hariMap[$libur->hari])) {
+                continue;
+            }
+
+            $targetDay = $hariMap[$libur->hari];
+
+            $tanggalLoop = $start->copy();
+
+            while ($tanggalLoop <= $end) {
+
+                if ($tanggalLoop->dayOfWeek == $targetDay) {
+
+                    $events->push([
+                        'tanggal' => $tanggalLoop->copy(),
+                        'jam' => '-',
+                        'lokasi' => '-',
+                        'keterangan' => null,
+                        'hadir' => 0,
+                        'total' => $totalAnggota,
+                        'libur' => true,
+                        'keterangan_libur' => $libur->keterangan,
+                    ]);
+                }
+
+                $tanggalLoop->addDay();
             }
         }
 
@@ -142,7 +216,8 @@ class JurnalController extends Controller
         $jadwal,
         $tanggal,
         $totalAnggota,
-        $isLibur = false
+        $isLibur = false,
+        $keteranganLibur = null
     )
     {
         $hadir = 0;
@@ -164,14 +239,15 @@ class JurnalController extends Controller
             'hadir' => $hadir,
             'total' => $totalAnggota,
             'libur' => $isLibur,
+            'keterangan_libur' => $keteranganLibur,
         ];
     }
 
     private function isLibur(
         Carbon $tanggal,
         Collection $liburs
-    ) {
-
+    )
+    {
         foreach ($liburs as $libur) {
 
             if (
@@ -179,7 +255,7 @@ class JurnalController extends Controller
                 Carbon::parse($libur->tanggal)
                     ->isSameDay($tanggal)
             ) {
-                return true;
+                return $libur;
             }
 
             if (
@@ -190,10 +266,10 @@ class JurnalController extends Controller
                     $tanggal->translatedFormat('l')
                 ))
             ) {
-                return true;
+                return $libur;
             }
         }
 
-        return false;
+        return null;
     }
 }
