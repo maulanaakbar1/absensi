@@ -14,6 +14,7 @@ class Jadwal extends Model
     protected $fillable = [
         'ekstrakurikuler_id',
         'hari',
+        'tipe',
         'tanggal',
         'jam_mulai',
         'jam_selesai',

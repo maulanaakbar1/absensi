@@ -2,20 +2,23 @@
 
 namespace App\Http\Controllers\Siswa;
 
-use App\Http\Controllers\Controller;
-use App\Models\Absensi;
+use Carbon\Carbon;
 use App\Models\Siswa;
 use App\Models\Jadwal;
+use App\Models\Absensi;
 use App\Models\Pembina;
 use Illuminate\Http\Request;
+use App\Models\Ekstrakurikuler;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
+        $ekskulId = $user->ekskul_aktif;
+        // dd($user->ekskul_aktif);
 
         $siswa = Siswa::where('user_id', $user->id)->first();
 
@@ -31,7 +34,7 @@ class DashboardController extends Controller
             ->where('status', 'hadir')
             ->count();
 
-        $namaEkskul = $siswa->ekstrakurikuler->nama ?? 'Belum Terdaftar';
+        $namaEkskul = Ekstrakurikuler::where('id', $user->ekskul_aktif)->first()->nama ?? 'Belum Terdaftar';
 
         // =========================
         // RIWAYAT ABSENSI
@@ -45,7 +48,7 @@ class DashboardController extends Controller
         // FILTER JADWAL BERDASARKAN
         // HARI & JAM SEKARANG
         // =========================
-        $ekskulId = $siswa->ekstrakurikuler_id;
+        // $ekskulId = $siswa->ekstrakurikuler_id;
 
         // Hari sekarang format Indonesia
         $hariMap = [

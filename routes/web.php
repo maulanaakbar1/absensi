@@ -111,6 +111,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/absen', [App\Http\Controllers\Siswa\AbsenController::class, 'store'])->name('siswa.absen.store');
         Route::get('/absen/riwayat', [App\Http\Controllers\Siswa\AbsenController::class, 'riwayat'])->name('siswa.absen.riwayat');
 
+        Route::post('/pilih-ekskul', function (\Illuminate\Http\Request $request) {
+            $request->validate(['ekskul_id' => 'required|integer']);
+            session()->put('ekskul_aktif', $request->ekskul_id);
+            // dd(auth()->user()->toArray());
+            return back();
+        })->name('siswa.pilih-ekskul');
+
     });
 
 });

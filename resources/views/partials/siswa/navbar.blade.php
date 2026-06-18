@@ -1,3 +1,5 @@
+            {{-- @dd(auth()->user()) --}}
+
 <nav class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-30" x-data="{ userMenu: false }">
     <div class="flex items-center gap-4">
         {{-- Burger Button untuk Mobile --}}
@@ -60,6 +62,29 @@
                 </svg>
                 Profil Saya
             </a>
+
+            @if(isset($eskul) && count($eskul) > 0)
+                <div class="border-t border-slate-100 my-1"></div>
+                <div class="px-4 py-3" @click.stop>
+                    <label for="ekskul_select" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        Pilih Ekskul
+                    </label>
+                    <form action="{{ route('siswa.pilih-ekskul') }}" method="POST">
+                        @csrf
+                        <select id="ekskul_select" name="ekskul_id"
+                            onchange="this.form.submit()"
+                            class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-2 transition outline-none cursor-pointer">
+                            <option value="" disabled {{ !session('ekskul_aktif') ? 'selected' : '' }}>-- Pilih Ekskul --</option>
+                            @foreach($eskul as $e)
+                                <option value="{{ $e->id }}" 
+                                    {{ session('ekskul_aktif') == $e->id ? 'selected' : '' }}>
+                                    {{ $e->nama ?? $e->nama ?? 'Ekstrakurikuler' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
+            @endif
 
             <div class="border-t border-slate-100 my-1"></div>
 

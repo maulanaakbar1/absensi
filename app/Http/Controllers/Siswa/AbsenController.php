@@ -2,34 +2,44 @@
 
 namespace App\Http\Controllers\Siswa;
 
-use App\Http\Controllers\Controller;
-use App\Models\Absensi;
+use Carbon\Carbon;
 use App\Models\Jadwal;
+use GuzzleHttp\Client;
+use App\Models\Absensi;
+use App\Jobs\KirimWaJob;
 use App\Models\HariLibur;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use App\Jobs\KirimWaJob;
-use GuzzleHttp\Client;
+use App\Models\Ekstrakurikuler;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class AbsenController extends Controller
 {
+
+    private $ekskulId;
+
+    public function __construct()
+    {
+        Carbon::setlocale('id');
+        $this->ekskulId = Auth::user()->ekskul_aktif;
+    }
+
     public function index()
     {
+
         $user = Auth::user();
         $siswa = $user->siswa;
 
         // Cek biodata
         $isComplete = $siswa->nisn && $siswa->alamat && $siswa->nama_ayah;
-
         $today = Carbon::today();
         $hariIni = $today->translatedFormat('l');
+        // dd($hariIni);
 
-        $ekskulId = $siswa->ekstrakurikuler_id;
 
         // AMBIL JADWAL HARI INI
-        $jadwalHariIni = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+        $jadwalHariIni = Jadwal::where('ekstrakurikuler_id', $this->ekskulId)
             ->where('hari', $hariIni)
             ->first();
 
@@ -41,6 +51,7 @@ class AbsenController extends Controller
         if ($jadwalHariIni) {
 
             $jamSekarang = Carbon::now()->format('H:i:s');
+            // dd($jamSekarang, $jadwalHariIni->jam_selesai);
 
             if ($jamSekarang > $jadwalHariIni->jam_selesai) {
                 $sudahTutup = true;
@@ -48,7 +59,7 @@ class AbsenController extends Controller
         }
 
         // CEK LIBUR
-        $isLibur = HariLibur::where('ekstrakurikuler_id', $ekskulId)
+        $isLibur = HariLibur::where('ekstrakurikuler_id', $this->ekskulId)
             ->whereDate('tanggal', $today)
             ->exists();
 
@@ -80,7 +91,7 @@ class AbsenController extends Controller
         $hariIni = $today->translatedFormat('l');
 
         // CEK JADWAL HARI INI
-        $jadwalHariIni = Jadwal::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
+        $jadwalHariIni = Jadwal::where('ekstrakurikuler_id', $this->ekskulId)
             ->where('hari', $hariIni)
             ->first();
 
@@ -96,7 +107,7 @@ class AbsenController extends Controller
         }
 
         // CEK LIBUR
-        $isLibur = HariLibur::where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
+        $isLibur = HariLibur::where('ekstrakurikuler_id', $this->ekskulId)
             ->whereDate('tanggal', $today)
             ->exists();
 
@@ -177,11 +188,9 @@ class AbsenController extends Controller
         if (!empty($siswa->kelas)) {
 
             $kelas = $siswa->kelas;
-
         } elseif (!empty($siswa->jurusan)) {
 
             $kelas = $siswa->jurusan;
-
         }
 
         // ==========================
@@ -204,7 +213,7 @@ class AbsenController extends Controller
 
         $pembina = \App\Models\Pembina::where(
             'ekstrakurikuler_id',
-            $siswa->ekstrakurikuler_id
+            $this->ekskulId
         )->first();
 
         $namaPembina = $pembina?->user?->name ?? 'Tidak diketahui';
@@ -222,9 +231,9 @@ class AbsenController extends Controller
             default => '📌'
         };
 
-        $namaEkskul = $siswa->ekstrakurikuler->nama ?? 'Ekstrakurikuler';
+        $namaEkskul = Ekstrakurikuler::where('id', $this->ekskulId)->first()->nama ?? 'Ekstrakurikuler';
 
-            $pesan =
+        $pesan =
             "📢 *ABSENSI {$namaEkskul}*\n\n" .
 
             "👤 Nama: {$siswa->user->name}\n" .
@@ -330,7 +339,6 @@ class AbsenController extends Controller
                 'nomor' => $nomor,
                 'response' => $response->getBody()->getContents()
             ]);
-
         } catch (\Exception $e) {
 
             Log::error('WA GAGAL', [

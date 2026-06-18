@@ -41,6 +41,7 @@ class JadwalController extends Controller
             Jadwal::create([
                 'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
                 'hari' => $hari,
+                'tipe' => $request->tipe,
                 'tanggal' => $request->tanggal,
                 'jam_mulai' => $request->jam_mulai,
                 'jam_selesai' => $request->jam_selesai,
@@ -58,6 +59,7 @@ class JadwalController extends Controller
 
             Jadwal::create([
                 'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
+                'tipe' => $request->tipe,
                 'hari' => $request->hari,
                 'jam_mulai' => $request->jam_mulai,
                 'jam_selesai' => $request->jam_selesai,
@@ -98,7 +100,7 @@ class JadwalController extends Controller
                 'tanggal' => 'required|date',
                 'keterangan' => 'required|string|max:255'
             ]);
-            
+
             HariLibur::create([
                 'ekstrakurikuler_id' => auth()->user()->pembina->ekstrakurikuler_id,
                 'tipe' => $request->tipe,

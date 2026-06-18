@@ -34,6 +34,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $appends = ['ekskul_aktif'];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -45,6 +47,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Accessor: ambil ekskul_aktif dari session.
+     */
+    public function getEkskulAktifAttribute()
+    {
+        return session('ekskul_aktif');
     }
 
     public function siswa() {
