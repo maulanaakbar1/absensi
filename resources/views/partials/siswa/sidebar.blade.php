@@ -1,12 +1,12 @@
 @php
-    $ekskul = Auth::user()->siswa->ekstrakurikuler ?? null;
+    // $ekskul = Auth::user()->siswa->ekstrakurikuler ?? null;
+    $ekskul = App\Models\Ekstrakurikuler::where('id', Auth::user()->ekskul_aktif)->first();
 
     $logo = $ekskul && $ekskul->foto
         ? asset('storage/' . $ekskul->foto)
         : asset('images/default-ekskul.png');
 
-    $namaSatuan = $ekskul->nama_satuan
-        ?? $ekskul->nama
+    $namaSatuan = $ekskul->nama
         ?? 'Ekstrakurikuler';
 @endphp
 

@@ -31,6 +31,7 @@ class DashboardController extends Controller
         // DATA STATISTIK
         // =========================
         $totalHadir = Absensi::where('siswa_id', $siswa->id)
+            ->where('ekstrakurikuler_id', $ekskulId)
             ->where('status', 'hadir')
             ->count();
 
@@ -40,6 +41,7 @@ class DashboardController extends Controller
         // RIWAYAT ABSENSI
         // =========================
         $riwayatAbsensi = Absensi::where('siswa_id', $siswa->id)
+            ->where('ekstrakurikuler_id', $ekskulId)
             ->orderBy('tanggal', 'desc')
             ->take(5)
             ->get();

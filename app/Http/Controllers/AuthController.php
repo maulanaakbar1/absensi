@@ -19,18 +19,19 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-
+        
         if (Auth::attempt($credentials)) {
-
+            
             $request->session()->regenerate();
-
+            
             $user = Auth::user();
-
+            
             // =========================
             // CEK SISWA PUNYA PEMBINA?
             // =========================
             if ($user->role === 'siswa') {
-
+                
+                // dd($request->all());
                 $siswa = $user->siswa;
 
                 // kalau belum punya ekskul
@@ -51,15 +52,15 @@ class AuthController extends Controller
                 )->exists();
 
                 // kalau belum ada pembina
-                if (!$pembinaAda) {
+                // if (!$pembinaAda) {
 
-                    Auth::logout();
+                //     Auth::logout();
 
-                    return back()->with(
-                        'loginError',
-                        'Ekstrakurikuler Anda belum memiliki pembina.'
-                    );
-                }
+                //     return back()->with(
+                //         'loginError',
+                //         'Ekstrakurikuler Anda belum memiliki pembina.'
+                //     );
+                // }
             }
 
             // =========================

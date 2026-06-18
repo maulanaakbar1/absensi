@@ -64,7 +64,9 @@ class AbsenController extends Controller
             ->exists();
 
         // CEK SUDAH ABSEN
-        $absenHariIni = Absensi::where('siswa_id', $siswa->id)
+        $absenHariIni = Absensi::with('ekstrakurikuler')
+            ->where('siswa_id', $siswa->id)
+            ->where('ekstrakurikuler_id', $this->ekskulId)
             ->whereDate('tanggal', $today)
             ->first();
 
@@ -199,6 +201,7 @@ class AbsenController extends Controller
 
         $absensi = Absensi::create([
             'siswa_id' => $siswa->id,
+            'ekstrakurikuler_id' => $this->ekskulId,
             'tanggal' => $today,
             'jam_masuk' => Carbon::now()->toTimeString(),
             'foto' => $fotoPath,
@@ -287,6 +290,7 @@ class AbsenController extends Controller
         $siswa = Auth::user()->siswa;
 
         $semuaRiwayat = Absensi::where('siswa_id', $siswa->id)
+            ->where('ekstrakurikuler_id', $this->ekskulId)
             ->orderBy('tanggal', 'desc')
             ->paginate(10);
 
