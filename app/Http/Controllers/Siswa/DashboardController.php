@@ -35,7 +35,7 @@ class DashboardController extends Controller
             ->count();
 
         $namaEkskul = Ekstrakurikuler::where('id', $user->ekskul_aktif)->first()->nama ?? 'Belum Terdaftar';
-
+  
         // =========================
         // RIWAYAT ABSENSI
         // =========================
