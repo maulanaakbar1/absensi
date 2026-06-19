@@ -7,6 +7,7 @@ use App\Models\Jadwal;
 use App\Models\HariLibur;
 use App\Models\Absensi;
 use App\Models\Siswa;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -312,5 +313,167 @@ class JurnalController extends Controller
         }
 
         return array_reverse($list);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        Carbon::setLocale('id');
+
+        $tanggalFilter = $request->tanggal;
+        $bulan = $request->bulan ?? now()->month;
+
+        $tahunAjaranList = $this->getTahunAjaranList();
+
+        $tahunAjaran = $request->tahun_ajaran
+            ?? ($tahunAjaranList[0] ?? $this->getCurrentTahunAjaran());
+
+        $tahunMulai = (int) explode('/', $tahunAjaran)[0];
+        $tahunSelesai = $tahunMulai + 1;
+
+        $tahun = $bulan >= 7 ? $tahunMulai : $tahunSelesai;
+
+        $ekskulId = auth()->user()->pembina->ekstrakurikuler_id;
+
+        $jadwals = Jadwal::where('ekstrakurikuler_id', $ekskulId)->get();
+        $liburs = HariLibur::where('ekstrakurikuler_id', $ekskulId)->get();
+
+        $totalAnggota = Siswa::where('ekstrakurikuler_id', $ekskulId)->count();
+
+        $events = collect();
+
+        $start = Carbon::create($tahun, $bulan, 1)->startOfMonth();
+        $end = Carbon::create($tahun, $bulan, 1)->endOfMonth();
+
+        $hariMap = [
+            'Minggu' => 0,
+            'Senin' => 1,
+            'Selasa' => 2,
+            'Rabu' => 3,
+            'Kamis' => 4,
+            'Jumat' => 5,
+            'Sabtu' => 6,
+        ];
+
+        foreach ($jadwals->whereNull('tanggal') as $jadwal) {
+
+            if (!isset($hariMap[$jadwal->hari])) continue;
+
+            $targetDay = $hariMap[$jadwal->hari];
+            $tanggalLoop = $start->copy();
+
+            while ($tanggalLoop <= $end) {
+
+                if ($tanggalLoop->dayOfWeek == $targetDay) {
+
+                    $libur = $this->isLibur($tanggalLoop, $liburs);
+
+                    $events->push($this->buildEvent(
+                        $jadwal,
+                        $tanggalLoop->copy(),
+                        $totalAnggota,
+                        $libur ? true : false,
+                        $libur?->keterangan
+                    ));
+                }
+
+                $tanggalLoop->addDay();
+            }
+        }
+
+        foreach ($jadwals->whereNotNull('tanggal') as $jadwal) {
+
+            $tanggal = Carbon::parse($jadwal->tanggal);
+
+            if ($tanggal->month == $bulan && $tanggal->year == $tahun) {
+
+                $libur = $this->isLibur($tanggal, $liburs);
+
+                $events->push($this->buildEvent(
+                    $jadwal,
+                    $tanggal->copy(),
+                    $totalAnggota,
+                    $libur ? true : false,
+                    $libur?->keterangan
+                ));
+            }
+        }
+
+        foreach ($liburs->whereNotNull('tanggal') as $libur) {
+
+            $tanggal = Carbon::parse($libur->tanggal);
+
+            if (
+                $tanggal->month == $bulan &&
+                $tanggal->year == $tahun
+            ) {
+                $events->push([
+                    'tanggal' => $tanggal,
+                    'jam' => '-',
+                    'lokasi' => '-',
+                    'keterangan' => null,
+                    'hadir' => 0,
+                    'total' => $totalAnggota,
+                    'libur' => true,
+                    'keterangan_libur' => $libur->keterangan,
+                ]);
+            }
+        }
+
+        foreach ($liburs->whereNull('tanggal') as $libur) {
+
+            $hariMap = [
+                'Minggu' => 0,
+                'Senin'  => 1,
+                'Selasa' => 2,
+                'Rabu'   => 3,
+                'Kamis'  => 4,
+                'Jumat'  => 5,
+                'Sabtu'  => 6,
+            ];
+
+            if (!isset($hariMap[$libur->hari])) {
+                continue;
+            }
+
+            $targetDay = $hariMap[$libur->hari];
+            $tanggalLoop = $start->copy();
+
+            while ($tanggalLoop <= $end) {
+
+                if ($tanggalLoop->dayOfWeek == $targetDay) {
+
+                    $events->push([
+                        'tanggal' => $tanggalLoop->copy(),
+                        'jam' => '-',
+                        'lokasi' => '-',
+                        'keterangan' => null,
+                        'hadir' => 0,
+                        'total' => $totalAnggota,
+                        'libur' => true,
+                        'keterangan_libur' => $libur->keterangan,
+                    ]);
+                }
+
+                $tanggalLoop->addDay();
+            }
+        }
+
+        if ($tanggalFilter) {
+            $events = $events->filter(fn($e) =>
+                Carbon::parse($e['tanggal'])->isSameDay(Carbon::parse($tanggalFilter))
+            );
+        }
+
+        $events = $events->sortBy('tanggal')->values();
+
+        $pdf = Pdf::loadView('pembina.jurnal_pdf', [
+            'events' => $events,
+            'bulan' => $bulan,
+            'tahunAjaran' => $tahunAjaran
+        ]);
+
+        $namaBulan = Carbon::create()->month($bulan)->translatedFormat('F');
+
+        return $pdf->download("Jurnal_Pembina_{$namaBulan}.pdf");
     }
 }

@@ -98,6 +98,8 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/jurnal', [JurnalController::class, 'index'])->name('pembina.jurnal.index');
 
+        Route::get('/pembina/jurnal/pdf', [JurnalController::class, 'exportPdf'])->name('pembina.jurnal.pdf');
+
     });
 
     // --- KHUSUS SISWA ---
