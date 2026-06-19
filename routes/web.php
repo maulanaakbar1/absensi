@@ -14,6 +14,7 @@ use App\Http\Controllers\Pembina\JadwalController;
 use App\Http\Controllers\Admin\RekapAbsensiController as AdminRekap;
 use App\Http\Controllers\Pembina\RekapAbsensiController as PembinaRekap;
 use App\Http\Controllers\Pembina\JurnalController;
+use App\Http\Controllers\Admin\JadwalController as AdminJadwalController;
 
 
 Route::get('/', function () { 
@@ -56,6 +57,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/rekap-absensi/pdf', [AdminRekap::class, 'downloadPdf'])->name('admin.rekap.pdf');
         Route::get('/rekap-absensi/excel', [AdminRekap::class, 'downloadExcel'])->name('admin.rekap.excel');
 
+        Route::get('/jadwal', [AdminJadwalController::class, 'index'])->name('admin.jadwal.index');
+        Route::get('/jadwal/{id}', [AdminJadwalController::class, 'show'])->name('admin.jadwal.show');
+        
     });
 
     // --- KHUSUS PEMBINA ---

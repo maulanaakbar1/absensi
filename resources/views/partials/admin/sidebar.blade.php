@@ -70,6 +70,17 @@
             </svg>
             Rekap Absensi
         </a>
+
+        <a href="{{ route('admin.jadwal.index') }}" 
+            class="flex items-center gap-3 {{ Request::is('admin/jadwal*') ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50' }} px-4 py-3 rounded-xl font-semibold transition">
+
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M8 7V3m8 4V3m-9 8h10m-11 8h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+
+            Jadwal Ekskul
+        </a>
         
     </nav>
 
