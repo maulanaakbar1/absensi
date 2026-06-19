@@ -24,6 +24,20 @@
 
             <div>
                 <label class="block text-xs font-semibold text-slate-500 mb-1">
+                    Tanggal
+                </label>
+
+                <input
+                    type="date"
+                    name="tanggal"
+                    value="{{ request('tanggal') }}"
+                    onchange="document.getElementById('filterForm').submit()"
+                    class="border border-slate-200 rounded-xl px-4 py-2 bg-white"
+                >
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">
                     Bulan
                 </label>
 
@@ -73,7 +87,8 @@
             </div>
 
             @if(
-                $bulan != now()->month
+                request('tanggal')
+                || $bulan != now()->month
                 || $tahunAjaran != ($tahunAjaranList[0] ?? $tahunAjaran)
             )
                 <a

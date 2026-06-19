@@ -17,6 +17,8 @@ class JurnalController extends Controller
     {
         Carbon::setLocale('id');
 
+        $tanggalFilter = $request->tanggal;
+
         $bulan = $request->bulan ?? now()->month;
 
         $tahunAjaranList = $this->getTahunAjaranList();
@@ -67,11 +69,6 @@ class JurnalController extends Controller
             'Sabtu'  => 6,
         ];
 
-        /*
-        |--------------------------------------------------------------------------
-        | Jadwal Rutin
-        |--------------------------------------------------------------------------
-        */
         foreach ($jadwals->whereNull('tanggal') as $jadwal) {
 
             if (!isset($hariMap[$jadwal->hari])) {
@@ -103,11 +100,6 @@ class JurnalController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Jadwal Dadakan
-        |--------------------------------------------------------------------------
-        */
         foreach ($jadwals->whereNotNull('tanggal') as $jadwal) {
 
             $tanggal = Carbon::parse($jadwal->tanggal);
@@ -131,11 +123,6 @@ class JurnalController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Hari Libur Dadakan
-        |--------------------------------------------------------------------------
-        */
         foreach ($liburs->whereNotNull('tanggal') as $libur) {
 
             $tanggal = Carbon::parse($libur->tanggal);
@@ -158,11 +145,6 @@ class JurnalController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Hari Libur Rutin
-        |--------------------------------------------------------------------------
-        */
         foreach ($liburs->whereNull('tanggal') as $libur) {
 
             $hariMap = [
@@ -203,11 +185,16 @@ class JurnalController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Urutkan berdasarkan tanggal lalu jam mulai
-        |--------------------------------------------------------------------------
-        */
+        if ($tanggalFilter) {
+
+            $events = $events->filter(function ($event) use ($tanggalFilter) {
+
+                $tanggal = Carbon::parse($event['tanggal']);
+
+                return $tanggal->isSameDay(Carbon::parse($tanggalFilter));
+            });
+        }
+
         $events = $events
             ->sortBy([
                 ['tanggal', 'asc'],
