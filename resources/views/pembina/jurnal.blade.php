@@ -20,53 +20,70 @@
 
         </div>
 
-        <form method="GET" id="filterForm" class="flex flex-wrap gap-2">
+        <form method="GET" id="filterForm" class="flex flex-wrap items-end gap-3">
 
-            <select
-                name="bulan"
-                onchange="document.getElementById('filterForm').submit()"
-                class="border border-slate-200 rounded-xl px-4 py-2 bg-white">
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">
+                    Bulan
+                </label>
 
-                @foreach(range(1,12) as $b)
+                <select
+                    name="bulan"
+                    onchange="document.getElementById('filterForm').submit()"
+                    class="border border-slate-200 rounded-xl px-4 py-2 bg-white">
 
-                    <option
-                        value="{{ $b }}"
-                        {{ $bulan == $b ? 'selected' : '' }}>
+                    @foreach(range(1,12) as $b)
 
-                        {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
+                        <option
+                            value="{{ $b }}"
+                            {{ $bulan == $b ? 'selected' : '' }}>
 
-                    </option>
+                            {{ \Carbon\Carbon::create()->month($b)->translatedFormat('F') }}
 
-                @endforeach
+                        </option>
 
-            </select>
+                    @endforeach
 
-            <select
-                name="tahun"
-                onchange="document.getElementById('filterForm').submit()"
-                class="border border-slate-200 rounded-xl px-4 py-2 bg-white">
+                </select>
+            </div>
 
-                @foreach(range(now()->year-3, now()->year+1) as $t)
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 mb-1">
+                    Tahun Ajaran
+                </label>
 
-                    <option
-                        value="{{ $t }}"
-                        {{ $tahun == $t ? 'selected' : '' }}>
+                <select
+                    name="tahun_ajaran"
+                    onchange="document.getElementById('filterForm').submit()"
+                    class="border border-slate-200 rounded-xl px-4 py-2 bg-white">
 
-                        {{ $t }}
+                    @foreach($tahunAjaranList as $ta)
 
-                    </option>
+                        <option
+                            value="{{ $ta }}"
+                            {{ $tahunAjaran == $ta ? 'selected' : '' }}>
 
-                @endforeach
+                            {{ $ta }}
 
-            </select>
+                        </option>
 
-            <a
-                href="{{ route('pembina.jurnal.index') }}"
-                class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">
+                    @endforeach
 
-                Reset
+                </select>
+            </div>
 
-            </a>
+            @if(
+                $bulan != now()->month
+                || $tahunAjaran != ($tahunAjaranList[0] ?? $tahunAjaran)
+            )
+                <a
+                    href="{{ route('pembina.jurnal.index') }}"
+                    class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">
+
+                    Reset
+
+                </a>
+            @endif
 
         </form>
 

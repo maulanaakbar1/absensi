@@ -18,7 +18,20 @@ class JurnalController extends Controller
         Carbon::setLocale('id');
 
         $bulan = $request->bulan ?? now()->month;
-        $tahun = $request->tahun ?? now()->year;
+
+        $tahunAjaranList = $this->getTahunAjaranList();
+
+        $tahunAjaran = $request->tahun_ajaran
+            ?? ($tahunAjaranList[0] ?? $this->getCurrentTahunAjaran());
+
+        $tahunMulai = (int) explode('/', $tahunAjaran)[0];
+        $tahunSelesai = $tahunMulai + 1;
+
+        $tahun = $bulan >= 7
+            ? $tahunMulai
+            : $tahunSelesai;
+
+        $tahunAjaranList = $this->getTahunAjaranList();
 
         $ekskulId = auth()->user()
             ->pembina
@@ -207,7 +220,9 @@ class JurnalController extends Controller
             compact(
                 'events',
                 'bulan',
-                'tahun'
+                'tahun',
+                'tahunAjaran',
+                'tahunAjaranList'
             )
         );
     }
@@ -271,5 +286,44 @@ class JurnalController extends Controller
         }
 
         return null;
+    }
+
+    private function getCurrentTahunAjaran(): string
+    {
+        $year = now()->month >= 7
+            ? now()->year
+            : now()->year - 1;
+
+        return $year . '/' . ($year + 1);
+    }
+
+    private function getTahunAjaranList(): array
+    {
+        $ekskulId = auth()->user()
+            ->pembina
+            ->ekstrakurikuler_id;
+
+        $range = Siswa::where('ekstrakurikuler_id', $ekskulId)
+            ->whereNotNull('tahun_masuk')
+            ->selectRaw('MIN(tahun_masuk) as min_tahun, MAX(tahun_masuk) as max_tahun')
+            ->first();
+
+        if (!$range || !$range->min_tahun) {
+            return [];
+        }
+
+        $currentYear = now()->month >= 7
+            ? now()->year
+            : now()->year - 1;
+
+        $maxLimit = max($currentYear, $range->max_tahun);
+
+        $list = [];
+
+        for ($y = $range->min_tahun; $y <= $maxLimit; $y++) {
+            $list[] = $y . '/' . ($y + 1);
+        }
+
+        return array_reverse($list);
     }
 }
