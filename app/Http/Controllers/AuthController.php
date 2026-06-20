@@ -19,20 +19,29 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
-        
+
         if (Auth::attempt($credentials)) {
-            
+
             $request->session()->regenerate();
-            
+
             $user = Auth::user();
-            
+
             // =========================
             // CEK SISWA PUNYA PEMBINA?
             // =========================
             if ($user->role === 'siswa') {
-                
+
                 // dd($request->all());
                 $siswa = $user->siswa;
+                $ekskulIds = json_decode($siswa->ekstrakurikuler_id, true) ?? [];
+
+                sort($ekskulIds);
+
+                $firstEkskul = $ekskulIds[0] ?? null;
+
+                if ($firstEkskul) {
+                    session()->put('ekskul_aktif', $firstEkskul);
+                }
 
                 // kalau belum punya ekskul
                 if (!$siswa || !$siswa->ekstrakurikuler_id) {

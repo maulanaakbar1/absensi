@@ -9,8 +9,8 @@
         ? asset('storage/' . $ekskul->foto)
         : asset('images/default-ekskul.png');
 
-    $namaSatuan = $ekskul->nama_satuan
-        ?? $ekskul->nama
+    $namaSatuan = $ekskul->nama
+        ?? $ekskul->nama_satuan
         ?? 'Ekstrakurikuler';
 @endphp
 
