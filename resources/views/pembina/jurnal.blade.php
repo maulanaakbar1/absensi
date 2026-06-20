@@ -93,6 +93,8 @@
 
     </div>
 
+    {{-- ... bagian atas / form filter tetap sama ... --}}
+
     <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
         <div class="w-full overflow-x-auto scrollbar-thin">
             <table class="w-full min-w-[800px] border-collapse whitespace-nowrap">
@@ -110,7 +112,8 @@
                     @forelse($events as $index => $event)
                         <tr class="hover:bg-slate-50/50 transition">
                             <td class="p-3 md:p-4 text-sm text-slate-600">
-                                {{ $index + 1 }}
+                                {{-- Modifikasi nomor urut agar menyesuaikan halaman pagination --}}
+                                {{ ($events->currentPage() - 1) * $events->perPage() + $index + 1 }}
                             </td>
                             <td class="p-3 md:p-4 text-sm font-medium text-slate-800">
                                 {{ $event['tanggal']->translatedFormat('l, d F Y') }}
@@ -154,6 +157,15 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- TAMPILKAN TOMBOL NAVIGASI PAGINATION DI SINI --}}
+        @if($events->hasPages())
+            <div class="px-4 py-3 bg-slate-50 border-t flex items-center justify-between system-pagination">
+                <div class="w-full link-pagination">
+                    {{ $events->links() }}
+                </div>
+            </div>
+        @endif
     </div>
 
 </div>
