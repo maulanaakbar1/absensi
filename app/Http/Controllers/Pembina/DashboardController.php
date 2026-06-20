@@ -7,6 +7,7 @@ use App\Models\Pembina;
 use App\Models\Siswa;
 use App\Models\Jadwal;
 use App\Models\Absensi;
+use App\Models\HariLibur;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -46,87 +47,146 @@ class DashboardController extends Controller
             ->count();
 
         // =========================
-        // 3. LOGIC JADWAL FIX FINAL
+        // 3. LOGIC JADWAL 
         // =========================
-
-        $daftarHari = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
 
         $now = Carbon::now();
-        $hariSekarangIndex = date('N');
-        $hariSekarang = $daftarHari[$hariSekarangIndex - 1];
-        $jamSekarang = $now->format('H:i:s');
+        $today = $now->toDateString();
 
-        // 1. CEK JADWAL AKTIF HARI INI
-        $jadwalAktifHariIni = Jadwal::where('ekstrakurikuler_id', $ekskulId)
-            ->where('hari', $hariSekarang)
-            ->where('jam_selesai', '>', $jamSekarang)
-            ->orderBy('jam_mulai', 'asc')
+        $daftarHari = [
+            1 => 'Senin',
+            2 => 'Selasa',
+            3 => 'Rabu',
+            4 => 'Kamis',
+            5 => 'Jumat',
+            6 => 'Sabtu',
+            7 => 'Minggu',
+        ];
+
+        $hariSekarang = $daftarHari[$now->dayOfWeekIso];
+
+        // =========================
+        // LIBUR HARI INI
+        // =========================
+
+        $liburHariIni = HariLibur::where('ekstrakurikuler_id', $ekskulId)
+            ->where(function ($q) use ($today, $hariSekarang) {
+
+                $q->where(function ($r) use ($today) {
+                    $r->where('tipe', 'dadakan')
+                        ->whereDate('tanggal', $today);
+                });
+
+                $q->orWhere(function ($r) use ($hariSekarang) {
+                    $r->where('tipe', 'rutin')
+                        ->where('hari', $hariSekarang);
+                });
+
+            })
             ->first();
 
-        if ($jadwalAktifHariIni) {
-            $jadwalTerdekat = $jadwalAktifHariIni;
-        } else {
-
-            $urutanHari = [
-                'Senin' => 1,
-                'Selasa' => 2,
-                'Rabu' => 3,
-                'Kamis' => 4,
-                'Jumat' => 5,
-                'Sabtu' => 6,
-                'Minggu' => 7,
-            ];
-
-            $jadwalTerdekat = Jadwal::where('ekstrakurikuler_id', $ekskulId)
-                ->get()
-                ->sortBy(function ($item) use ($urutanHari, $hariSekarangIndex, $jamSekarang) {
-
-                    $hariIndex = $urutanHari[$item->hari];
-
-                    $diff = $hariIndex - $hariSekarangIndex;
-
-                    if ($diff < 0) {
-                        $diff += 7;
-                    }
-
-                    if ($diff == 0 && $item->jam_mulai <= $jamSekarang) {
-                        $diff = 7;
-                    }
-
-                    return $diff;
-                })
-                ->sortBy('jam_mulai')
-                ->first();
-        }
-
-        // =========================
-        // LABEL JADWAL (INI YANG KAMU TAMBAH)
-        // =========================
+        $jadwalTerdekat = null;
         $labelJadwal = null;
 
-        if ($jadwalTerdekat) {
+        // kalau hari ini libur
+        if ($liburHariIni) {
 
-            if ($jadwalTerdekat->hari == $hariSekarang) {
-                $labelJadwal = 'Jadwal Latihan Hari Ini';
-            } else {
+            $labelJadwal = 'Hari Ini Libur';
 
-                // hitung selisih hari (0-6)
-                $urutanHari = [
-                    'Senin' => 1,
-                    'Selasa' => 2,
-                    'Rabu' => 3,
-                    'Kamis' => 4,
-                    'Jumat' => 5,
-                    'Sabtu' => 6,
-                    'Minggu' => 7,
-                ];
+        } else {
 
-                $selisih = $urutanHari[$jadwalTerdekat->hari] - $hariSekarangIndex;
+            // =========================
+            // AMBIL SEMUA JADWAL AKTIF
+            // =========================
 
-                if ($selisih == 1 || $selisih == -6) {
-                    $labelJadwal = 'Jadwal Latihan Besok';
+            $jadwalList = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+                ->get()
+                ->filter(function ($jadwal) use ($today) {
+
+                    // jadwal dadakan
+                    if ($jadwal->tipe === 'dadakan') {
+
+                        return $jadwal->tanggal >= $today;
+                    }
+
+                    return true;
+                })
+                ->map(function ($jadwal) use ($now, $daftarHari) {
+
+                    if ($jadwal->tipe === 'dadakan') {
+
+                        $jadwal->tanggal_event =
+                            Carbon::parse($jadwal->tanggal . ' ' . $jadwal->jam_mulai);
+
+                    } else {
+
+                        $hariIndex = array_search(
+                            $jadwal->hari,
+                            $daftarHari
+                        );
+
+                        $eventDate = now()->startOfDay();
+
+                        while ($eventDate->dayOfWeekIso != $hariIndex) {
+                            $eventDate->addDay();
+                        }
+
+                        if (
+                            $eventDate->isToday() &&
+                            $jadwal->jam_mulai < $now->format('H:i:s')
+                        ) {
+                            $eventDate->addWeek();
+                        }
+
+                        $jadwal->tanggal_event =
+                            Carbon::parse(
+                                $eventDate->format('Y-m-d')
+                                . ' '
+                                . $jadwal->jam_mulai
+                            );
+                    }
+
+                    return $jadwal;
+                })
+                ->sortBy('tanggal_event');
+
+            $jadwalTerdekat = $jadwalList->first();
+
+            if ($jadwalTerdekat) {
+
+                if ($jadwalTerdekat->tipe === 'dadakan') {
+
+                    if (
+                        Carbon::parse($jadwalTerdekat->tanggal)
+                            ->isToday()
+                    ) {
+
+                        $labelJadwal = 'Latihan Dadakan Hari Ini';
+
+                    } elseif (
+                        Carbon::parse($jadwalTerdekat->tanggal)
+                            ->isTomorrow()
+                    ) {
+
+                        $labelJadwal = 'Latihan Dadakan Besok';
+
+                    } else {
+
+                        $labelJadwal = 'Latihan Dadakan';
+                    }
+
                 } else {
-                    $labelJadwal = 'Jadwal Latihan Hari ' . $jadwalTerdekat->hari;
+
+                    if ($jadwalTerdekat->hari === $hariSekarang) {
+
+                        $labelJadwal = 'Jadwal Latihan Hari Ini';
+
+                    } else {
+
+                        $labelJadwal =
+                            'Jadwal Latihan Hari ' .
+                            $jadwalTerdekat->hari;
+                    }
                 }
             }
         }

@@ -152,10 +152,14 @@
                 </svg>
             </div>
             <div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                     <h5 class="font-bold text-slate-800">Jadwal Latihan</h5>
 
-                    @if($labelJadwal)
+                    @if($labelJadwal === 'Hari Ini Libur')
+                        <span class="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700">
+                            LIBUR HARI INI
+                        </span>
+                    @elseif($labelJadwal)
                         <span class="text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-700">
                             {{ $labelJadwal }}
                         </span>
@@ -163,7 +167,11 @@
                 </div>
                 @if($jadwalTerdekat)
                     <p class="text-sm text-blue-700 mt-1 font-semibold">
-                        {{ $jadwalTerdekat->hari }}, 
+                        @if($jadwalTerdekat->tipe === 'dadakan')
+                            {{ \Carbon\Carbon::parse($jadwalTerdekat->tanggal)->translatedFormat('l, d F Y') }}
+                        @else
+                            {{ $jadwalTerdekat->hari }}
+                        @endif
                         {{ date('H:i', strtotime($jadwalTerdekat->jam_mulai)) }} - {{ date('H:i', strtotime($jadwalTerdekat->jam_selesai)) }} WIB
                     </p>
                     <div class="flex flex-col mt-1">
