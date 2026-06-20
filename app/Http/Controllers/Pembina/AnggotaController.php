@@ -32,7 +32,7 @@ class AnggotaController extends Controller
             : $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
         $query = Siswa::with(['user', 'ekstrakurikuler'])
-            ->where('ekstrakurikuler_id', $ekskulId);
+            ->whereJsonContains('ekstrakurikuler_id', $ekskulId);
 
         // Filter berdasarkan tahun ajaran (jika bukan 'semua')
         if ($selectedTahun !== 'semua') {

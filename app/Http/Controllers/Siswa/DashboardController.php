@@ -82,7 +82,7 @@ class DashboardController extends Controller
 
                 // Jadwal reguler
                 $query->where(function ($q) use ($hariIni) {
-                    $q->where('tipe', 'reguler')
+                    $q->where('tipe', 'rutin')
                         ->where('hari', $hariIni);
                 });
 

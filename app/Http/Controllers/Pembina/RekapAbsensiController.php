@@ -57,12 +57,15 @@ class RekapAbsensiController extends Controller
         // =========================
         $query = Siswa::with([
             'user',
-            'absensis' => function ($q) use ($bulan, $tahun) {
-                $q->whereMonth('tanggal', $bulan)
+            'absensis' => function ($q) use ($bulan, $tahun, $ekskulId) {
+                $q->where('ekstrakurikuler_id', $ekskulId)
+                ->whereMonth('tanggal', $bulan)
                 ->whereYear('tanggal', $tahun);
             }
-        ])->where('ekstrakurikuler_id', $ekskulId);
+        ])->whereJsonContains('ekstrakurikuler_id', $ekskulId);
+        // $query = Siswa::whereJsonContains('ekstrakurikuler_id', $ekskulId);
 
+        
         // =========================
         // FILTER TAHUN AJARAN
         // =========================
@@ -94,7 +97,7 @@ class RekapAbsensiController extends Controller
         // =========================
         // LIST JURUSAN
         // =========================
-        $jurusanList = Siswa::where('ekstrakurikuler_id', $ekskulId)
+        $jurusanList = Siswa::whereJsonContains('ekstrakurikuler_id', $ekskulId)
             ->whereNotNull('jurusan')
             ->select('jurusan')
             ->distinct()
@@ -148,6 +151,8 @@ class RekapAbsensiController extends Controller
             '05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus',
             '09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'
         ];
+
+        
 
         return view('pembina.rekap_absensi', compact(
             'siswas',
@@ -207,6 +212,7 @@ class RekapAbsensiController extends Controller
                 $ekskulId
             )
             ->whereDate('tanggal', $request->tanggal)
+            ->orWhere('hari',$hariIndo)
             ->exists();
 
         if ($cekLibur) {
@@ -231,6 +237,8 @@ class RekapAbsensiController extends Controller
 
         }
 
+        
+
         if ($absensi) {
 
             $absensi->update([
@@ -246,6 +254,7 @@ class RekapAbsensiController extends Controller
 
             Absensi::create([
                 'siswa_id'  => $request->siswa_id,
+                'ekstrakurikuler_id'   => $ekskulId,
                 'tanggal'   => $request->tanggal,
 
                 // FIX ERROR DISINI
@@ -300,7 +309,7 @@ class RekapAbsensiController extends Controller
             'absensis' => function ($q) use ($tanggal) {
                 $q->whereDate('tanggal', $tanggal);
             }
-        ])->where(
+        ])->whereJsonContains(
             'ekstrakurikuler_id',
             $pembina->ekstrakurikuler_id
         );
@@ -381,7 +390,7 @@ class RekapAbsensiController extends Controller
         // =========================
         // LIST JURUSAN
         // =========================
-        $jurusanList = Siswa::where(
+        $jurusanList = Siswa::whereJsonContains(
                 'ekstrakurikuler_id',
                 $pembina->ekstrakurikuler_id
             )
@@ -468,7 +477,7 @@ class RekapAbsensiController extends Controller
             $search
         ) {
 
-            $q->where('ekstrakurikuler_id', $ekskulId);
+            $q->whereJsonContains('ekstrakurikuler_id', $ekskulId);
 
             // FILTER SEARCH NAMA
             if ($search) {
@@ -572,7 +581,7 @@ class RekapAbsensiController extends Controller
         // =========================
         // LIST JURUSAN
         // =========================
-        $jurusanList = \App\Models\Siswa::where('ekstrakurikuler_id', $ekskulId)
+        $jurusanList = \App\Models\Siswa::whereJsonContains('ekstrakurikuler_id', $ekskulId)
             ->whereNotNull('jurusan')
             ->select('jurusan')
             ->distinct()
@@ -607,7 +616,7 @@ class RekapAbsensiController extends Controller
 
     private function getTahunAjaranList(int $ekskulId): array
     {
-        $range = Siswa::where('ekstrakurikuler_id', $ekskulId)
+        $range = Siswa::whereJsonContains('ekstrakurikuler_id', $ekskulId)
             ->whereNotNull('tahun_masuk')
             ->selectRaw('MIN(tahun_masuk) as min_tahun, MAX(tahun_masuk) as max_tahun')
             ->first();
@@ -727,7 +736,7 @@ class RekapAbsensiController extends Controller
                 $q->whereMonth('tanggal', $bulan)
                 ->whereYear('tanggal', $tahun);
             }
-        ])->where('ekstrakurikuler_id', $ekskulId);
+        ])->whereJsonContains('ekstrakurikuler_id', $ekskulId);
 
         if ($selectedTahunStart) {
 
