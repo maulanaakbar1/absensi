@@ -36,7 +36,7 @@ class DashboardController extends Controller
             ->count();
 
         $namaEkskul = Ekstrakurikuler::where('id', $user->ekskul_aktif)->first()->nama ?? 'Belum Terdaftar';
-  
+
         // =========================
         // RIWAYAT ABSENSI
         // =========================
@@ -69,16 +69,33 @@ class DashboardController extends Controller
         // Jam sekarang
         $jamSekarang = Carbon::now()->format('H:i:s');
 
+
+
+        // =========================
+        $tanggalHariIni = now()->toDateString();
+
         // =========================
         // CEK JADWAL BERLANGSUNG
         // =========================
         $jadwalEkskul = Jadwal::where('ekstrakurikuler_id', $ekskulId)
-            ->where('hari', $hariIni)
+            ->where(function ($query) use ($hariIni, $tanggalHariIni) {
+
+                // Jadwal reguler
+                $query->where(function ($q) use ($hariIni) {
+                    $q->where('tipe', 'reguler')
+                        ->where('hari', $hariIni);
+                });
+
+                // Jadwal dadakan
+                $query->orWhere(function ($q) use ($tanggalHariIni) {
+                    $q->where('tipe', 'dadakan')
+                        ->whereDate('tanggal', $tanggalHariIni);
+                });
+            })
             ->where('jam_mulai', '<=', $jamSekarang)
             ->where('jam_selesai', '>=', $jamSekarang)
-            ->orderBy('jam_mulai', 'asc')
+            ->orderBy('jam_mulai')
             ->get();
-
         // =========================
         // JIKA TIDAK ADA JADWAL HARI INI
         // MAKA TAMPILKAN JADWAL BERIKUTNYA
@@ -87,41 +104,51 @@ class DashboardController extends Controller
 
         if ($jadwalEkskul->isEmpty()) {
 
-            // Urutan hari
-            $urutanHari = [
-                'Senin',
-                'Selasa',
-                'Rabu',
-                'Kamis',
-                'Jumat',
-                'Sabtu',
-                'Minggu'
-            ];
+            // Prioritaskan jadwal dadakan yang tanggalnya belum lewat
+            $jadwalDadakan = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+                ->where('tipe', 'dadakan')
+                ->whereDate('tanggal', '>=', $tanggalHariIni)
+                ->orderBy('tanggal')
+                ->orderBy('jam_mulai')
+                ->get();
 
-            $indexHariIni = array_search($hariIni, $urutanHari);
+            if ($jadwalDadakan->isNotEmpty()) {
 
-            // Cari jadwal terdekat
-            for ($i = 1; $i <= 7; $i++) {
+                $jadwalEkskul = $jadwalDadakan;
+                $statusJadwal = 'Akan Datang';
+            } else {
 
-                $nextIndex = ($indexHariIni + $i) % 7;
-                $hariBerikutnya = $urutanHari[$nextIndex];
+                // Cari jadwal reguler terdekat
+                $urutanHari = [
+                    'Senin',
+                    'Selasa',
+                    'Rabu',
+                    'Kamis',
+                    'Jumat',
+                    'Sabtu',
+                    'Minggu'
+                ];
 
-                $jadwalBesok = Jadwal::where('ekstrakurikuler_id', $ekskulId)
-                    ->where('hari', $hariBerikutnya)
-                    ->orderBy('jam_mulai', 'asc')
-                    ->get();
+                $indexHariIni = array_search($hariIni, $urutanHari);
 
-                if ($jadwalBesok->isNotEmpty()) {
+                for ($i = 1; $i <= 7; $i++) {
 
-                    $jadwalEkskul = $jadwalBesok;
+                    $nextIndex = ($indexHariIni + $i) % 7;
+                    $hariBerikutnya = $urutanHari[$nextIndex];
 
-                    if ($i == 1) {
-                        $statusJadwal = 'Segera Hadir';
-                    } else {
-                        $statusJadwal = 'Akan Datang';
+                    $jadwalBerikutnya = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+                        ->where('tipe', 'rutin')
+                        ->where('hari', $hariBerikutnya)
+                        ->orderBy('jam_mulai')
+                        ->get();
+
+                    if ($jadwalBerikutnya->isNotEmpty()) {
+
+                        $jadwalEkskul = $jadwalBerikutnya;
+                        $statusJadwal = $i == 1 ? 'Segera Hadir' : 'Akan Datang';
+
+                        break;
                     }
-
-                    break;
                 }
             }
         }
