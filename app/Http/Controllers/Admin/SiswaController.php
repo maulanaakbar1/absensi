@@ -24,17 +24,15 @@ class SiswaController extends Controller
 
         $selectedKelas = $request->get('kelas');
         $selectedJurusan = $request->get('jurusan');
+        $selectedEkskul = $request->get('ekskul');
 
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
             : $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
-        // ❌ HAPUS RELATION EKSKUL
         $query = Siswa::with('user');
 
-        // =========================
-        // FILTER TAHUN AJARAN
-        // =========================
+        // filter tahun ajaran
         if ($selectedTahun !== 'semua') {
             $query->where(function ($q) use ($selectedTahunStart) {
                 $q->whereNull('tahun_masuk')
@@ -47,16 +45,20 @@ class SiswaController extends Controller
             });
         }
 
-        // =========================
-        // FILTER JURUSAN
-        // =========================
+        // filter jurusan
         if ($selectedJurusan) {
             $query->where('jurusan', $selectedJurusan);
         }
 
-        // =========================
-        // SEARCH NAMA
-        // =========================
+        // filter eskul
+        if ($selectedEkskul && $selectedEkskul !== 'all') {
+            $query->whereJsonContains(
+                'ekstrakurikuler_id',
+                (int) $selectedEkskul
+            );
+        }
+
+        // search nama
         if ($request->filled('search')) {
             $search = $request->search;
 
@@ -65,9 +67,7 @@ class SiswaController extends Controller
             });
         }
 
-        // =========================
-        // FILTER KELAS
-        // =========================
+        // filter kelas
         if ($selectedKelas) {
             $query->where(function ($q) use ($selectedTahunStart, $selectedKelas) {
                 $q->whereRaw(
@@ -86,11 +86,9 @@ class SiswaController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // =========================
-        // 🔥 AMBIL EKSKUL MANUAL SEKALI (NO N+1)
-        // =========================
+        
         $allEkskul = Ekstrakurikuler::all()->keyBy('id');
-        $ekskul = Ekstrakurikuler::all(); // 🔥 TAMBAH INI
+        $ekskul = Ekstrakurikuler::all(); 
 
         $anggota->getCollection()->transform(function ($siswa) use ($selectedTahunStart, $allEkskul) {
 
@@ -123,7 +121,8 @@ class SiswaController extends Controller
             'selectedTahun',
             'selectedTahunStart',
             'selectedKelas',
-            'selectedJurusan'
+            'selectedJurusan',
+            'selectedEkskul'
         ));
     }
 
@@ -162,7 +161,6 @@ class SiswaController extends Controller
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
 
-            // ✅ FIX MULTIPLE EKSKUL
             'ekstrakurikuler_id' => 'required|array',
             'ekstrakurikuler_id.*' => 'exists:ekstrakurikulers,id',
 
@@ -192,7 +190,6 @@ class SiswaController extends Controller
             Siswa::create([
                 'user_id' => $user->id,
 
-                // ✅ SIMPAN MULTIPLE EKSKUL
                 'ekstrakurikuler_id' => json_encode($ekskul),
 
                 'nis' => $request->nis,
@@ -235,7 +232,6 @@ class SiswaController extends Controller
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
 
-            // ✅ FIX MULTIPLE EKSKUL
             'ekstrakurikuler_id' => 'required|array',
             'ekstrakurikuler_id.*' => 'exists:ekstrakurikulers,id',
 
@@ -299,7 +295,6 @@ class SiswaController extends Controller
                 'jurusan' => $request->jurusan,
                 'jenis_kelamin' => $request->jenis_kelamin,
 
-                // ✅ SIMPAN ARRAY -> JSON
                 'ekstrakurikuler_id' => json_encode($ekskul),
 
                 'no_telp_siswa' => $request->no_telp_siswa,
