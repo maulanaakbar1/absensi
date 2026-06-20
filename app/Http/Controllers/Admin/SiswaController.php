@@ -17,23 +17,20 @@ class SiswaController extends Controller
 {
     public function index(Request $request)
     {
-        // Default tahun ajaran sekarang
         $selectedTahun = $request->get(
             'tahun_ajaran',
             $this->getCurrentTahunAjaran()
         );
 
-        // Filter kelas
         $selectedKelas = $request->get('kelas');
-
-        // FILTER JURUSAN
         $selectedJurusan = $request->get('jurusan');
 
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
             : $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
-        $query = Siswa::with(['user', 'ekstrakurikuler']);
+        // ❌ HAPUS RELATION EKSKUL
+        $query = Siswa::with('user');
 
         // =========================
         // FILTER TAHUN AJARAN
@@ -41,12 +38,12 @@ class SiswaController extends Controller
         if ($selectedTahun !== 'semua') {
             $query->where(function ($q) use ($selectedTahunStart) {
                 $q->whereNull('tahun_masuk')
-                ->orWhere(function ($q2) use ($selectedTahunStart) {
-                    $q2->whereRaw(
-                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
-                        [$selectedTahunStart]
-                    );
-                });
+                    ->orWhere(function ($q2) use ($selectedTahunStart) {
+                        $q2->whereRaw(
+                            '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                            [$selectedTahunStart]
+                        );
+                    });
             });
         }
 
@@ -56,12 +53,11 @@ class SiswaController extends Controller
         if ($selectedJurusan) {
             $query->where('jurusan', $selectedJurusan);
         }
-        
+
         // =========================
-        // FILTER SEARCH NAMA
+        // SEARCH NAMA
         // =========================
         if ($request->filled('search')) {
-
             $search = $request->search;
 
             $query->whereHas('user', function ($q) use ($search) {
@@ -70,15 +66,17 @@ class SiswaController extends Controller
         }
 
         // =========================
-        // PERBAIKAN FILTER KELAS: Langsung di Query Database
+        // FILTER KELAS
         // =========================
         if ($selectedKelas) {
             $query->where(function ($q) use ($selectedTahunStart, $selectedKelas) {
-                $q->whereRaw('(? - tahun_masuk) + tingkat_awal = ?', [$selectedTahunStart, $selectedKelas]);
+                $q->whereRaw(
+                    '(? - tahun_masuk) + tingkat_awal = ?',
+                    [$selectedTahunStart, $selectedKelas]
+                );
             });
         }
 
-        // Ambil Data dengan Paginate & Pertahankan Filter di URL
         $anggota = $query
             ->join('users', 'siswas.user_id', '=', 'users.id')
             ->orderBy('siswas.jurusan', 'asc')
@@ -88,27 +86,35 @@ class SiswaController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // Transform data display teks kelas untuk setiap item halaman
-        $anggota->getCollection()->transform(function ($siswa) use ($selectedTahunStart) {
+        // =========================
+        // 🔥 AMBIL EKSKUL MANUAL SEKALI (NO N+1)
+        // =========================
+        $allEkskul = Ekstrakurikuler::all()->keyBy('id');
+        $ekskul = Ekstrakurikuler::all(); // 🔥 TAMBAH INI
+
+        $anggota->getCollection()->transform(function ($siswa) use ($selectedTahunStart, $allEkskul) {
+
             $tingkat = $this->getTingkat($siswa, $selectedTahunStart);
             $siswa->kelas_display = $this->getKelasDisplay($siswa, $selectedTahunStart);
             $siswa->tingkat_display = $tingkat;
 
+            $ids = json_decode($siswa->ekstrakurikuler_id, true) ?? [];
+
+            $siswa->ekskul_nama = collect($ids)
+                ->map(fn($id) => $allEkskul[$id]->nama ?? '-')
+                ->implode(', ');
+
             return $siswa;
         });
 
-        // Dropdown tahun ajaran
         $tahunAjaranList = $this->getTahunAjaranList();
 
-        // Pastikan selected tetap muncul
         if (
             $selectedTahun !== 'semua'
             && !in_array($selectedTahun, $tahunAjaranList)
         ) {
             $tahunAjaranList[] = $selectedTahun;
         }
-
-        $ekskul = Ekstrakurikuler::all();
 
         return view('admin.siswa', compact(
             'anggota',
@@ -117,7 +123,7 @@ class SiswaController extends Controller
             'selectedTahun',
             'selectedTahunStart',
             'selectedKelas',
-            'selectedJurusan' 
+            'selectedJurusan'
         ));
     }
 
@@ -144,6 +150,7 @@ class SiswaController extends Controller
 
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -154,7 +161,11 @@ class SiswaController extends Controller
             'tingkat_awal' => 'required|in:10,11,12',
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
-            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
+
+            // ✅ FIX MULTIPLE EKSKUL
+            'ekstrakurikuler_id' => 'required|array',
+            'ekstrakurikuler_id.*' => 'exists:ekstrakurikulers,id',
+
             'no_telp_siswa' => 'nullable|string|max:15',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
@@ -174,10 +185,16 @@ class SiswaController extends Controller
                 'password' => Hash::make($request->password),
                 'role' => 'siswa',
             ]);
+            $ekskul = array_map('intval', $request->ekstrakurikuler_id ?? []);
+
+
 
             Siswa::create([
                 'user_id' => $user->id,
-                'ekstrakurikuler_id' => $request->ekstrakurikuler_id,
+
+                // ✅ SIMPAN MULTIPLE EKSKUL
+                'ekstrakurikuler_id' => json_encode($ekskul),
+
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
                 'tahun_masuk' => $request->tahun_masuk,
@@ -217,7 +234,11 @@ class SiswaController extends Controller
             'tingkat_awal' => 'required|in:10,11,12',
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
-            'ekstrakurikuler_id' => 'required|exists:ekstrakurikulers,id',
+
+            // ✅ FIX MULTIPLE EKSKUL
+            'ekstrakurikuler_id' => 'required|array',
+            'ekstrakurikuler_id.*' => 'exists:ekstrakurikulers,id',
+
             'no_telp_siswa' => 'nullable|string|max:15',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
@@ -227,12 +248,10 @@ class SiswaController extends Controller
             'nama_ibu' => 'nullable|string|max:100',
             'no_telp_ibu' => 'nullable|string|max:15',
             'tingkatan' => 'required|in:balonpas,instruktur',
-        ], [
-            'password.min' => 'Password minimal 6 karakter.',
         ]);
 
         // =========================
-        // DATA LAMA
+        // OLD DATA
         // =========================
         $oldEkskul = $siswa->ekstrakurikuler->nama ?? '-';
 
@@ -257,11 +276,9 @@ class SiswaController extends Controller
             'Ekskul' => $oldEkskul,
         ];
 
-        DB::transaction(function () use (
-            $request,
-            $user,
-            $siswa
-        ) {
+        DB::transaction(function () use ($request, $user, $siswa) {
+
+            $ekskul = array_map('intval', $request->ekstrakurikuler_id ?? []);
 
             $user->update([
                 'name' => $request->name,
@@ -269,7 +286,6 @@ class SiswaController extends Controller
             ]);
 
             if ($request->filled('password')) {
-
                 $user->update([
                     'password' => Hash::make($request->password)
                 ]);
@@ -282,7 +298,10 @@ class SiswaController extends Controller
                 'tingkat_awal' => $request->tingkat_awal,
                 'jurusan' => $request->jurusan,
                 'jenis_kelamin' => $request->jenis_kelamin,
-                'ekstrakurikuler_id' => $request->ekstrakurikuler_id,
+
+                // ✅ SIMPAN ARRAY -> JSON
+                'ekstrakurikuler_id' => json_encode($ekskul),
+
                 'no_telp_siswa' => $request->no_telp_siswa,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
@@ -296,9 +315,12 @@ class SiswaController extends Controller
         });
 
         // =========================
-        // DATA BARU
+        // NEW DATA
         // =========================
-        $newEkskul = Ekstrakurikuler::find($request->ekstrakurikuler_id)?->nama ?? '-';
+
+        $newEkskul = Ekstrakurikuler::whereIn('id', $request->ekstrakurikuler_id ?? [])
+            ->pluck('nama')
+            ->implode(', ') ?: '-';
 
         $newData = [
             'Nama' => $request->name,
@@ -331,7 +353,6 @@ class SiswaController extends Controller
             $newValue = $newData[$field] ?? null;
 
             if ($oldValue != $newValue) {
-
                 $changes[] = "{$field}: {$oldValue} → {$newValue}";
             }
         }
@@ -340,25 +361,12 @@ class SiswaController extends Controller
             $changes[] = "Password berhasil diperbarui";
         }
 
-        // =========================
-        // FORMAT PESAN
-        // =========================
-        if (count($changes) > 0) {
+        $message = count($changes) > 0
+            ? "Data siswa berhasil diperbarui:\n- " . implode("\n- ", $changes)
+            : "Tidak ada data yang diubah";
 
-            $message = "Data siswa berhasil diperbarui:\n- "
-                . implode("\n- ", $changes);
-
-        } else {
-
-            $message = "Tidak ada data yang diubah";
-        }
-
-        return back()->with(
-            'success',
-            $message
-        );
+        return back()->with('success', $message);
     }
-
     public function destroy($id)
     {
         $siswa = Siswa::findOrFail($id);
