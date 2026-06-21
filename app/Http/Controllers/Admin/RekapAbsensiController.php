@@ -67,7 +67,10 @@ class RekapAbsensiController extends Controller
         // FILTER EKSKUL
         // =========================
         if ($ekskul != 'all') {
-            $query->where('ekstrakurikuler_id', $ekskul);
+            $query->whereJsonContains(
+                'ekstrakurikuler_id',
+                (int) $ekskul
+            );
         }
 
         // =========================
@@ -102,7 +105,7 @@ class RekapAbsensiController extends Controller
             ->orderBy('tingkat_awal', 'asc')
             ->orderBy('jurusan', 'asc')
             ->orderBy('nis', 'asc')
-            ->get();$siswas = $query->get();
+            ->get();
 
         // =========================
         // TRANSFORM KELAS DISPLAY
@@ -333,7 +336,10 @@ class RekapAbsensiController extends Controller
 
         // Filter Ekskul
         if ($ekskul && $ekskul !== 'all') {
-            $query->where('ekstrakurikuler_id', $ekskul);
+            $query->whereJsonContains(
+                'ekstrakurikuler_id',
+                (int) $ekskul
+            );
         }
 
         // Filter Tahun Ajaran / Tahun Masuk Sekolah

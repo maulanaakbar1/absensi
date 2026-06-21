@@ -197,6 +197,10 @@
             
             <div class="overflow-x-auto border rounded-xl">
                 <table class="min-w-max table-fixed text-sm border-collapse">
+
+                @php
+                    $selectedEkskul = request('ekskul');
+                @endphp
                     
                     <thead class="bg-slate-50 text-slate-600">
                         <tr>
@@ -249,16 +253,18 @@
                                     $hari = $tanggalCarbon->translatedFormat('l');
 
                                     $isLibur = $hariLibur
-                                        ->where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
+                                        ->where('ekstrakurikuler_id', (int) $selectedEkskul)
                                         ->where('tanggal', $fullDate)
                                         ->isNotEmpty();
 
                                     $adaJadwal = $jadwals
-                                        ->where('ekstrakurikuler_id', $siswa->ekstrakurikuler_id)
+                                        ->where('ekstrakurikuler_id', (int) $selectedEkskul)
                                         ->where('hari', $hari)
                                         ->isNotEmpty();
 
-                                    $absen = $siswa->absensis->firstWhere('tanggal', $fullDate);
+                                    $absen = $siswa->absensis
+                                        ->where('ekstrakurikuler_id', (int) $selectedEkskul)
+                                        ->firstWhere('tanggal', $fullDate);
 
                                     $statusColor = '';
 
