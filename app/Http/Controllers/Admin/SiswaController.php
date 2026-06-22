@@ -96,7 +96,7 @@ class SiswaController extends Controller
             $siswa->kelas_display = $this->getKelasDisplay($siswa, $selectedTahunStart);
             $siswa->tingkat_display = $tingkat;
 
-            $ids = json_decode($siswa->ekstrakurikuler_id, true) ?? [];
+            $ids = $siswa->ekstrakurikuler_id ?? [];
 
             $siswa->ekskul_nama = collect($ids)
                 ->map(fn($id) => $allEkskul[$id]->nama ?? '-')
@@ -128,7 +128,7 @@ class SiswaController extends Controller
 
     public function show($id)
     {
-        $siswa = Siswa::with(['user', 'ekstrakurikuler'])
+        $siswa = Siswa::with('user')
             ->findOrFail($id);
 
         $tahunAjaran = $this->getCurrentTahunAjaran();
@@ -185,12 +185,10 @@ class SiswaController extends Controller
             ]);
             $ekskul = array_map('intval', $request->ekstrakurikuler_id ?? []);
 
-
-
             Siswa::create([
                 'user_id' => $user->id,
 
-                'ekstrakurikuler_id' => json_encode($ekskul),
+                'ekstrakurikuler_id' => $ekskul,
 
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
@@ -249,7 +247,8 @@ class SiswaController extends Controller
         // =========================
         // OLD DATA
         // =========================
-        $oldEkskul = $siswa->ekstrakurikuler->nama ?? '-';
+        $oldEkskul = Ekstrakurikuler::whereIn('id',$siswa->ekstrakurikuler_id ?? [])->pluck('nama')->implode(', ');
+        $oldEkskul = $oldEkskul ?: '-';
 
         $oldData = [
             'Nama' => $user->name,
@@ -294,9 +293,7 @@ class SiswaController extends Controller
                 'tingkat_awal' => $request->tingkat_awal,
                 'jurusan' => $request->jurusan,
                 'jenis_kelamin' => $request->jenis_kelamin,
-
-                'ekstrakurikuler_id' => json_encode($ekskul),
-
+                'ekstrakurikuler_id' => $ekskul,
                 'no_telp_siswa' => $request->no_telp_siswa,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
