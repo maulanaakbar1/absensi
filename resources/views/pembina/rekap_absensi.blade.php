@@ -184,7 +184,6 @@
                                 <th class="w-10 border text-center">A</th>
                             </tr>
                         </thead>
-
                         <tbody>
                             @foreach ($siswas as $index => $siswa)
                                 @php

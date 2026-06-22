@@ -16,10 +16,13 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // dd('dsd');
         // 1. Ambil data pembina dan ekskulnya
         $pembina = Pembina::where('user_id', Auth::id())
             ->with('ekstrakurikuler')
             ->first();
+
+        // dd($pembina);
 
         if (!$pembina || !$pembina->ekstrakurikuler) {
             return view('pembina.dashboard', [
@@ -36,13 +39,13 @@ class DashboardController extends Controller
         $ekskulId = $pembina->ekstrakurikuler_id;
 
         // 2. Hitung jumlah siswa
-        $jumlahSiswa = Siswa::where('ekstrakurikuler_id', $ekskulId)->count();
+        $jumlahSiswa = Siswa::whereJsonContains('ekstrakurikuler_id', $ekskulId)->count();
 
-        $jumlahBalonpas = Siswa::where('ekstrakurikuler_id', $ekskulId)
+        $jumlahBalonpas = Siswa::whereJsonContains('ekstrakurikuler_id', $ekskulId)
             ->where('tingkatan', 'balonpas')
             ->count();
 
-        $jumlahInstruktur = Siswa::where('ekstrakurikuler_id', $ekskulId)
+        $jumlahInstruktur = Siswa::whereJsonContains('ekstrakurikuler_id', $ekskulId)
             ->where('tingkatan', 'instruktur')
             ->count();
 
@@ -193,7 +196,7 @@ class DashboardController extends Controller
 
         // 4. Absensi hari ini
         $absensiHariIni = Absensi::whereHas('siswa', function ($q) use ($ekskulId) {
-                $q->where('ekstrakurikuler_id', $ekskulId);
+                $q->whereJsonContains('ekstrakurikuler_id', $ekskulId);
             })
             ->whereDate('tanggal', Carbon::today())
             ->count();
@@ -220,7 +223,7 @@ class DashboardController extends Controller
         }
 
         $siswaList = Siswa::with('user')
-            ->where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
+            ->whereJsonContains('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
             ->get();
 
         $daftarHari = [
