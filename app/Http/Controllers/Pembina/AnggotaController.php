@@ -249,11 +249,13 @@ class AnggotaController extends Controller
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
 
         $siswa = Siswa::with(['user', 'ekstrakurikuler'])
-            ->where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
+            ->whereJsonContains(
+                'ekstrakurikuler_id',
+                $pembina->ekstrakurikuler_id
+            )
             ->findOrFail($id);
 
         $tahunAjaran = $this->getCurrentTahunAjaran();
-
         $tahunStart = $this->parseTahunAjaranStart($tahunAjaran);
 
         $kelasDisplay = $this->getKelasDisplay(
