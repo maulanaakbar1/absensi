@@ -247,7 +247,15 @@ class SiswaController extends Controller
         // =========================
         // OLD DATA
         // =========================
-        $oldEkskul = Ekstrakurikuler::whereIn('id',$siswa->ekstrakurikuler_id ?? [])->pluck('nama')->implode(', ');
+        $oldEkskulIds = $siswa->ekstrakurikuler_id;
+
+        if (!is_array($oldEkskulIds)) {
+            $oldEkskulIds = json_decode($oldEkskulIds, true) ?: [$oldEkskulIds];
+        }
+
+        $oldEkskul = Ekstrakurikuler::whereIn('id', $oldEkskulIds)
+            ->pluck('nama')
+            ->implode(', ');
         $oldEkskul = $oldEkskul ?: '-';
 
         $oldData = [

@@ -30,15 +30,11 @@ class Siswa extends Model
     protected $casts = [
         'tahun_masuk' => 'integer',
         'tanggal_lahir' => 'date',
+        'ekstrakurikuler_id' => 'array',
     ];
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function ekstrakurikuler()
-    {
-        return $this->belongsTo(Ekstrakurikuler::class);
     }
 
     public function absensis()
