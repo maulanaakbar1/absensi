@@ -96,7 +96,11 @@ class SiswaController extends Controller
             $siswa->kelas_display = $this->getKelasDisplay($siswa, $selectedTahunStart);
             $siswa->tingkat_display = $tingkat;
 
-            $ids = $siswa->ekstrakurikuler_id ?? [];
+            $ids = is_string($siswa->ekstrakurikuler_id) 
+                ? json_decode($siswa->ekstrakurikuler_id, true) 
+                : $siswa->ekstrakurikuler_id;
+                
+            $ids = $ids ?: [];
 
             $siswa->ekskul_nama = collect($ids)
                 ->map(fn($id) => $allEkskul[$id]->nama ?? '-')
@@ -130,6 +134,16 @@ class SiswaController extends Controller
     {
         $siswa = Siswa::with('user')
             ->findOrFail($id);
+
+        $ids = is_string($siswa->ekstrakurikuler_id) 
+            ? json_decode($siswa->ekstrakurikuler_id, true) 
+            : $siswa->ekstrakurikuler_id;
+            
+        $ids = $ids ?: [];
+
+        $siswa->ekskul_nama = Ekstrakurikuler::whereIn('id', $ids)
+            ->pluck('nama')
+            ->implode(', ');
 
         $tahunAjaran = $this->getCurrentTahunAjaran();
 

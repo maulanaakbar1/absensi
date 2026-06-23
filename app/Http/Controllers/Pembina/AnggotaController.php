@@ -31,7 +31,7 @@ class AnggotaController extends Controller
             ? $this->parseTahunAjaranStart($selectedTahun)
             : $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
-        $query = Siswa::with(['user', 'ekstrakurikuler'])
+        $query = Siswa::with(['user'])
             ->whereJsonContains('ekstrakurikuler_id', $ekskulId);
 
         // Filter berdasarkan tahun ajaran (jika bukan 'semua')
@@ -139,7 +139,7 @@ class AnggotaController extends Controller
 
         Siswa::create([
             'user_id' => $user->id,
-            'ekstrakurikuler_id' => $ekskulId,
+            'ekstrakurikuler_id' => json_encode([$ekskulId]),
             'tahun_masuk' => $request->tahun_masuk,
             'tingkat_awal' => $request->tingkat_awal,
             'jurusan' => $request->jurusan,
@@ -248,7 +248,7 @@ class AnggotaController extends Controller
     {
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
 
-        $siswa = Siswa::with(['user', 'ekstrakurikuler'])
+        $siswa = Siswa::with(['user'])
             ->whereJsonContains(
                 'ekstrakurikuler_id',
                 $pembina->ekstrakurikuler_id

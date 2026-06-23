@@ -30,7 +30,7 @@ class Siswa extends Model
     protected $casts = [
         'tahun_masuk' => 'integer',
         'tanggal_lahir' => 'date',
-        'ekstrakurikuler_id' => 'array',
+        // 'ekstrakurikuler_id' => 'array',
     ];
     public function user()
     {

@@ -161,7 +161,7 @@
                         </p>
 
                         <p class="mt-1 text-indigo-600 font-bold">
-                            {{ $siswa->ekstrakurikuler->nama ?? '-' }}
+                            {{ $siswa->ekskul_nama ?? '-' }}
                         </p>
                     </div>
 
