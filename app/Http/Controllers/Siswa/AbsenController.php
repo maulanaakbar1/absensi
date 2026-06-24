@@ -39,9 +39,7 @@ class AbsenController extends Controller
 
 
         // AMBIL JADWAL HARI INI
-        $jadwalHariIni = Jadwal::where('ekstrakurikuler_id', $this->ekskulId)
-            ->where('hari', $hariIni)
-            ->first();
+        $jadwalHariIni = $this->getJadwalHariIni($this->ekskulId);
 
         $adaJadwal = $jadwalHariIni ? true : false;
 
@@ -59,9 +57,10 @@ class AbsenController extends Controller
         }
 
         // CEK LIBUR
-        $isLibur = HariLibur::where('ekstrakurikuler_id', $this->ekskulId)
-            ->whereDate('tanggal', $today)
-            ->exists();
+        $isLibur = $this->isHariLibur($this->ekskulId);
+        if ($isLibur) {
+            $adaJadwal = false;
+        }
 
         // CEK SUDAH ABSEN
         $absenHariIni = Absensi::with('ekstrakurikuler')
@@ -93,9 +92,7 @@ class AbsenController extends Controller
         $hariIni = $today->translatedFormat('l');
 
         // CEK JADWAL HARI INI
-        $jadwalHariIni = Jadwal::where('ekstrakurikuler_id', $this->ekskulId)
-            ->where('hari', $hariIni)
-            ->first();
+        $jadwalHariIni = $this->getJadwalHariIni($this->ekskulId);
 
         if (!$jadwalHariIni) {
             return back()->with('error', 'Tidak ada jadwal latihan hari ini!');
@@ -109,9 +106,7 @@ class AbsenController extends Controller
         }
 
         // CEK LIBUR
-        $isLibur = HariLibur::where('ekstrakurikuler_id', $this->ekskulId)
-            ->whereDate('tanggal', $today)
-            ->exists();
+        $isLibur = $this->isHariLibur($this->ekskulId);
 
         if ($isLibur) {
             return back()->with('error', 'Hari ini adalah hari libur!');
@@ -350,5 +345,58 @@ class AbsenController extends Controller
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    private function getJadwalHariIni($ekskulId)
+    {
+        $today = Carbon::today();
+        $hariIni = $today->translatedFormat('l');
+
+        return Jadwal::where('ekstrakurikuler_id', $ekskulId)
+            ->where(function ($q) use ($hariIni, $today) {
+
+                $q->where(function ($r) use ($hariIni) {
+
+                    $r->where('tipe', 'rutin')
+                        ->where('hari', $hariIni);
+
+                });
+
+                $q->orWhere(function ($r) use ($today) {
+
+                    $r->where('tipe', 'dadakan')
+                        ->whereDate('tanggal', $today);
+
+                });
+
+            })
+            ->orderBy('jam_mulai')
+            ->first();
+    }
+
+    private function isHariLibur($ekskulId)
+    {
+        $today = Carbon::today();
+        $hariIni = $today->translatedFormat('l');
+
+        return HariLibur::where('ekstrakurikuler_id', $ekskulId)
+            ->where(function ($q) use ($hariIni, $today) {
+
+                $q->where(function ($r) use ($today) {
+
+                    $r->where('tipe', 'dadakan')
+                        ->whereDate('tanggal', $today);
+
+                });
+
+                $q->orWhere(function ($r) use ($hariIni) {
+
+                    $r->where('tipe', 'rutin')
+                        ->where('hari', $hariIni);
+
+                });
+
+            })
+            ->exists();
     }
 }
