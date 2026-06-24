@@ -214,24 +214,33 @@
 
                                             \Carbon\Carbon::setLocale('id');
                                             $tanggalCarbon = \Carbon\Carbon::parse($fullDate);
-                                            $hari = \Carbon\Carbon::now()->isoFormat('dddd');
+                                            $hari = $tanggalCarbon->locale('id')->translatedFormat('l');
 
-                                            $isLibur = \App\Models\HariLibur::where(
-                                                'ekstrakurikuler_id',
-                                                $siswa->ekstrakurikuler_id,
-                                            )
-                                                ->whereDate('tanggal', $fullDate)
-                                                ->exists();
+                                            $ekskulSiswaIds = is_array($ekskulIds) ? $ekskulIds : [$siswa->ekstrakurikuler_id];
 
-                                            $adaJadwal = \App\Models\Jadwal::where('tipe', 'rutin')
+                                            $isLiburRutin = \App\Models\HariLibur::where('tipe', 'rutin')
                                                 ->where('hari', $hari)
-                                                ->whereIn('ekstrakurikuler_id', $ekskulIds)
-                                                ->exists();
-                                            $adaJadwalDadakan = \App\Models\Jadwal::where('tipe', 'dadakan')
-                                                ->whereIn('ekstrakurikuler_id', $ekskulIds)
+                                                ->whereIn('ekstrakurikuler_id', $ekskulSiswaIds)
                                                 ->exists();
 
-                                            // dd($adaJadwal, $adaJadwalDadakan);
+                                            $isLiburDadakan = \App\Models\HariLibur::where('tipe', 'dadakan')
+                                                ->whereDate('tanggal', $fullDate)
+                                                ->whereIn('ekstrakurikuler_id', $ekskulSiswaIds)
+                                                ->exists();
+
+                                            $isLibur = $isLiburRutin || $isLiburDadakan;
+
+                                            $adaJadwalRutin = \App\Models\Jadwal::where('tipe', 'rutin')
+                                                ->where('hari', $hari)
+                                                ->whereIn('ekstrakurikuler_id', $ekskulSiswaIds)
+                                                ->exists();
+
+                                            $adaJadwalDadakan = \App\Models\Jadwal::where('tipe', 'dadakan')
+                                                ->whereDate('tanggal', $fullDate)
+                                                ->whereIn('ekstrakurikuler_id', $ekskulSiswaIds)
+                                                ->exists();
+
+                                            $adaJadwal = $adaJadwalRutin || $adaJadwalDadakan;
 
                                             $absen = $siswa->absensis->firstWhere('tanggal', $fullDate);
                                             $statusColor = 'bg-slate-50';
