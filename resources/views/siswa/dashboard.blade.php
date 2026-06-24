@@ -247,7 +247,7 @@
                     @forelse($jadwalEkskul as $jadwal)
                         <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
 
-                            <div class="flex items-center justify-between mb-2">
+                            <div class="flex flex-col gap-3 mb-2">
 
                                 <div>
 
