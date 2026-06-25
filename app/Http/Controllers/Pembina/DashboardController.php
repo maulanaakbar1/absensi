@@ -84,7 +84,6 @@ class DashboardController extends Controller
                     $r->where('tipe', 'rutin')
                         ->where('hari', $hariSekarang);
                 });
-
             })
             ->first();
 
@@ -95,7 +94,6 @@ class DashboardController extends Controller
         if ($liburHariIni) {
 
             $labelJadwal = 'Hari Ini Libur';
-
         } else {
 
             // =========================
@@ -120,7 +118,6 @@ class DashboardController extends Controller
 
                         $jadwal->tanggal_event =
                             Carbon::parse($jadwal->tanggal . ' ' . $jadwal->jam_mulai);
-
                     } else {
 
                         $hariIndex = array_search(
@@ -144,8 +141,8 @@ class DashboardController extends Controller
                         $jadwal->tanggal_event =
                             Carbon::parse(
                                 $eventDate->format('Y-m-d')
-                                . ' '
-                                . $jadwal->jam_mulai
+                                    . ' '
+                                    . $jadwal->jam_mulai
                             );
                     }
 
@@ -161,29 +158,25 @@ class DashboardController extends Controller
 
                     if (
                         Carbon::parse($jadwalTerdekat->tanggal)
-                            ->isToday()
+                        ->isToday()
                     ) {
 
                         $labelJadwal = 'Latihan Dadakan Hari Ini';
-
                     } elseif (
                         Carbon::parse($jadwalTerdekat->tanggal)
-                            ->isTomorrow()
+                        ->isTomorrow()
                     ) {
 
                         $labelJadwal = 'Latihan Dadakan Besok';
-
                     } else {
 
                         $labelJadwal = 'Latihan Dadakan';
                     }
-
                 } else {
 
                     if ($jadwalTerdekat->hari === $hariSekarang) {
 
                         $labelJadwal = 'Jadwal Latihan Hari Ini';
-
                     } else {
 
                         $labelJadwal =
@@ -196,8 +189,8 @@ class DashboardController extends Controller
 
         // 4. Absensi hari ini
         $absensiHariIni = Absensi::whereHas('siswa', function ($q) use ($ekskulId) {
-                $q->whereJsonContains('ekstrakurikuler_id', $ekskulId);
-            })
+            $q->whereJsonContains('ekstrakurikuler_id', $ekskulId);
+        })
             ->whereDate('tanggal', Carbon::today())
             ->count();
 
@@ -227,7 +220,13 @@ class DashboardController extends Controller
             ->get();
 
         $daftarHari = [
-            'Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'
+            'Senin',
+            'Selasa',
+            'Rabu',
+            'Kamis',
+            'Jumat',
+            'Sabtu',
+            'Minggu'
         ];
 
         $urutanHari = [
@@ -247,20 +246,44 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($item) use ($urutanHari, $hariSekarangIndex, $now) {
 
+                // JADWAL DADAKAN
+                if ($item->tipe === 'dadakan') {
+
+                    $tanggalKegiatan = Carbon::parse($item->tanggal . ' ' . $item->jam_mulai);
+
+                    // skip yang sudah lewat
+                    if ($tanggalKegiatan->lt($now)) {
+                        $item->ranking = PHP_INT_MAX;
+                    } else {
+                        $item->ranking = $now->diffInSeconds($tanggalKegiatan);
+                    }
+
+                    return $item;
+                }
+
+                // JADWAL RUTIN
                 $hariIndex = $urutanHari[$item->hari];
 
-                $diff = $hariIndex - $hariSekarangIndex;
+                $diffHari = $hariIndex - $hariSekarangIndex;
 
-                if ($diff < 0) {
-                    $diff += 7;
+                if ($diffHari < 0) {
+                    $diffHari += 7;
                 }
 
-                // ⛔ kalau hari sama tapi jam sudah lewat → dorong ke minggu depan
-                if ($diff == 0 && $item->jam_mulai <= $now->format('H:i:s')) {
-                    $diff = 7;
+                // hari sama tapi jam sudah lewat
+                if (
+                    $diffHari == 0 &&
+                    $item->jam_mulai <= $now->format('H:i:s')
+                ) {
+                    $diffHari = 7;
                 }
 
-                $item->ranking = $diff;
+                $nextDate = $now->copy()
+                    ->startOfDay()
+                    ->addDays($diffHari)
+                    ->setTimeFromTimeString($item->jam_mulai);
+
+                $item->ranking = $now->diffInSeconds($nextDate);
 
                 return $item;
             })
@@ -269,6 +292,7 @@ class DashboardController extends Controller
 
         $delay = 0;
 
+        \Log::info($jadwal);
         // ======================
         // SISWA
         // ======================
