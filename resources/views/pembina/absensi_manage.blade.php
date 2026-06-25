@@ -198,7 +198,67 @@
 
                         @php
                             $absen = $siswa->absensis->first();
-                            $status = $absen ? $absen->status : 'belum ada';
+
+                            $hariMap = [
+                                'Sunday' => 'Minggu',
+                                'Monday' => 'Senin',
+                                'Tuesday' => 'Selasa',
+                                'Wednesday' => 'Rabu',
+                                'Thursday' => 'Kamis',
+                                'Friday' => 'Jumat',
+                                'Saturday' => 'Sabtu'
+                            ];
+
+                            $hari = $hariMap[\Carbon\Carbon::parse($tanggal)->format('l')];
+
+                            $ekskulIds = is_array($siswa->ekstrakurikuler_id)
+                                ? $siswa->ekstrakurikuler_id
+                                : json_decode($siswa->ekstrakurikuler_id, true);
+
+                            $ekskulIds = $ekskulIds ?: [];
+
+                            $isLiburRutin = \App\Models\HariLibur::where('tipe', 'rutin')
+                                ->where('hari', $hari)
+                                ->whereIn('ekstrakurikuler_id', $ekskulIds)
+                                ->exists();
+
+                            $isLiburDadakan = \App\Models\HariLibur::where('tipe', 'dadakan')
+                                ->whereDate('tanggal', $tanggal)
+                                ->whereIn('ekstrakurikuler_id', $ekskulIds)
+                                ->exists();
+
+                            $isLibur = $isLiburRutin || $isLiburDadakan;
+
+                            $adaJadwalRutin = \App\Models\Jadwal::where('tipe', 'rutin')
+                                ->where('hari', $hari)
+                                ->whereIn('ekstrakurikuler_id', $ekskulIds)
+                                ->exists();
+
+                            $adaJadwalDadakan = \App\Models\Jadwal::where('tipe', 'dadakan')
+                                ->whereDate('tanggal', $tanggal)
+                                ->whereIn('ekstrakurikuler_id', $ekskulIds)
+                                ->exists();
+
+                            $adaJadwal = $adaJadwalRutin || $adaJadwalDadakan;
+
+                            if ($absen) {
+
+                                $status = $absen->status;
+
+                            } elseif (
+                                !$isLibur &&
+                                $adaJadwal &&
+                                $tanggal < now()->toDateString()
+                            ) {
+
+                                // otomatis alpa
+                                $status = 'alpa';
+
+                            } else {
+
+                                $status = 'belum ada';
+
+                            }
 
                             $statusColor = match($status) {
                                 'hadir' => 'bg-emerald-100 text-emerald-700',
