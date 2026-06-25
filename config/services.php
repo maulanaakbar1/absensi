@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'waapi' => [
+        'url' => env('WA_API_URL'),
+        'token' => env('WA_API_TOKEN'),
+    ],
+
 ];

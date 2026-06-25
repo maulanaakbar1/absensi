@@ -26,9 +26,9 @@ class KirimWaJob implements ShouldQueue
     {
         Http::timeout(30)
             ->withHeaders([
-                'Authorization' => 'Bearer ' . env('WA_API_TOKEN'),
+                'Authorization' => 'Bearer ' . config('services.waapi.token'),
             ])
-            ->post(env('WA_API_URL'), [
+            ->post(config('services.waapi.url'), [
                 'phone' => $this->nomor,
                 'message' => $this->pesan,
             ]);
