@@ -216,7 +216,9 @@
                                             $tanggalCarbon = \Carbon\Carbon::parse($fullDate);
                                             $hari = $tanggalCarbon->locale('id')->translatedFormat('l');
 
-                                            $ekskulSiswaIds = is_array($ekskulIds) ? $ekskulIds : [$siswa->ekstrakurikuler_id];
+                                            $ekskulSiswaIds = is_array($ekskulIds)
+                                                ? $ekskulIds
+                                                : [$siswa->ekstrakurikuler_id];
 
                                             $isLiburRutin = \App\Models\HariLibur::where('tipe', 'rutin')
                                                 ->where('hari', $hari)
@@ -243,48 +245,74 @@
                                             $adaJadwal = $adaJadwalRutin || $adaJadwalDadakan;
 
                                             $absen = $siswa->absensis->firstWhere('tanggal', $fullDate);
+
                                             $statusColor = 'bg-slate-50';
                                             $tooltip = 'Belum ada absensi';
 
+                                            // =========================
+                                            // LIBUR
+                                            // =========================
                                             if ($isLibur) {
+
                                                 $statusColor = 'bg-red-500 border-red-600';
-                                            } elseif (!$adaJadwal) {
-                                                $statusColor = 'bg-slate-100'; // kosong / no jadwal
-                                            } elseif ($absen) {
-                                                if ($absen->status == 'hadir') {
-                                                    $statusColor = 'bg-emerald-100 border-emerald-200';
-                                                    $totalHadir++;
-                                                } elseif ($absen->status == 'sakit') {
-                                                    $statusColor = 'bg-amber-100 border-amber-200';
-                                                    $totalSakit++;
-                                                } elseif ($absen->status == 'izin') {
-                                                    $statusColor = 'bg-blue-100 border-blue-200';
-                                                    $totalIzin++;
-                                                } elseif ($absen->status == 'alpa') {
-                                                    $statusColor = 'bg-slate-400 border-slate-500';
-                                                    $totalAlpa++;
-                                                }
-                                            }
-                                        @endphp
-
-                                        @php
-                                            $tooltip = 'Tidak ada jadwal';
-                                           
-
-                                            if ($isLibur) {
                                                 $tooltip = 'Hari Libur';
-                                            } elseif (!$adaJadwal) {
-                                                $tooltip = 'Tidak ada jadwal';
-                                            } elseif ($absen) {
-                                                if ($absen->status == 'hadir') {
-                                                    $tooltip = 'Hadir';
-                                                } elseif ($absen->status == 'sakit') {
-                                                    $tooltip = 'Sakit';
-                                                } elseif ($absen->status == 'izin') {
-                                                    $tooltip = 'Izin';
-                                                } elseif ($absen->status == 'alpa') {
-                                                    $tooltip = 'Alpa';
+
+                                            }
+
+                                            elseif ($adaJadwal) {
+
+                                                if ($absen) {
+
+                                                    if ($absen->status === 'hadir') {
+
+                                                        $statusColor = 'bg-emerald-100 border-emerald-200';
+                                                        $tooltip = 'Hadir';
+                                                        $totalHadir++;
+
+                                                    } elseif ($absen->status === 'sakit') {
+
+                                                        $statusColor = 'bg-amber-100 border-amber-200';
+                                                        $tooltip = 'Sakit';
+                                                        $totalSakit++;
+
+                                                    } elseif ($absen->status === 'izin') {
+
+                                                        $statusColor = 'bg-blue-100 border-blue-200';
+                                                        $tooltip = 'Izin';
+                                                        $totalIzin++;
+
+                                                    } elseif ($absen->status === 'alpa') {
+
+                                                        $statusColor = 'bg-slate-400 border-slate-500';
+                                                        $tooltip = 'Alpa';
+                                                        $totalAlpa++;
+
+                                                    }
+
                                                 }
+
+                                                elseif (\Carbon\Carbon::parse($fullDate)->lt(now()->startOfDay())) {
+
+                                                    $statusColor = 'bg-slate-400 border-slate-500';
+                                                    $tooltip = 'Alpa';
+                                                    $totalAlpa++;
+
+                                                }
+
+                                                else {
+
+                                                    $statusColor = 'bg-slate-50';
+                                                    $tooltip = 'Belum ada absensi';
+
+                                                }
+
+                                            }
+
+                                            else {
+
+                                                $statusColor = 'bg-slate-100';
+                                                $tooltip = 'Tidak ada jadwal';
+
                                             }
                                         @endphp
 
