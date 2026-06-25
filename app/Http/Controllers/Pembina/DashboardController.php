@@ -245,7 +245,7 @@ class DashboardController extends Controller
         $jadwal = Jadwal::where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
             ->get()
             ->map(function ($item) use ($urutanHari, $hariSekarangIndex, $now) {
- 
+  
                 // JADWAL DADAKAN
                 if ($item->tipe === 'dadakan') {
 
