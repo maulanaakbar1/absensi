@@ -237,11 +237,6 @@
                                             $tanggalCarbon = \Carbon\Carbon::parse($fullDate);
                                             $hari = $tanggalCarbon->locale('id')->translatedFormat('l');
 
-                                            /*
-    |--------------------------------------------------------------------------
-    | Filter Ekskul
-    |--------------------------------------------------------------------------
-    */
                                             $jadwalFiltered = $jadwals;
                                             $liburFiltered = $hariLibur;
                                             $absensiFiltered = $siswa->absensis;
@@ -273,11 +268,6 @@
                                             $jadwalSiswa = $jadwalFiltered->whereIn('ekstrakurikuler_id', $ekskulSiswaIds);
                                             $liburSiswa = $liburFiltered->whereIn('ekstrakurikuler_id', $ekskulSiswaIds);
 
-                                            /*
-    |--------------------------------------------------------------------------
-    | Jadwal
-    |--------------------------------------------------------------------------
-    */
                                             $jadwalRutin =
                                                 $jadwalSiswa->where('tipe', 'rutin')->where('hari', $hari)->count() >
                                                 0;
@@ -294,11 +284,6 @@
 
                                             $adaJadwal = $jadwalRutin || $jadwalDadakan;
 
-                                            /*
-    |--------------------------------------------------------------------------
-    | Libur
-    |--------------------------------------------------------------------------
-    */
                                             $liburRutin =
                                                 $liburSiswa->where('tipe', 'rutin')->where('hari', $hari)->count() >
                                                 0;
@@ -314,23 +299,12 @@
                                                     ->count() > 0;
 
                                             $isLibur = $liburRutin || $liburDadakan;
-                                            /*
 
-                                            
-    |--------------------------------------------------------------------------
-    | Absensi
-    |--------------------------------------------------------------------------
-    */
                                             $absen = $absensiFiltered->first(function ($item) use ($fullDate) {
                                                 return \Carbon\Carbon::parse($item->tanggal)->format('Y-m-d') ===
                                                     $fullDate;
                                             });
 
-                                            /*
-    |--------------------------------------------------------------------------
-    | Warna Status
-    |--------------------------------------------------------------------------
-    */
                                             $statusColor = '';
 
                                             if ($isLibur) {
@@ -338,7 +312,9 @@
                                             } elseif (!$adaJadwal) {
                                                 $statusColor = 'bg-slate-100';
                                             } elseif ($absen) {
+
                                                 switch ($absen->status) {
+
                                                     case 'hadir':
                                                         $statusColor = 'bg-emerald-100 border-emerald-200';
                                                         $totalHadir++;
@@ -359,6 +335,13 @@
                                                         $totalAlpa++;
                                                         break;
                                                 }
+
+                                            }
+                                            elseif ($adaJadwal && \Carbon\Carbon::parse($fullDate)->lt(now()->startOfDay())) {
+
+                                                $statusColor = 'bg-slate-400 border-slate-500';
+                                                $totalAlpa++;
+
                                             }
                                         @endphp
 
@@ -366,21 +349,31 @@
                                             @php
                                                 $tooltip = 'Belum ada absensi';
 
-                                                if ($isLibur) {
-                                                    $tooltip = 'Hari Libur';
-                                                } elseif (!$adaJadwal) {
-                                                    $tooltip = 'Tidak ada jadwal';
-                                                } elseif ($absen) {
-                                                    if ($absen->status == 'hadir') {
-                                                        $tooltip = 'Hadir';
-                                                    } elseif ($absen->status == 'sakit') {
-                                                        $tooltip = 'Sakit';
-                                                    } elseif ($absen->status == 'izin') {
-                                                        $tooltip = 'Izin';
-                                                    } elseif ($absen->status == 'alpa') {
+                                                    if ($isLibur) {
+
+                                                        $tooltip = 'Hari Libur';
+
+                                                    } elseif (!$adaJadwal) {
+
+                                                        $tooltip = 'Tidak ada jadwal';
+
+                                                    } elseif ($absen) {
+
+                                                        if ($absen->status == 'hadir') {
+                                                            $tooltip = 'Hadir';
+                                                        } elseif ($absen->status == 'sakit') {
+                                                            $tooltip = 'Sakit';
+                                                        } elseif ($absen->status == 'izin') {
+                                                            $tooltip = 'Izin';
+                                                        } elseif ($absen->status == 'alpa') {
+                                                            $tooltip = 'Alpa';
+                                                        }
+
+                                                    } elseif (\Carbon\Carbon::parse($fullDate)->lt(now()->startOfDay())) {
+
                                                         $tooltip = 'Alpa';
+
                                                     }
-                                                }
                                             @endphp
 
                                             <div class="relative group w-full h-full flex items-center justify-center">
