@@ -77,8 +77,15 @@ class JurnalController extends Controller
             $tanggal = Carbon::parse($libur->tanggal);
             if ($tanggal->month == $bulan && $tanggal->year == $tahun) {
                 $events->push([
-                    'tanggal' => $tanggal, 'jam' => '-', 'lokasi' => '-', 'keterangan' => null,
-                    'hadir' => 0, 'total' => $totalAnggota, 'libur' => true, 'keterangan_libur' => $libur->keterangan,
+                    'tanggal' => $tanggal,
+                    'jadwal' => '-',
+                    'jam' => '-',
+                    'lokasi' => '-',
+                    'keterangan' => null,
+                    'hadir' => 0,
+                    'total' => $totalAnggota,
+                    'libur' => true,
+                    'keterangan_libur' => $libur->keterangan,
                 ]);
             }
         }
@@ -151,6 +158,7 @@ class JurnalController extends Controller
 
         return [
             'tanggal' => $tanggal->copy(),
+            'jadwal' => ucfirst($jadwal->tipe), // Tambahkan ini
             'jam' => $jadwal->jam_mulai . ' - ' . $jadwal->jam_selesai,
             'lokasi' => $jadwal->lokasi,
             'keterangan' => $jadwal->keterangan,
@@ -261,8 +269,15 @@ class JurnalController extends Controller
             $tanggal = Carbon::parse($libur->tanggal);
             if ($tanggal->month == $bulan && $tanggal->year == $tahun) {
                 $events->push([
-                    'tanggal' => $tanggal, 'jam' => '-', 'lokasi' => '-', 'keterangan' => null,
-                    'hadir' => 0, 'total' => $totalAnggota, 'libur' => true, 'keterangan_libur' => $libur->keterangan,
+                    'tanggal' => $tanggal,
+                    'jadwal' => '-',
+                    'jam' => '-',
+                    'lokasi' => '-',
+                    'keterangan' => null,
+                    'hadir' => 0,
+                    'total' => $totalAnggota,
+                    'libur' => true,
+                    'keterangan_libur' => $libur->keterangan,
                 ]);
             }
         }

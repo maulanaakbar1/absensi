@@ -25,6 +25,7 @@
         <tr>
             <th>No</th>
             <th>Tanggal</th>
+            <th>Jadwal</th>
             <th>Jam</th>
             <th>Lokasi</th>
             <th>Keterangan</th>
@@ -41,6 +42,14 @@
                 {{ $event['tanggal']->translatedFormat('d F Y') }}
             </td>
 
+            <td>
+                @if($event['libur'])
+                    -
+                @else
+                    {{ $event['jadwal'] }}
+                @endif
+            </td>
+
             <td>{{ $event['jam'] }}</td>
 
             <td>{{ $event['lokasi'] }}</td>
@@ -55,9 +64,11 @@
                 @endif
             </td>
 
-            <td>
+            <td style="text-align: center;">
                 @if($event['libur'])
-                    <strong>LIBUR</strong>
+                    <strong style="color: #dc2626;">
+                        LIBUR
+                    </strong>
                 @else
                     {{ $event['hadir'] }}/{{ $event['total'] }}
                 @endif

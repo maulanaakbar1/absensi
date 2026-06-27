@@ -102,6 +102,7 @@
                     <tr>
                         <th class="p-3 md:p-4 text-left text-xs md:text-sm font-semibold text-slate-600">No</th>
                         <th class="p-3 md:p-4 text-left text-xs md:text-sm font-semibold text-slate-600">Hari / Tanggal</th>
+                        <th class="p-3 md:p-4 text-left text-xs md:text-sm font-semibold text-slate-600">Jadwal</th>
                         <th class="p-3 md:p-4 text-left text-xs md:text-sm font-semibold text-slate-600">Jam</th>
                         <th class="p-3 md:p-4 text-left text-xs md:text-sm font-semibold text-slate-600">Lokasi</th>
                         <th class="p-3 md:p-4 text-left text-xs md:text-sm font-semibold text-slate-600">Keterangan</th>
@@ -112,11 +113,25 @@
                     @forelse($events as $index => $event)
                         <tr class="hover:bg-slate-50/50 transition">
                             <td class="p-3 md:p-4 text-sm text-slate-600">
-                                {{-- Modifikasi nomor urut agar menyesuaikan halaman pagination --}}
                                 {{ ($events->currentPage() - 1) * $events->perPage() + $index + 1 }}
                             </td>
                             <td class="p-3 md:p-4 text-sm font-medium text-slate-800">
                                 {{ $event['tanggal']->translatedFormat('l, d F Y') }}
+                            </td>
+                            <td class="p-3 md:p-4 text-sm">
+                                @if($event['libur'])
+                                    <span class="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">
+                                        -
+                                    </span>
+                                @elseif($event['jadwal'] === 'Dadakan')
+                                    <span class="inline-block px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                                        Dadakan
+                                    </span>
+                                @else
+                                    <span class="inline-block px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                                        Rutin
+                                    </span>
+                                @endif
                             </td>
                             <td class="p-3 md:p-4 text-sm text-slate-600">
                                 {{ $event['jam'] }}
@@ -149,7 +164,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="p-10 text-center text-slate-400 text-sm">
+                            <td colspan="7" class="p-10 text-center text-slate-400 text-sm">
                                 Belum ada jurnal
                             </td>
                         </tr>
