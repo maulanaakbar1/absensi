@@ -244,50 +244,49 @@ class DashboardController extends Controller
 
         $jadwal = Jadwal::where('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
             ->get()
-            ->map(function ($item) use ($urutanHari, $hariSekarangIndex, $now) {
-  
-                // JADWAL DADAKAN
+            ->filter(function ($item) use ($now) {
+
+                if ($item->tipe === 'dadakan') {
+                    return Carbon::parse($item->tanggal)->gte($now->copy()->startOfDay());
+                }
+
+                return true;
+            })
+            ->map(function ($item) use ($urutanHari, $now) {
+
                 if ($item->tipe === 'dadakan') {
 
-                    $tanggalKegiatan = Carbon::parse($item->tanggal . ' ' . $item->jam_mulai);
+                    $item->tanggal_event = Carbon::parse(
+                        $item->tanggal.' '.$item->jam_mulai
+                    );
 
-                    // skip yang sudah lewat
-                    if ($tanggalKegiatan->lt($now)) {
-                        $item->ranking = PHP_INT_MAX;
-                    } else {
-                        $item->ranking = $now->diffInSeconds($tanggalKegiatan);
+                } else {
+
+                    $hariIndex = $urutanHari[$item->hari];
+
+                    $eventDate = $now->copy()->startOfDay();
+
+                    while ($eventDate->dayOfWeekIso != $hariIndex) {
+                        $eventDate->addDay();
                     }
 
-                    return $item;
+                    // kalau hari ini tapi jamnya sudah lewat,
+                    // pindahkan ke minggu depan
+                    if (
+                        $eventDate->isToday() &&
+                        $item->jam_mulai <= $now->format('H:i:s')
+                    ) {
+                        $eventDate->addWeek();
+                    }
+
+                    $eventDate->setTimeFromTimeString($item->jam_mulai);
+
+                    $item->tanggal_event = $eventDate;
                 }
-
-                // JADWAL RUTIN
-                $hariIndex = $urutanHari[$item->hari];
-
-                $diffHari = $hariIndex - $hariSekarangIndex;
-
-                if ($diffHari < 0) {
-                    $diffHari += 7;
-                }
-
-                // hari sama tapi jam sudah lewat
-                if (
-                    $diffHari == 0 &&
-                    $item->jam_mulai <= $now->format('H:i:s')
-                ) {
-                    $diffHari = 7;
-                }
-
-                $nextDate = $now->copy()
-                    ->startOfDay()
-                    ->addDays($diffHari)
-                    ->setTimeFromTimeString($item->jam_mulai);
-
-                $item->ranking = $now->diffInSeconds($nextDate);
 
                 return $item;
             })
-            ->sortBy('ranking')
+            ->sortBy('tanggal_event')
             ->first();
 
         $delay = 0;
@@ -304,8 +303,24 @@ class DashboardController extends Controller
 
             if ($jadwal) {
 
-                $pesan .= "📅 Jadwal Kegiatan\n";
-                $pesan .= "Hari : {$jadwal->hari}\n";
+                if ($jadwal->tipe === 'dadakan') {
+
+                    $pesan .= "📅 *Jadwal Dadakan*\n";
+                    $pesan .= "Hari : " .
+                        Carbon::parse($jadwal->tanggal)
+                        ->locale('id')
+                        ->translatedFormat('l') . "\n";
+                    $pesan .= "Tanggal : " .
+                        Carbon::parse($jadwal->tanggal)
+                        ->locale('id')
+                        ->translatedFormat('d F Y') . "\n";
+
+                } else {
+
+                    $pesan .= "📅 *Jadwal Rutin*\n";
+                    $pesan .= "Hari : {$jadwal->hari}\n";
+
+                }
 
                 $pesan .= "Jam : "
                     . date('H:i', strtotime($jadwal->jam_mulai))
@@ -350,8 +365,24 @@ class DashboardController extends Controller
 
             if ($jadwal) {
 
-                $pesan .= "📅 Jadwal Kegiatan\n";
-                $pesan .= "Hari : {$jadwal->hari}\n";
+                if ($jadwal->tipe === 'dadakan') {
+
+                    $pesan .= "📅 *Jadwal Dadakan*\n";
+                    $pesan .= "Hari : " .
+                        Carbon::parse($jadwal->tanggal)
+                        ->locale('id')
+                        ->translatedFormat('l') . "\n";
+                    $pesan .= "Tanggal : " .
+                        Carbon::parse($jadwal->tanggal)
+                        ->locale('id')
+                        ->translatedFormat('d F Y') . "\n";
+
+                } else {
+
+                    $pesan .= "📅 *Jadwal Rutin*\n";
+                    $pesan .= "Hari : {$jadwal->hari}\n";
+
+                }
 
                 $pesan .= "Jam : "
                     . date('H:i', strtotime($jadwal->jam_mulai))
@@ -396,8 +427,24 @@ class DashboardController extends Controller
 
             if ($jadwal) {
 
-                $pesan .= "📅 Jadwal Kegiatan\n";
-                $pesan .= "Hari : {$jadwal->hari}\n";
+                if ($jadwal->tipe === 'dadakan') {
+
+                    $pesan .= "📅 *Jadwal Dadakan*\n";
+                    $pesan .= "Hari : " .
+                        Carbon::parse($jadwal->tanggal)
+                        ->locale('id')
+                        ->translatedFormat('l') . "\n";
+                    $pesan .= "Tanggal : " .
+                        Carbon::parse($jadwal->tanggal)
+                        ->locale('id')
+                        ->translatedFormat('d F Y') . "\n";
+
+                } else {
+
+                    $pesan .= "📅 *Jadwal Rutin*\n";
+                    $pesan .= "Hari : {$jadwal->hari}\n";
+
+                }
 
                 $pesan .= "Jam : "
                     . date('H:i', strtotime($jadwal->jam_mulai))
