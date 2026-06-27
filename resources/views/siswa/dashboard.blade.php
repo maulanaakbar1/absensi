@@ -251,15 +251,17 @@
 
                                 <div>
 
-                                    @if ($jadwal->tipe === 'dadakan')
-                                        <p class="text-sm font-black text-slate-700 mb-2">
-
-                                            <span
-                                                class="bg-emerald-500 text-white text-[10px] px-3 py-1 rounded-full font-bold">
+                                    <p class="text-sm font-black text-slate-700 mb-2">
+                                        @if ($jadwal->tipe === 'dadakan')
+                                            <span class="bg-emerald-500 text-white text-[10px] px-3 py-1 rounded-full font-bold">
                                                 Jadwal Dadakan
                                             </span>
-                                        </p>
-                                    @endif
+                                        @else
+                                            <span class="bg-blue-500 text-white text-[10px] px-3 py-1 rounded-full font-bold">
+                                                Jadwal Rutin
+                                            </span>
+                                        @endif
+                                    </p>
                                     <p class="text-sm font-black text-slate-700">
 
                                         {{ $jadwal->hari }}

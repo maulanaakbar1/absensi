@@ -104,52 +104,92 @@ class DashboardController extends Controller
 
         if ($jadwalEkskul->isEmpty()) {
 
-            // Prioritaskan jadwal dadakan yang tanggalnya belum lewat
+            $jadwalTerpilih = collect();
+
+
             $jadwalDadakan = Jadwal::where('ekstrakurikuler_id', $ekskulId)
                 ->where('tipe', 'dadakan')
                 ->whereDate('tanggal', '>=', $tanggalHariIni)
                 ->orderBy('tanggal')
                 ->orderBy('jam_mulai')
-                ->get();
+                ->first();
 
-            if ($jadwalDadakan->isNotEmpty()) {
 
-                $jadwalEkskul = $jadwalDadakan;
-                $statusJadwal = 'Akan Datang';
-            } else {
+            $urutanHari = [
+                'Senin',
+                'Selasa',
+                'Rabu',
+                'Kamis',
+                'Jumat',
+                'Sabtu',
+                'Minggu'
+            ];
 
-                // Cari jadwal reguler terdekat
-                $urutanHari = [
-                    'Senin',
-                    'Selasa',
-                    'Rabu',
-                    'Kamis',
-                    'Jumat',
-                    'Sabtu',
-                    'Minggu'
-                ];
+            $indexHariIni = array_search($hariIni, $urutanHari);
 
-                $indexHariIni = array_search($hariIni, $urutanHari);
+            $jadwalRutin = null;
+            $selisihHariRutin = 999;
 
-                for ($i = 1; $i <= 7; $i++) {
+            for ($i = 0; $i < 7; $i++) {
 
-                    $nextIndex = ($indexHariIni + $i) % 7;
-                    $hariBerikutnya = $urutanHari[$nextIndex];
+                $nextIndex = ($indexHariIni + $i) % 7;
+                $hariCari = $urutanHari[$nextIndex];
 
-                    $jadwalBerikutnya = Jadwal::where('ekstrakurikuler_id', $ekskulId)
-                        ->where('tipe', 'rutin')
-                        ->where('hari', $hariBerikutnya)
-                        ->orderBy('jam_mulai')
-                        ->get();
+                $query = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+                    ->where('tipe', 'rutin')
+                    ->where('hari', $hariCari);
 
-                    if ($jadwalBerikutnya->isNotEmpty()) {
-
-                        $jadwalEkskul = $jadwalBerikutnya;
-                        $statusJadwal = $i == 1 ? 'Segera Hadir' : 'Akan Datang';
-
-                        break;
-                    }
+                // Kalau hari ini, ambil yang jamnya belum lewat
+                if ($i == 0) {
+                    $query->where('jam_mulai', '>=', $jamSekarang);
                 }
+
+                $jadwal = $query->orderBy('jam_mulai')->first();
+
+                if ($jadwal) {
+                    $jadwalRutin = $jadwal;
+                    $selisihHariRutin = $i;
+                    break;
+                }
+            }
+
+            if ($jadwalDadakan && $jadwalRutin) {
+
+                $tanggalDadakan = Carbon::parse($jadwalDadakan->tanggal)->startOfDay();
+
+                $tanggalRutin = now()->copy()->startOfDay();
+
+                if ($selisihHariRutin > 0) {
+                    $tanggalRutin->addDays($selisihHariRutin);
+                }
+
+                if ($tanggalDadakan->lte($tanggalRutin)) {
+
+                    $jadwalTerpilih = collect([$jadwalDadakan]);
+
+                } else {
+
+                    $jadwalTerpilih = collect([$jadwalRutin]);
+
+                }
+
+            } elseif ($jadwalDadakan) {
+
+                $jadwalTerpilih = collect([$jadwalDadakan]);
+
+            } elseif ($jadwalRutin) {
+
+                $jadwalTerpilih = collect([$jadwalRutin]);
+
+            }
+
+            $jadwalEkskul = $jadwalTerpilih;
+
+            if ($jadwalEkskul->isNotEmpty()) {
+
+                $statusJadwal = $selisihHariRutin == 0
+                    ? 'Segera Hadir'
+                    : 'Akan Datang';
             }
         }
 
