@@ -15,7 +15,14 @@ class JadwalController extends Controller
         $user = auth()->user();
         $ekskulId = $user->pembina->ekstrakurikuler_id;
 
-        $jadwals = Jadwal::where('ekstrakurikuler_id', $ekskulId)->get();
+        $jadwals = Jadwal::where('ekstrakurikuler_id', $ekskulId)
+        ->where(function ($q) {
+            $q->whereNull('tanggal')              
+            ->orWhereDate('tanggal', '>=', today()); 
+        })
+        ->orderByRaw('tanggal IS NULL DESC')
+        ->orderBy('tanggal')
+        ->get();
         $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 
         return view('pembina.jadwal_latihan', compact('jadwals', 'hariList'));
@@ -87,7 +94,13 @@ class JadwalController extends Controller
     public function liburIndex()
     {
         $ekskulId = auth()->user()->pembina->ekstrakurikuler_id;
-        $hariLibur = HariLibur::where('ekstrakurikuler_id', $ekskulId)->orderBy('tanggal', 'desc')->get();
+        $hariLibur = HariLibur::where('ekstrakurikuler_id', $ekskulId)
+        ->where(function ($q) {
+            $q->whereNull('tanggal')
+            ->orWhereDate('tanggal', '>=', today());
+        })
+        ->orderBy('tanggal')
+        ->get();
 
         return view('pembina.hari_libur', compact('hariLibur'));
     }
