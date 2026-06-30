@@ -96,16 +96,16 @@
                             Semua Kelas
                         </option>
 
-                        <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>
-                            X
+                        <option value="7" {{ $selectedKelas == '7' ? 'selected' : '' }}>
+                            VII
                         </option>
 
-                        <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>
-                            XI
+                        <option value="8" {{ $selectedKelas == '8' ? 'selected' : '' }}>
+                            VIII
                         </option>
 
-                        <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>
-                            XII
+                        <option value="9" {{ $selectedKelas == '9' ? 'selected' : '' }}>
+                            IX
                         </option>
 
                     </select>
@@ -116,7 +116,7 @@
                 <div class="w-full md:w-56">
 
                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">
-                        Jurusan
+                        Kode Kelas
                     </label>
 
                     <select
@@ -124,7 +124,7 @@
                         onchange="this.form.submit()"
                         class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 focus:border-blue-500 focus:ring-0">
 
-                        <option value="">Semua Jurusan</option>
+                        <option value="">Semua Kode Kelas</option>
 
                         @foreach($jurusanList as $jurusan)
                             <option value="{{ $jurusan }}" 
@@ -254,11 +254,19 @@
                     {{-- KELAS (DIPISAH) --}}
                     <td class="px-5 py-4 text-center">
 
-                            <span class="inline-flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold uppercase whitespace-nowrap">
-                                {{ $row->siswa->kelas_display ?? '-' }}
-                            </span>
+                        @php
+                            $kelasColor = match ($row->siswa->tingkat_display) {
+                                7 => 'bg-blue-50 text-blue-600',
+                                8 => 'bg-emerald-50 text-emerald-600',
+                                9 => 'bg-purple-50 text-purple-600',
+                                default => 'bg-slate-100 text-slate-600',
+                                };
+                            @endphp
 
-                        </td>
+                        <span class="inline-flex items-center justify-center min-w-[90px] px-3 py-1.5 rounded-xl {{ $kelasColor }}">
+                            {{ $row->siswa->kelas_display ?? '-' }}
+                        </span>
+                    </td>
 
                     {{-- TANGGAL --}}
                     <td class="px-5 py-4 text-sm text-slate-600 text-center whitespace-nowrap font-medium">

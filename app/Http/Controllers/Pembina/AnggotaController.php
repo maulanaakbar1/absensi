@@ -87,7 +87,7 @@ class AnggotaController extends Controller
 
         // Dropdown data pendukung
         $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
-        $jurusanList = Siswa::where('ekstrakurikuler_id', $ekskulId)
+        $jurusanList = Siswa::whereJsonContains('ekstrakurikuler_id', $ekskulId)
             ->whereNotNull('jurusan')
             ->select('jurusan')
             ->distinct()
@@ -121,7 +121,7 @@ class AnggotaController extends Controller
             'nis' => 'required|unique:siswas,nis',
             'nisn' => 'required|unique:siswas,nisn',
             'tahun_masuk' => 'required|integer|min:2000|max:2100',
-            'tingkat_awal' => 'required|in:10,11,12',
+            'tingkat_awal' => 'required|in:7,8,9',
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
             'tingkatan' => 'required|in:balonpas,instruktur',
@@ -182,7 +182,7 @@ class AnggotaController extends Controller
             'nis'            => 'required|unique:siswas,nis,' . $siswa->id,
             'nisn'           => 'required|unique:siswas,nisn,' . $siswa->id,
             'tahun_masuk'    => 'required|integer|min:2000|max:2100',
-            'tingkat_awal'   => 'required|in:10,11,12',
+            'tingkat_awal'   => 'required|in:7,8,9',
             'jurusan'        => 'required|string|max:50',
             'jenis_kelamin'  => 'required|in:L,P',
             'tingkatan'      => 'required|in:balonpas,instruktur',
@@ -356,7 +356,7 @@ class AnggotaController extends Controller
         $tingkat = ($tahunAjaranStart - $siswa->tahun_masuk)
             + $siswa->tingkat_awal;
 
-        return ($tingkat >= 10 && $tingkat <= 12)
+        return ($tingkat >= 7 && $tingkat <= 9)
             ? $tingkat
             : null;
     }
@@ -370,14 +370,14 @@ class AnggotaController extends Controller
         }
 
         $label = match ($tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
+            7 => 'VII',
+            8 => 'VIII',
+            9 => 'IX',
             default => '?',
         };
 
         $jurusan = preg_replace(
-            '/^(X|XI|XII)\s+/i',
+            '/^(VII|VIII|IX)\s+/i',
             '',
             $siswa->jurusan ?? ''
         );
@@ -388,9 +388,9 @@ class AnggotaController extends Controller
     private function generateKelas($tingkat, $jurusan)
     {
         $label = match ((int)$tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
+            7 => 'VII',
+            8 => 'VIII',
+            9 => 'IX',
             default => '',
         };
 

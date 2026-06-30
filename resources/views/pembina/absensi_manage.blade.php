@@ -55,16 +55,16 @@
                     class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700">
                     <option value="">Semua Kelas</option>
 
-                    <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>
-                        X
+                    <option value="7" {{ $selectedKelas == '7' ? 'selected' : '' }}>
+                        VII
                     </option>
 
-                    <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>
-                        XI
+                    <option value="8" {{ $selectedKelas == '8' ? 'selected' : '' }}>
+                        VIII
                     </option>
 
-                    <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>
-                        XII
+                    <option value="9" {{ $selectedKelas == '9' ? 'selected' : '' }}>
+                        IX
                     </option>
                 </select>
             </div>
@@ -90,8 +90,8 @@
                         </option>
                     @endforeach
 
-    </select>
-</div>
+                </select>
+            </div>
 
             {{-- Tanggal --}}
             <div class="w-full md:w-56">
@@ -304,11 +304,18 @@
 
                             {{-- KELAS --}}
                             <td class="px-6 py-5">
-                                <div class="inline-flex items-center px-3 py-2 rounded-xl bg-blue-50 text-blue-700">
-                                    <span class="text-xs font-bold uppercase tracking-wide whitespace-nowrap">
-                                        {{ $siswa->kelas_display }}
-                                    </span>
-                                </div>
+                                @php
+                                    $kelasColor = match ($siswa->tingkat_display) {
+                                        7 => 'bg-blue-50 text-blue-600',
+                                        8 => 'bg-emerald-50 text-emerald-600',
+                                        9 => 'bg-purple-50 text-purple-600',
+                                        default => 'bg-slate-100 text-slate-600',
+                                    };
+                                @endphp
+
+                                <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold {{ $kelasColor }}">
+                                    {{ $siswa->kelas_display }}
+                                </span>
                             </td>
 
                             {{-- ANGKATAN --}}

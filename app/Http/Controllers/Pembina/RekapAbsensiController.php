@@ -277,27 +277,15 @@ class RekapAbsensiController extends Controller
 
         $pembina = auth()->user()->pembina;
 
-        // =========================
-        // FILTER TAHUN AJARAN
-        // =========================
         $selectedTahun = $request->get(
             'tahun_ajaran',
             $this->getCurrentTahunAjaran()
         );
 
-        // =========================
-        // FILTER KELAS
-        // =========================
         $selectedKelas = $request->get('kelas');
 
-        // =========================
-        // FILTER JURUSAN
-        // =========================
         $selectedJurusan = $request->get('jurusan');
 
-        // =========================
-        // SEARCH
-        // =========================
         $search = $request->get('search');
 
         $selectedTahunStart = $selectedTahun !== 'semua'
@@ -314,9 +302,6 @@ class RekapAbsensiController extends Controller
             $pembina->ekstrakurikuler_id
         );
 
-        // =========================
-        // FILTER TAHUN AJARAN
-        // =========================
         if ($selectedTahunStart) {
 
             $query->where(function ($q) use ($selectedTahunStart) {
@@ -649,7 +634,7 @@ class RekapAbsensiController extends Controller
         $tingkat = ($tahunAjaranStart - $siswa->tahun_masuk)
             + $siswa->tingkat_awal;
 
-        return ($tingkat >= 10 && $tingkat <= 12)
+        return ($tingkat >= 7 && $tingkat <= 9)
             ? $tingkat
             : null;
     }
@@ -663,14 +648,14 @@ class RekapAbsensiController extends Controller
         }
 
         $label = match ($tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
+            7 => 'VII',
+            8 => 'VIII',
+            9 => 'IX',
             default => '?',
         };
 
         $jurusan = preg_replace(
-            '/^(X|XI|XII)\s+/i',
+            '/^(VII|VIII|IX)\s+/i',
             '',
             $siswa->jurusan ?? ''
         );
@@ -747,7 +732,7 @@ class RekapAbsensiController extends Controller
                 ->orWhere(function ($q2) use ($selectedTahunStart) {
 
                     $q2->whereRaw(
-                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (9 - tingkat_awal))',
                         [$selectedTahunStart]
                     );
 

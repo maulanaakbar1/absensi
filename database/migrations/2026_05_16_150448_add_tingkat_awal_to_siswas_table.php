@@ -13,19 +13,18 @@ return new class extends Migration
 
             if (!Schema::hasColumn('siswas', 'tingkat_awal')) {
                 $table->integer('tingkat_awal')
-                    ->default(10)
+                    ->default(7)
                     ->after('tahun_masuk');
             }
         });
 
-        // isi otomatis dari data jurusan lama
         DB::statement("
             UPDATE siswas
             SET tingkat_awal = CASE
-                WHEN jurusan LIKE 'XII %' THEN 12
-                WHEN jurusan LIKE 'XI %' THEN 11
-                WHEN jurusan LIKE 'X %' THEN 10
-                ELSE 10
+                WHEN jurusan LIKE 'IX %' THEN 9
+                WHEN jurusan LIKE 'VIII %' THEN 8
+                WHEN jurusan LIKE 'VII %' THEN 7
+                ELSE 7
             END
             WHERE tingkat_awal IS NULL
         ");

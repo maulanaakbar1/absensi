@@ -181,7 +181,7 @@ class ProfileController extends Controller
         $tingkat = ($tahunAjaranStart - $siswa->tahun_masuk)
             + $siswa->tingkat_awal;
 
-        return ($tingkat >= 10 && $tingkat <= 12)
+        return ($tingkat >= 7 && $tingkat <= 9)
             ? $tingkat
             : null;
     }
@@ -195,14 +195,14 @@ class ProfileController extends Controller
         }
 
         $label = match ($tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
+            7 => 'VII',
+            8 => 'VIII',
+            9 => 'IX',
             default => '?',
         };
 
         $jurusan = preg_replace(
-            '/^(X|XI|XII)\s+/i',
+            '/^(VII|VIII|IX)\s+/i',
             '',
             $siswa->jurusan ?? ''
         );

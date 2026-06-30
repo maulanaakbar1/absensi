@@ -40,23 +40,23 @@
 
                 <button
                     @click="
-    openModal = true;
-    editMode = false;
+                        openModal = true;
+                        editMode = false;
 
-    currentData = {
-        id: '',
-        name: '',
-        email: '',
-        nis: '',
-        nisn: '',
-        tahun_masuk: '',
-        tingkat_awal: '',
-        jurusan: '',
-        jk: 'L',
-        ekskul: [],
-        tingkatan: '',
-    }
-"
+                        currentData = {
+                            id: '',
+                            name: '',
+                            email: '',
+                            nis: '',
+                            nisn: '',
+                            tahun_masuk: '',
+                            tingkat_awal: '',
+                            jurusan: '',
+                            jk: 'L',
+                            ekskul: [],
+                            tingkatan: '',
+                        }
+                    "
                     class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md shadow-blue-100 hover:bg-blue-700 transition flex items-center gap-2 w-fit">
 
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
@@ -103,9 +103,9 @@
                     <select name="kelas" onchange="this.form.submit()"
                         class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700">
                         <option value="">Semua Kelas</option>
-                        <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>X</option>
-                        <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>XI</option>
-                        <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>XII</option>
+                        <option value="7" {{ $selectedKelas == '7' ? 'selected' : '' }}>VII</option>
+                        <option value="8" {{ $selectedKelas == '8' ? 'selected' : '' }}>VIII</option>
+                        <option value="9" {{ $selectedKelas == '9' ? 'selected' : '' }}>IX</option>
                     </select>
                 </div>
 
@@ -136,7 +136,7 @@
                 {{-- Jurusan --}}
                 <div class="md:col-span-3">
                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">
-                        Jurusan
+                        Kode Kelas
                     </label>
 
                     <select name="jurusan" onchange="this.form.submit()"
@@ -328,9 +328,9 @@
                                 }
 
                                 $tingkatColor = match ($tingkat) {
-                                    10 => 'text-blue-600 bg-blue-50',
-                                    11 => 'text-emerald-600 bg-emerald-50',
-                                    12 => 'text-purple-600 bg-purple-50',
+                                    7 => 'text-blue-600 bg-blue-50',
+                                    8 => 'text-emerald-600 bg-emerald-50',
+                                    9 => 'text-purple-600 bg-purple-50',
                                     default => 'text-slate-600 bg-slate-50',
                                 };
                             @endphp
@@ -470,23 +470,23 @@
                                         {{-- EDIT --}}
                                         <button
                                             @click="
-    openModal = true;
-    editMode = true;
+                                                openModal = true;
+                                                editMode = true;
 
-    currentData = {
-        id: '{{ $s->id }}',
-        name: @js($s->user?->name ?? ''),
-        email: @js($s->user?->email ?? ''),
-        nis: @js($s->nis),
-        nisn: @js($s->nisn),
-        tahun_masuk: @js($s->tahun_masuk),
-        tingkat_awal: @js($s->tingkat_awal),
-        jurusan: @js($s->jurusan),
-        jk: @js($s->jenis_kelamin),
-        ekskul: @js(is_array($s->ekstrakurikuler_id) ? $s->ekstrakurikuler_id : json_decode($s->ekstrakurikuler_id, true) ?? []),
-        tingkatan: @js($s->tingkatan),
-    }
-"
+                                                currentData = {
+                                                    id: '{{ $s->id }}',
+                                                    name: @js($s->user?->name ?? ''),
+                                                    email: @js($s->user?->email ?? ''),
+                                                    nis: @js($s->nis),
+                                                    nisn: @js($s->nisn),
+                                                    tahun_masuk: @js($s->tahun_masuk),
+                                                    tingkat_awal: @js($s->tingkat_awal),
+                                                    jurusan: @js($s->jurusan),
+                                                    jk: @js($s->jenis_kelamin),
+                                                    ekskul: @js(is_array($s->ekstrakurikuler_id) ? $s->ekstrakurikuler_id : json_decode($s->ekstrakurikuler_id, true) ?? []),
+                                                    tingkatan: @js($s->tingkatan),
+                                                }
+                                            "
                                             class="p-2 text-amber-500 hover:bg-amber-50 rounded-xl transition">
 
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
@@ -785,9 +785,9 @@
                                         class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
                                         required>
                                         <option value="">Pilih Tingkat</option>
-                                        <option value="10">X</option>
-                                        <option value="11">XI</option>
-                                        <option value="12">XII</option>
+                                            <option value="7">VII</option>
+                                            <option value="8">VIII</option>
+                                            <option value="9">IX</option>
                                     </select>
 
                                     <p class="text-[10px] text-slate-400 mt-1 ml-1">
@@ -798,7 +798,7 @@
                                 {{-- Jurusan --}}
                                 <div>
                                     <label class="text-xs font-bold text-slate-400 uppercase ml-1">
-                                        Jurusan
+                                        Kode Kelas
                                     </label>
 
                                     <input type="text" name="jurusan" x-model="currentData.jurusan"
@@ -807,7 +807,7 @@
                                         required>
 
                                     <p class="text-[10px] text-slate-400 mt-1 ml-1">
-                                        Tanpa X / XI / XII
+                                        Tanpa 7 / 8 / 9
                                     </p>
                                 </div>
 

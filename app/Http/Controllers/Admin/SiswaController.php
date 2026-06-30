@@ -171,7 +171,7 @@ class SiswaController extends Controller
             'nis' => 'required|unique:siswas,nis',
             'nisn' => 'required|unique:siswas,nisn',
             'tahun_masuk' => 'required|integer|min:2000|max:2100',
-            'tingkat_awal' => 'required|in:10,11,12',
+            'tingkat_awal' => 'required|in:7,8,9',
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
 
@@ -202,7 +202,7 @@ class SiswaController extends Controller
             Siswa::create([
                 'user_id' => $user->id,
 
-                'ekstrakurikuler_id' => $ekskul,
+                'ekstrakurikuler_id' => json_encode($ekskul),
 
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
@@ -240,7 +240,7 @@ class SiswaController extends Controller
             'nis' => 'required|unique:siswas,nis,' . $siswa->id,
             'nisn' => 'required|unique:siswas,nisn,' . $siswa->id,
             'tahun_masuk' => 'required|integer|min:2000|max:2100',
-            'tingkat_awal' => 'required|in:10,11,12',
+            'tingkat_awal' => 'required|in:7,8,9',
             'jurusan' => 'required|string|max:50',
             'jenis_kelamin' => 'required|in:L,P',
 
@@ -315,7 +315,7 @@ class SiswaController extends Controller
                 'tingkat_awal' => $request->tingkat_awal,
                 'jurusan' => $request->jurusan,
                 'jenis_kelamin' => $request->jenis_kelamin,
-                'ekstrakurikuler_id' => $ekskul,
+                'ekstrakurikuler_id' => json_encode($ekskul),
                 'no_telp_siswa' => $request->no_telp_siswa,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
@@ -472,7 +472,7 @@ class SiswaController extends Controller
         $tingkat = ($tahunAjaranStart - $siswa->tahun_masuk)
             + $siswa->tingkat_awal;
 
-        return ($tingkat >= 10 && $tingkat <= 12)
+        return ($tingkat >= 7 && $tingkat <= 9)
             ? $tingkat
             : null;
     }
@@ -486,18 +486,12 @@ class SiswaController extends Controller
         }
 
         $label = match ($tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
+            7 => 'VII',
+            8 => 'VIII',
+            9 => 'IX',
             default => '?',
         };
 
-        $jurusan = preg_replace(
-            '/^(X|XI|XII)\s+/i',
-            '',
-            $siswa->jurusan ?? ''
-        );
-
-        return trim($label . ' ' . $jurusan);
+        return trim($label.' '.$siswa->jurusan);
     }
 }

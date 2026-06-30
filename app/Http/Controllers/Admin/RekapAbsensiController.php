@@ -244,7 +244,7 @@ class RekapAbsensiController extends Controller
         $tingkat = ($tahunAjaranStart - $siswa->tahun_masuk)
             + $siswa->tingkat_awal;
 
-        return ($tingkat >= 10 && $tingkat <= 12)
+        return ($tingkat >= 7 && $tingkat <= 9)
             ? $tingkat
             : null;
     }
@@ -258,14 +258,14 @@ class RekapAbsensiController extends Controller
         }
 
         $label = match ($tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
+            7 => 'VII',
+            8 => 'VIII',
+            9 => 'IX',
             default => '?',
         };
 
         $jurusan = preg_replace(
-            '/^(X|XI|XII)\s+/i',
+            '/^(VII|VIII|IX)\s+/i',
             '',
             $siswa->jurusan ?? ''
         );
@@ -348,7 +348,7 @@ class RekapAbsensiController extends Controller
                 $q->whereNull('tahun_masuk')
                 ->orWhere(function ($q2) use ($selectedTahunStart) {
                     $q2->whereRaw(
-                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (9 - tingkat_awal))',
                         [$selectedTahunStart]
                     );
                 });

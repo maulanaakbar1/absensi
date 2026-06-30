@@ -65,16 +65,16 @@
                 >
                     <option value="">Semua Kelas</option>
 
-                    <option value="10" {{ $selectedKelas == '10' ? 'selected' : '' }}>
-                        X
+                    <option value="7" {{ $selectedKelas == '7' ? 'selected' : '' }}>
+                        VII
                     </option>
 
-                    <option value="11" {{ $selectedKelas == '11' ? 'selected' : '' }}>
-                        XI
+                    <option value="8" {{ $selectedKelas == '8' ? 'selected' : '' }}>
+                        VIII
                     </option>
 
-                    <option value="12" {{ $selectedKelas == '12' ? 'selected' : '' }}>
-                        XII
+                    <option value="9" {{ $selectedKelas == '9' ? 'selected' : '' }}>
+                        IX
                     </option>
                 </select>
             </div>
@@ -82,13 +82,13 @@
             {{-- JURUSAN --}}
             <div class="w-full md:w-44 flex-shrink-0">
                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">
-                    Jurusan
+                    Kode Kelas
                 </label>
                 <select
                     name="jurusan"
                     onchange="this.form.submit()"
                     class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 focus:border-blue-500 focus:ring-0">
-                    <option value="">Semua Jurusan</option>
+                    <option value="">Semua Kode Kelas</option>
                     @foreach($jurusanList as $jurusan)
                         <option value="{{ $jurusan }}" {{ $selectedJurusan == $jurusan ? 'selected' : '' }}>
                             {{ $jurusan }}
@@ -269,9 +269,9 @@
                     @forelse($anggota as $s)
                     @php
                         $tingkatColor = match($s->tingkat_display) {
-                            10 => 'text-blue-600 bg-blue-50',
-                            11 => 'text-emerald-600 bg-emerald-50',
-                            12 => 'text-purple-600 bg-purple-50',
+                            7 => 'text-blue-600 bg-blue-50',
+                            8 => 'text-emerald-600 bg-emerald-50',
+                            9 => 'text-purple-600 bg-purple-50',
                             default => 'text-slate-600 bg-slate-50',
                         };
                     @endphp
@@ -654,9 +654,9 @@
                                     required
                                 >
                                     <option value="">Pilih Kelas</option>
-                                    <option value="10">X</option>
-                                    <option value="11">XI</option>
-                                    <option value="12">XII</option>
+                                    <option value="7">VII</option>
+                                    <option value="8">VIII</option>
+                                    <option value="9">IX</option>
                                 </select>
 
                                 <p class="text-[11px] text-slate-400 ml-1">
@@ -667,20 +667,20 @@
                             {{-- Jurusan --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-400 uppercase ml-1">
-                                    Jurusan
+                                    Kode kelas
                                 </label>
 
                                 <input
                                     type="text"
                                     name="jurusan"
                                     x-model="currentData.jurusan"
-                                    placeholder="Contoh: RPL / TKJ / AKL"
+                                    placeholder="Contoh: 07 / 08 / 09"
                                     class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
                                     required
                                 >
 
                                 <p class="text-[11px] text-slate-400 ml-1">
-                                    Tidak perlu menulis X / XI / XII
+                                    Tidak perlu menulis VII / VIII / IX
                                 </p>
                             </div>
 

@@ -25,17 +25,14 @@ return new class extends Migration
             $table->string('kelas', 20)->nullable()->change();
         });
 
-        // OPTIONAL:
-        // Bersihkan data lama kalau jurusan masih format "X RPL 1"
-
         DB::statement("
             UPDATE siswas
             SET jurusan = TRIM(
                 REPLACE(
                     REPLACE(
-                        REPLACE(jurusan, 'XII ', ''),
-                    'XI ', ''),
-                'X ', '')
+                        REPLACE(jurusan, 'VIII ', ''),
+                    'VII ', ''),
+                'IX ', '')
             )
             WHERE jurusan IS NOT NULL
         ");
