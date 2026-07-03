@@ -9,19 +9,87 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 class SiswaExport implements FromCollection, WithHeadings
 {
     protected $ekskulId;
+    protected $tahunAjaran;
+    protected $kelas;
+    protected $jurusan;
+    protected $search;
 
-    public function __construct($ekskulId = null)
-    {
+    public function __construct(
+        $ekskulId = null,
+        $tahunAjaran = null,
+        $kelas = null,
+        $jurusan = null,
+        $search = null
+    ) {
         $this->ekskulId = $ekskulId;
+        $this->tahunAjaran = $tahunAjaran;
+        $this->kelas = $kelas;
+        $this->jurusan = $jurusan;
+        $this->search = $search;
     }
 
     public function collection()
     {
         $query = Siswa::with(['user']);
 
-        // FILTER KHUSUS PEMBINA
-        if ($this->ekskulId) {
-            $query->whereJsonContains('ekstrakurikuler_id', $this->ekskulId);
+        $tahunStart = null;
+
+        if ($this->tahunAjaran && $this->tahunAjaran !== 'semua') {
+
+            $tahunStart = (int) explode('/', $this->tahunAjaran)[0];
+
+            $currentStart = now()->month >= 7
+                ? now()->year
+                : now()->year - 1;
+
+            $query->where(function ($q) use ($tahunStart, $currentStart) {
+
+                $q->whereNull('tahun_masuk');
+
+                if ($tahunStart == $currentStart) {
+
+                    $q->orWhereRaw(
+                        '(? - tahun_masuk) + tingkat_awal BETWEEN 7 AND 9',
+                        [$tahunStart]
+                    );
+
+                } else {
+
+                    $q->orWhereRaw(
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        [$tahunStart]
+                    );
+
+                }
+            });
+        }
+
+        if ($this->jurusan) {
+            $query->where('jurusan', $this->jurusan);
+        }
+
+        if ($this->ekskulId && $this->ekskulId !== 'all') {
+            $query->whereJsonContains('ekstrakurikuler_id', (int) $this->ekskulId);
+        }
+
+        if ($this->kelas) {
+
+            $tahunUntukKelas = $tahunStart ?? (now()->month >= 7
+                ? now()->year
+                : now()->year - 1);
+
+            $query->whereRaw(
+                '(? - tahun_masuk) + tingkat_awal = ?',
+                [$tahunUntukKelas, $this->kelas]
+            );
+        }
+
+        if ($this->search) {
+            $search = $this->search;
+
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
         }
 
         $ekskuls = \App\Models\Ekstrakurikuler::all()->keyBy('id');
@@ -70,7 +138,7 @@ class SiswaExport implements FromCollection, WithHeadings
             'NIS',
             'NISN',
             'Kelas',
-            'Jurusan',
+            'Kode Kelas',
             'Tingkat Awal',
             'Tahun Masuk',
             'Jenis Kelamin',
@@ -92,20 +160,28 @@ class SiswaExport implements FromCollection, WithHeadings
             return '-';
         }
 
-        $tahunSekarang = now()->month >= 7
-            ? now()->year
-            : now()->year - 1;
+        if ($this->tahunAjaran && $this->tahunAjaran !== 'semua') {
+            $tahun = (int) explode('/', $this->tahunAjaran)[0];
+        } else {
+            $tahun = now()->month >= 7
+                ? now()->year
+                : now()->year - 1;
+        }
 
-        $tingkat = ($tahunSekarang - $siswa->tahun_masuk)
+        $tingkat = ($tahun - $siswa->tahun_masuk)
             + $siswa->tingkat_awal;
 
+        if ($tingkat > 9) {
+            return 'Lulus';
+        }
+
         $label = match ($tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
-            default => '?',
+            7 => 'VII',
+            8 => 'VIII',
+            9 => 'IX',
+            default => $tingkat,
         };
 
-        return $label . ' ' . $siswa->jurusan;
+        return trim($label.' '.$siswa->jurusan);
     }
 }

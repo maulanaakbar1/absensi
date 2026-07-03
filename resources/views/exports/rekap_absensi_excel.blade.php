@@ -37,7 +37,6 @@
         <tr>
             <th rowspan="2" align="center">No</th>
             <th rowspan="2" align="center">NISN</th>
-            {{-- PERUBAHAN: Ditambahkan style width agar kolom nama otomatis lebar di Excel --}}
             <th rowspan="2" align="left" style="width: 250px; min-width: 250px;">Nama Siswa</th>
             <th rowspan="2" align="center">Kelas</th>
             <th rowspan="2" align="center">Angkatan</th>

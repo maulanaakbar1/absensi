@@ -412,10 +412,16 @@ class SiswaController extends Controller
         );
     }
 
-    public function export()
+    public function export(Request $request)
     {
         return Excel::download(
-            new SiswaExport,
+            new SiswaExport(
+                $request->ekskul,
+                $request->tahun_ajaran, 
+                $request->kelas,
+                $request->jurusan,
+                $request->search
+            ),
             'data-siswa.xlsx'
         );
     }

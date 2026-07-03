@@ -254,15 +254,13 @@
                 </form>
 
                 {{-- EXPORT --}}
-                <a href="{{ route('admin.siswa.export') }}"
+                <a href="{{ route('admin.siswa.export', request()->query()) }}"
                     class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-1">
 
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
-
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 4v12m0 0l-4-4m4 4l4-4m6 4v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2" />
-
                     </svg>
 
                     Export
