@@ -141,7 +141,7 @@
 
                     <select name="jurusan" onchange="this.form.submit()"
                         class="w-full mt-1 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition text-sm font-bold text-slate-700">
-                        <option value="">Semua Jurusan</option>
+                        <option value="">Semua Kode Kelas</option>
 
                         @foreach ($anggota->pluck('jurusan')->unique()->filter() as $jur)
                             <option value="{{ $jur }}" {{ $selectedJurusan == $jur ? 'selected' : '' }}>
@@ -319,18 +319,13 @@
 
                         @forelse($anggota as $s)
                             @php
-                                $tingkat = null;
+                                $tingkat = $s->tingkat_display;
 
-                                if ($s->tahun_masuk && $s->tingkat_awal) {
-                                    $tahunSekarang = now()->month >= 7 ? now()->year : now()->year - 1;
-
-                                    $tingkat = $tahunSekarang - $s->tahun_masuk + $s->tingkat_awal;
-                                }
-
-                                $tingkatColor = match ($tingkat) {
-                                    7 => 'text-blue-600 bg-blue-50',
-                                    8 => 'text-emerald-600 bg-emerald-50',
-                                    9 => 'text-purple-600 bg-purple-50',
+                                $tingkatColor = match (true) {
+                                    $s->kelas_display === 'Lulus' => 'text-slate-600 bg-slate-200',
+                                    $tingkat === 7 => 'text-blue-600 bg-blue-50',
+                                    $tingkat === 8 => 'text-emerald-600 bg-emerald-50',
+                                    $tingkat === 9 => 'text-purple-600 bg-purple-50',
                                     default => 'text-slate-600 bg-slate-50',
                                 };
                             @endphp

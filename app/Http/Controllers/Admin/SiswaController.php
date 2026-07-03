@@ -34,14 +34,27 @@ class SiswaController extends Controller
 
         // filter tahun ajaran
         if ($selectedTahun !== 'semua') {
-            $query->where(function ($q) use ($selectedTahunStart) {
-                $q->whereNull('tahun_masuk')
-                    ->orWhere(function ($q2) use ($selectedTahunStart) {
-                        $q2->whereRaw(
-                            '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
-                            [$selectedTahunStart]
-                        );
-                    });
+            $currentStart = $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
+
+            $query->where(function ($q) use ($selectedTahunStart, $currentStart) {
+
+                $q->whereNull('tahun_masuk');
+
+                if ($selectedTahunStart == $currentStart) {
+
+                    $q->orWhereRaw(
+                        '(? - tahun_masuk) + tingkat_awal BETWEEN 7 AND 9',
+                        [$selectedTahunStart]
+                    );
+
+                } else {
+
+                    $q->orWhereRaw(
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        [$selectedTahunStart]
+                    );
+
+                }
             });
         }
 
@@ -202,7 +215,7 @@ class SiswaController extends Controller
             Siswa::create([
                 'user_id' => $user->id,
 
-                'ekstrakurikuler_id' => json_encode($ekskul),
+                'ekstrakurikuler_id' => $ekskul,
 
                 'nis' => $request->nis,
                 'nisn' => $request->nisn,
@@ -315,7 +328,7 @@ class SiswaController extends Controller
                 'tingkat_awal' => $request->tingkat_awal,
                 'jurusan' => $request->jurusan,
                 'jenis_kelamin' => $request->jenis_kelamin,
-                'ekstrakurikuler_id' => json_encode($ekskul),
+                'ekstrakurikuler_id' => $ekskul,
                 'no_telp_siswa' => $request->no_telp_siswa,
                 'tempat_lahir' => $request->tempat_lahir,
                 'tanggal_lahir' => $request->tanggal_lahir,
@@ -481,8 +494,15 @@ class SiswaController extends Controller
     {
         $tingkat = $this->getTingkat($siswa, $tahunAjaranStart);
 
-        if (!$tingkat) {
-            return $siswa->kelas ?? '-';
+        if ($tingkat === null) {
+
+            $kelasAsli = ($tahunAjaranStart - $siswa->tahun_masuk) + $siswa->tingkat_awal;
+
+            if ($kelasAsli > 9) {
+                return 'Lulus';
+            }
+
+            return '-';
         }
 
         $label = match ($tingkat) {
@@ -492,6 +512,12 @@ class SiswaController extends Controller
             default => '?',
         };
 
-        return trim($label.' '.$siswa->jurusan);
+         $jurusan = preg_replace(
+            '/^(VII|VIII|IX)\s+/i',
+            '',
+            $siswa->jurusan ?? ''
+        );
+
+        return trim($label.' '.$jurusan);
     }
 }
