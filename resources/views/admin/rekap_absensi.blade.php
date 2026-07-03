@@ -223,11 +223,21 @@
                                     <td class="border px-2">{{ $siswa->user->name ?? '-' }}</td>
                                     <td class="border px-2 text-center">
                                         @php
-                                            $kelasColor = match ($siswa->tingkat_display) {
-                                                7 => 'bg-blue-50 text-blue-600',
-                                                8 => 'bg-emerald-50 text-emerald-600',
-                                                9 => 'bg-purple-50 text-purple-600',
-                                                default => 'bg-slate-100 text-slate-600',
+                                            $kelasColor = match (true) {
+                                                $siswa->kelas_display === 'Lulus'
+                                                    => 'bg-slate-200 text-slate-700',
+
+                                                $siswa->tingkat_display == 7
+                                                    => 'bg-blue-50 text-blue-600',
+
+                                                $siswa->tingkat_display == 8
+                                                    => 'bg-emerald-50 text-emerald-600',
+
+                                                $siswa->tingkat_display == 9
+                                                    => 'bg-purple-50 text-purple-600',
+
+                                                default
+                                                    => 'bg-slate-100 text-slate-600',
                                             };
                                         @endphp
 

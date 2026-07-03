@@ -38,7 +38,7 @@ class RekapAbsensiController extends Controller
         // =========================
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
-            : now()->year;
+            : null;
 
         // =========================
         // TENTUKAN TAHUN
@@ -76,27 +76,38 @@ class RekapAbsensiController extends Controller
         // =========================
         // FILTER TAHUN AJARAN
         // =========================
+        $currentStart = $this->parseTahunAjaranStart(
+            $this->getCurrentTahunAjaran()
+        );
+
         if ($selectedTahunStart) {
 
-            $query->where(function ($q) use ($selectedTahunStart) {
+            $query->where(function ($q) use ($selectedTahunStart, $currentStart) {
 
-                $q->whereNull('tahun_masuk')
-                ->orWhere(function ($q2) use ($selectedTahunStart) {
+                $q->whereNull('tahun_masuk');
 
-                    $q2->whereRaw(
-                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                if ($selectedTahunStart == $currentStart) {
+
+                    // Tahun ajaran terbaru → hanya siswa aktif
+                    $q->orWhereRaw(
+                        '(? - tahun_masuk) + tingkat_awal BETWEEN 7 AND 9',
                         [$selectedTahunStart]
                     );
 
-                });
+                } else {
+
+                    // Tahun ajaran lama → tampilkan semua termasuk yang lulus
+                    $q->orWhereRaw(
+                        '? >= tahun_masuk',
+                        [$selectedTahunStart]
+                    );
+
+                }
 
             });
 
         }
 
-        // =========================
-        // FILTER JURUSAN (BARU)
-        // =========================
         if ($selectedJurusan) {
             $query->where('jurusan', $selectedJurusan);
         }
@@ -107,25 +118,54 @@ class RekapAbsensiController extends Controller
             ->orderBy('nis', 'asc')
             ->get();
 
-        // =========================
-        // TRANSFORM KELAS DISPLAY
-        // =========================
-        $siswas->transform(function ($siswa) use ($selectedTahunStart) {
+        $currentStart = $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
-            $tahunDisplay = $selectedTahunStart
-                ?? $this->parseTahunAjaranStart(
-                    $this->getCurrentTahunAjaran()
-                );
+        $siswas->transform(function ($siswa) use ($selectedTahunStart, $selectedTahun, $currentStart) {
 
-            $tingkat = $this->getTingkat($siswa, $tahunDisplay);
+            $tahunDisplay = $selectedTahun === 'semua'
+                ? $currentStart
+                : $selectedTahunStart;
 
-            $kelasDisplay = $this->getKelasDisplay($siswa, $tahunDisplay);
+            $kelasAsli = ($tahunDisplay - $siswa->tahun_masuk) + $siswa->tingkat_awal;
 
-            $siswa->kelas_display = $kelasDisplay;
-            $siswa->tingkat_display = $tingkat;
+            if ($kelasAsli > 9) {
+                $siswa->kelas_display = 'Lulus';
+                $siswa->tingkat_display = 'lulus';
+            } else {
+                $siswa->tingkat_display = $this->getTingkat($siswa, $tahunDisplay);
+                $siswa->kelas_display = $this->getKelasDisplay($siswa, $tahunDisplay);
+            }
 
             return $siswa;
         });
+
+        if ($selectedTahun !== 'semua') {
+
+    $query->where(function ($q) use ($selectedTahunStart, $currentStart) {
+
+        $q->whereNull('tahun_masuk');
+
+        if ($selectedTahunStart == $currentStart) {
+
+            // Tahun ajaran terbaru
+            $q->orWhereRaw(
+                '(? - tahun_masuk) + tingkat_awal BETWEEN 7 AND 9',
+                [$selectedTahunStart]
+            );
+
+        } else {
+
+            // Tahun ajaran lama
+            $q->orWhereRaw(
+                '? >= tahun_masuk',
+                [$selectedTahunStart]
+            );
+
+        }
+
+    });
+
+}
 
         // =========================
         // FILTER KELAS
@@ -133,9 +173,7 @@ class RekapAbsensiController extends Controller
         if ($selectedKelas) {
 
             $siswas = $siswas->filter(function ($siswa) use ($selectedKelas) {
-
                 return $siswa->tingkat_display == $selectedKelas;
-
             })->values();
 
         }
@@ -253,8 +291,14 @@ class RekapAbsensiController extends Controller
     {
         $tingkat = $this->getTingkat($siswa, $tahunAjaranStart);
 
+        $kelasAsli = ($tahunAjaranStart - $siswa->tahun_masuk) + $siswa->tingkat_awal;
+
+        if ($kelasAsli > 9) {
+            return 'Lulus';
+        }
+
         if (!$tingkat) {
-            return $siswa->kelas ?? '-';
+            return '-';
         }
 
         $label = match ($tingkat) {
