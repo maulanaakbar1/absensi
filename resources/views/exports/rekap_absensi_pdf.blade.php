@@ -71,10 +71,8 @@
         <tr>
             <th rowspan="2" style="width: 30px;">No</th>
             <th rowspan="2" style="width: 70px;">NISN</th>
-            {{-- PERUBAHAN: Ditambahkan lebar eksplisit agar kolom Nama Siswa di PDF lebih luas --}}
             <th rowspan="2" class="text-left" style="width: 180px;">Nama Siswa</th>
             <th rowspan="2" style="width: 60px;">Kelas</th>
-            {{-- TAMBAHAN: Kolom Angkatan sesuai format Excel --}}
             <th rowspan="2" style="width: 55px;">Angkatan</th>
 
             <th colspan="{{ $jumlahHari }}">
