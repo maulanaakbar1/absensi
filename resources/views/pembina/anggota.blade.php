@@ -298,7 +298,7 @@
 
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide inline-block {{ $tingkatColor }}">
-                                {{ $s->kelas_display }}
+                                {{ $s->kelas_display ?? '-'}}
                             </span>
                         </td>
 

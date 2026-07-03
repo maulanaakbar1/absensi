@@ -38,18 +38,18 @@ class AnggotaController extends Controller
         if ($selectedTahun !== 'semua') {
             $query->where(function ($q) use ($selectedTahunStart) {
                 $q->whereNull('tahun_masuk')
-                ->orWhere(function ($q2) use ($selectedTahunStart) {
-                    $q2->whereRaw(
-                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
-                        [$selectedTahunStart]
-                    );
-                });
+                    ->orWhere(function ($q2) use ($selectedTahunStart) {
+                        $q2->whereRaw(
+                            '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                            [$selectedTahunStart]
+                        );
+                    });
             });
         }
 
         // PERBAIKAN FILTER KELAS: Dihitung langsung di query database
         if ($selectedKelas) {
-            $query->where(function($q) use ($selectedTahunStart, $selectedKelas) {
+            $query->where(function ($q) use ($selectedTahunStart, $selectedKelas) {
                 $q->whereRaw('(? - tahun_masuk) + tingkat_awal = ?', [$selectedTahunStart, $selectedKelas]);
             });
         }
@@ -84,6 +84,10 @@ class AnggotaController extends Controller
 
             return $siswa;
         });
+
+        // dd($anggota);
+
+
 
         // Dropdown data pendukung
         $tahunAjaranList = $this->getTahunAjaranList($ekskulId);
@@ -263,6 +267,7 @@ class AnggotaController extends Controller
             $tahunStart
         );
 
+
         return view('pembina.anggota-show', compact(
             'siswa',
             'tahunAjaran',
@@ -321,9 +326,11 @@ class AnggotaController extends Controller
         return $year . '/' . ($year + 1);
     }
 
-    private function getTahunAjaranList(int $ekskulId): array
+    private function getTahunAjaranList(): array
     {
-        $range = Siswa::where('ekstrakurikuler_id', $ekskulId)
+        $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
+
+        $range = Siswa::whereJsonContains('ekstrakurikuler_id',$pembina->ekstrakurikuler_id)
             ->whereNotNull('tahun_masuk')
             ->selectRaw('MIN(tahun_masuk) as min_tahun, MAX(tahun_masuk) as max_tahun')
             ->first();
@@ -365,8 +372,15 @@ class AnggotaController extends Controller
     {
         $tingkat = $this->getTingkat($siswa, $tahunAjaranStart);
 
-        if (!$tingkat) {
-            return $siswa->kelas ?? '-';
+        if ($tingkat === null) {
+
+            $kelasAsli = ($tahunAjaranStart - $siswa->tahun_masuk) + $siswa->tingkat_awal;
+
+            if ($kelasAsli > 9) {
+                return 'Lulus';
+            }
+
+            return '-';
         }
 
         $label = match ($tingkat) {
