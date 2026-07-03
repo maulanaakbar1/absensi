@@ -8,60 +8,54 @@ use App\Models\Ekstrakurikuler;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 
-class SiswaImport implements ToModel, WithHeadingRow
+class SiswaImport implements ToModel, WithHeadingRow, SkipsEmptyRows
 {
     public function model(array $row)
     {
-        // =========================
-        // SKIP JIKA EMAIL SUDAH ADA
-        // =========================
         if (
-            isset($row['email']) &&
+            !empty($row['email']) &&
             User::where('email', $row['email'])->exists()
         ) {
             return null;
         }
 
-        // =========================
-        // SKIP JIKA NIS SUDAH ADA
-        // =========================
         if (
-            isset($row['nis']) &&
+            !empty($row['nis']) &&
             Siswa::where('nis', $row['nis'])->exists()
         ) {
             return null;
         }
 
-        // =========================
-        // CARI EKSKUL
-        // =========================
-        $ekskul = Ekstrakurikuler::where(
-            'nama',
-            $row['ekstrakurikuler'] ?? ''
-        )->first();
+        if (
+            !empty($row['nisn']) &&
+            Siswa::where('nisn', $row['nisn'])->exists()
+        ) {
+            return null;
+        }
 
-        // =========================
-        // AMBIL TINGKAT AWAL
-        // =========================
-        $tingkatAwal = (int) ($row['tingkat_awal'] ?? 10);
+        $namaEkskulList = collect(explode(',', $row['ekstrakurikuler'] ?? ''))
+            ->map(fn($nama) => trim($nama))
+            ->filter()
+            ->filter(fn($nama) => strtolower($nama) !== '-');
 
-        // =========================
-        // AMBIL JURUSAN
-        // =========================
-        $jurusan = $row['jurusan'] ?? '';
+        $ekskulIds = Ekstrakurikuler::whereIn('nama', $namaEkskulList)
+            ->pluck('id')
+            ->map(fn($id) => (int) $id)
+            ->values()
+            ->all();
 
-        // =========================
-        // GENERATE KELAS OTOMATIS
-        // =========================
-        $kelas = $this->generateKelas(
-            $tingkatAwal,
-            $jurusan
+        $tingkatAwal = isset($row['tingkat_awal']) && $row['tingkat_awal'] !== ''
+            ? (int) $row['tingkat_awal']
+            : null;
+
+        $jurusan = trim(
+            $row['kode_kelas']
+                ?? $row['jurusan'] 
+                ?? ''
         );
 
-        // =========================
-        // CREATE USER
-        // =========================
         $user = User::create([
             'name' => $row['nama'] ?? '-',
             'email' => $row['email'],
@@ -69,18 +63,12 @@ class SiswaImport implements ToModel, WithHeadingRow
             'role' => 'siswa',
         ]);
 
-        // =========================
-        // CREATE SISWA
-        // =========================
         return new Siswa([
             'user_id'             => $user->id,
-            'ekstrakurikuler_id'  => $ekskul?->id,
+            'ekstrakurikuler_id'  => !empty($ekskulIds) ? json_encode($ekskulIds) : null,
 
             'nis'                 => $row['nis'] ?? null,
             'nisn'                => $row['nisn'] ?? null,
-
-            // AUTO GENERATE
-            'kelas'               => $kelas,
 
             'jurusan'             => $jurusan,
             'tingkat_awal'        => $tingkatAwal,
@@ -90,7 +78,7 @@ class SiswaImport implements ToModel, WithHeadingRow
 
             'alamat'              => $row['alamat'] ?? null,
             'tempat_lahir'        => $row['tempat_lahir'] ?? null,
-            'tanggal_lahir'       => $row['tanggal_lahir'] ?? null,
+            'tanggal_lahir'       => $this->parseTanggal($row['tanggal_lahir'] ?? null),
 
             'nama_ayah'           => $row['nama_ayah'] ?? null,
             'nama_ibu'            => $row['nama_ibu'] ?? null,
@@ -98,28 +86,30 @@ class SiswaImport implements ToModel, WithHeadingRow
             'no_telp_ayah'        => $row['no_telp_ayah'] ?? null,
             'no_telp_ibu'         => $row['no_telp_ibu'] ?? null,
             'no_telp_siswa'       => $row['no_telp_siswa'] ?? null,
+
+            'tingkatan'           => $row['tingkatan'] ?? 'balonpas',
         ]);
     }
 
-    // =========================
-    // GENERATE KELAS
-    // =========================
-    private function generateKelas($tingkat, $jurusan)
+    private function parseTanggal($value)
     {
-        $label = match ((int) $tingkat) {
-            10 => 'X',
-            11 => 'XI',
-            12 => 'XII',
-            default => '',
-        };
+        if (empty($value)) {
+            return null;
+        }
 
-        // HAPUS PREFIX X/XI/XII JIKA ADA
-        $jurusan = preg_replace(
-            '/^(X|XI|XII)\s+/i',
-            '',
-            $jurusan
-        );
+        if (is_numeric($value)) {
+            try {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)
+                    ->format('Y-m-d');
+            } catch (\Throwable $e) {
+                return null;
+            }
+        }
 
-        return trim($label . ' ' . $jurusan);
+        try {
+            return \Carbon\Carbon::parse($value)->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }

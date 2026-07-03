@@ -64,14 +64,17 @@ class SiswaExport implements FromCollection, WithHeadings
             });
         }
 
+        // filter jurusan / kode kelas
         if ($this->jurusan) {
             $query->where('jurusan', $this->jurusan);
         }
 
+        // filter ekskul
         if ($this->ekskulId && $this->ekskulId !== 'all') {
             $query->whereJsonContains('ekstrakurikuler_id', (int) $this->ekskulId);
         }
 
+        // filter kelas (tingkat 7/8/9) — dihitung relatif terhadap tahun ajaran yang dipilih
         if ($this->kelas) {
 
             $tahunUntukKelas = $tahunStart ?? (now()->month >= 7
@@ -84,6 +87,7 @@ class SiswaExport implements FromCollection, WithHeadings
             );
         }
 
+        // search nama
         if ($this->search) {
             $search = $this->search;
 
@@ -175,13 +179,11 @@ class SiswaExport implements FromCollection, WithHeadings
             return 'Lulus';
         }
 
-        $label = match ($tingkat) {
+        return match ($tingkat) {
             7 => 'VII',
             8 => 'VIII',
             9 => 'IX',
-            default => $tingkat,
+            default => (string) $tingkat,
         };
-
-        return trim($label.' '.$siswa->jurusan);
     }
 }
