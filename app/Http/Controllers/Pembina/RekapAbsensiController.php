@@ -319,19 +319,26 @@ class RekapAbsensiController extends Controller
             $pembina->ekstrakurikuler_id
         );
 
-        if ($selectedTahunStart) {
+        if ($selectedTahun !== 'semua') {
+            $currentStart = $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
-            $query->where(function ($q) use ($selectedTahunStart) {
+            $query->where(function ($q) use ($selectedTahunStart, $currentStart) {
 
-                $q->whereNull('tahun_masuk')
+                $q->whereNull('tahun_masuk');
 
-                    ->orWhere(function ($q2) use ($selectedTahunStart) {
+                if ($selectedTahunStart == $currentStart) {
 
-                        $q2->whereRaw(
-                            '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
-                            [$selectedTahunStart]
-                        );
-                    });
+                    $q->orWhereRaw(
+                        '(? - tahun_masuk) + tingkat_awal BETWEEN 7 AND 9',
+                        [$selectedTahunStart]
+                    );
+                } else {
+
+                    $q->orWhereRaw(
+                        '? BETWEEN tahun_masuk AND (tahun_masuk + (12 - tingkat_awal))',
+                        [$selectedTahunStart]
+                    );
+                }
             });
         }
 
