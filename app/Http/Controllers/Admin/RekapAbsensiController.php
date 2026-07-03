@@ -141,31 +141,31 @@ class RekapAbsensiController extends Controller
 
         if ($selectedTahun !== 'semua') {
 
-    $query->where(function ($q) use ($selectedTahunStart, $currentStart) {
+            $query->where(function ($q) use ($selectedTahunStart, $currentStart) {
 
-        $q->whereNull('tahun_masuk');
+                $q->whereNull('tahun_masuk');
 
-        if ($selectedTahunStart == $currentStart) {
+                if ($selectedTahunStart == $currentStart) {
 
-            // Tahun ajaran terbaru
-            $q->orWhereRaw(
-                '(? - tahun_masuk) + tingkat_awal BETWEEN 7 AND 9',
-                [$selectedTahunStart]
-            );
+                    // Tahun ajaran terbaru
+                    $q->orWhereRaw(
+                        '(? - tahun_masuk) + tingkat_awal BETWEEN 7 AND 9',
+                        [$selectedTahunStart]
+                    );
 
-        } else {
+                } else {
 
-            // Tahun ajaran lama
-            $q->orWhereRaw(
-                '? >= tahun_masuk',
-                [$selectedTahunStart]
-            );
+                    // Tahun ajaran lama
+                    $q->orWhereRaw(
+                        '? >= tahun_masuk',
+                        [$selectedTahunStart]
+                    );
+
+                }
+
+            });
 
         }
-
-    });
-
-}
 
         // =========================
         // FILTER KELAS
