@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\Pembina;
 
-use App\Http\Controllers\Controller;
-use App\Models\Jadwal;
-use App\Models\HariLibur;
-use App\Models\Absensi;
-use App\Models\Siswa;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use App\Models\Siswa;
+use App\Models\Jadwal;
+use App\Models\Absensi;
+use App\Models\Pembina;
+use App\Models\HariLibur;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
-use Illuminate\Pagination\LengthAwarePaginator; 
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class JurnalController extends Controller
 {
@@ -43,8 +45,13 @@ class JurnalController extends Controller
         $end = Carbon::create($tahun, $bulan, 1)->endOfMonth();
 
         $hariMap = [
-            'Minggu' => 0, 'Senin' => 1, 'Selasa' => 2, 'Rabu' => 3,
-            'Kamis'  => 4, 'Jumat' => 5, 'Sabtu' => 6,
+            'Minggu' => 0,
+            'Senin' => 1,
+            'Selasa' => 2,
+            'Rabu' => 3,
+            'Kamis'  => 4,
+            'Jumat' => 5,
+            'Sabtu' => 6,
         ];
 
         foreach ($jadwals->whereNull('tanggal') as $jadwal) {
@@ -98,8 +105,14 @@ class JurnalController extends Controller
             while ($tanggalLoop <= $end) {
                 if ($tanggalLoop->dayOfWeek == $targetDay) {
                     $events->push([
-                        'tanggal' => $tanggalLoop->copy(), 'jam' => '-', 'lokasi' => '-', 'keterangan' => null,
-                        'hadir' => 0, 'total' => $totalAnggota, 'libur' => true, 'keterangan_libur' => $libur->keterangan,
+                        'tanggal' => $tanggalLoop->copy(),
+                        'jam' => '-',
+                        'lokasi' => '-',
+                        'keterangan' => null,
+                        'hadir' => 0,
+                        'total' => $totalAnggota,
+                        'libur' => true,
+                        'keterangan_libur' => $libur->keterangan,
                     ]);
                 }
                 $tanggalLoop->addDay();
@@ -118,16 +131,16 @@ class JurnalController extends Controller
         ])->values();
 
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        
-        $perPage = 10; 
+
+        $perPage = 10;
 
         $currentItems = $events->slice(($currentPage - 1) * $perPage, $perPage)->values();
 
         $paginatedEvents = new LengthAwarePaginator(
-            $currentItems, 
-            $events->count(), 
-            $perPage, 
-            $currentPage, 
+            $currentItems,
+            $events->count(),
+            $perPage,
+            $currentPage,
             [
                 'path' => LengthAwarePaginator::resolveCurrentPath(),
                 'query' => $request->query()
@@ -137,7 +150,7 @@ class JurnalController extends Controller
         return view(
             'pembina.jurnal',
             [
-                'events' => $paginatedEvents, 
+                'events' => $paginatedEvents,
                 'bulan' => $bulan,
                 'tahun' => $tahun,
                 'tahunAjaran' => $tahunAjaran,
@@ -192,9 +205,9 @@ class JurnalController extends Controller
 
     private function getTahunAjaranList(): array
     {
-        $ekskulId = auth()->user()->pembina->ekstrakurikuler_id;
+        $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
 
-        $range = Siswa::where('ekstrakurikuler_id', $ekskulId)
+        $range = Siswa::whereJsonContains('ekstrakurikuler_id', $pembina->ekstrakurikuler_id)
             ->whereNotNull('tahun_masuk')
             ->selectRaw('MIN(tahun_masuk) as min_tahun, MAX(tahun_masuk) as max_tahun')
             ->first();
@@ -203,10 +216,14 @@ class JurnalController extends Controller
             return [];
         }
 
-        $currentYear = now()->month >= 7 ? now()->year : now()->year - 1;
+        $currentYear = now()->month >= 7
+            ? now()->year
+            : now()->year - 1;
+
         $maxLimit = max($currentYear, $range->max_tahun);
 
         $list = [];
+
         for ($y = $range->min_tahun; $y <= $maxLimit; $y++) {
             $list[] = $y . '/' . ($y + 1);
         }
@@ -239,8 +256,13 @@ class JurnalController extends Controller
         $end = Carbon::create($tahun, $bulan, 1)->endOfMonth();
 
         $hariMap = [
-            'Minggu' => 0, 'Senin' => 1, 'Selasa' => 2, 'Rabu' => 3,
-            'Kamis' => 4, 'Jumat' => 5, 'Sabtu' => 6,
+            'Minggu' => 0,
+            'Senin' => 1,
+            'Selasa' => 2,
+            'Rabu' => 3,
+            'Kamis' => 4,
+            'Jumat' => 5,
+            'Sabtu' => 6,
         ];
 
         foreach ($jadwals->whereNull('tanggal') as $jadwal) {
@@ -290,8 +312,14 @@ class JurnalController extends Controller
             while ($tanggalLoop <= $end) {
                 if ($tanggalLoop->dayOfWeek == $targetDay) {
                     $events->push([
-                        'tanggal' => $tanggalLoop->copy(), 'jam' => '-', 'lokasi' => '-', 'keterangan' => null,
-                        'hadir' => 0, 'total' => $totalAnggota, 'libur' => true, 'keterangan_libur' => $libur->keterangan,
+                        'tanggal' => $tanggalLoop->copy(),
+                        'jam' => '-',
+                        'lokasi' => '-',
+                        'keterangan' => null,
+                        'hadir' => 0,
+                        'total' => $totalAnggota,
+                        'libur' => true,
+                        'keterangan_libur' => $libur->keterangan,
                     ]);
                 }
                 $tanggalLoop->addDay();
@@ -299,7 +327,8 @@ class JurnalController extends Controller
         }
 
         if ($tanggalFilter) {
-            $events = $events->filter(fn($e) =>
+            $events = $events->filter(
+                fn($e) =>
                 Carbon::parse($e['tanggal'])->isSameDay(Carbon::parse($tanggalFilter))
             );
         }
