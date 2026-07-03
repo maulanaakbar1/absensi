@@ -59,7 +59,7 @@ class SiswaImport implements ToModel, WithHeadingRow, SkipsEmptyRows
         $user = User::create([
             'name' => $row['nama'] ?? '-',
             'email' => $row['email'],
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('123456'),
             'role' => 'siswa',
         ]);
 
