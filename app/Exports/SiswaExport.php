@@ -17,15 +17,26 @@ class SiswaExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        $query = Siswa::with(['user', 'ekstrakurikuler']);
+        $query = Siswa::with(['user']);
 
         // FILTER KHUSUS PEMBINA
         if ($this->ekskulId) {
-            $query->where('ekstrakurikuler_id', $this->ekskulId);
+            $query->whereJsonContains('ekstrakurikuler_id', $this->ekskulId);
         }
 
+        $ekskuls = \App\Models\Ekstrakurikuler::all()->keyBy('id');
+
         return $query->get()
-            ->map(function ($siswa) {
+            ->map(function ($siswa) use ($ekskuls) {
+                $siswaEkskulIds = is_array($siswa->ekstrakurikuler_id)
+                    ? $siswa->ekstrakurikuler_id
+                    : json_decode($siswa->ekstrakurikuler_id, true) ?? [];
+
+                $ekskulNames = collect($siswaEkskulIds)
+                    ->map(fn($id) => $ekskuls->get($id)->nama ?? null)
+                    ->filter()
+                    ->implode(', ');
+
                 return [
                     'nama'                => $siswa->user->name ?? '-',
                     'email'               => $siswa->user->email ?? '-',
@@ -46,7 +57,7 @@ class SiswaExport implements FromCollection, WithHeadings
                     'no_telp_ayah'        => $siswa->no_telp_ayah,
                     'no_telp_ibu'         => $siswa->no_telp_ibu,
                     'no_telp_siswa'       => $siswa->no_telp_siswa,
-                    'ekstrakurikuler'     => $siswa->ekstrakurikuler->nama ?? '-',
+                    'ekstrakurikuler'     => $ekskulNames ?: '-',
                 ];
             });
     }

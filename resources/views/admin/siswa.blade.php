@@ -802,7 +802,7 @@
                                     </label>
 
                                     <input type="text" name="jurusan" x-model="currentData.jurusan"
-                                        placeholder="Contoh: RPL 1"
+                                        placeholder="Contoh: 07 / 08"
                                         class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-0 transition"
                                         required>
 
