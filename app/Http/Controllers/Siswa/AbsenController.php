@@ -44,16 +44,18 @@ class AbsenController extends Controller
         $adaJadwal = $jadwalHariIni ? true : false;
 
         // CEK APAKAH SUDAH LEWAT JAM SELESAI
+        $sudahMulai = false;
         $sudahTutup = false;
 
         if ($jadwalHariIni) {
 
-            $jamSekarang = Carbon::now()->format('H:i:s');
-            // dd($jamSekarang, $jadwalHariIni->jam_selesai);
+            $jamSekarang = Carbon::now();
 
-            if ($jamSekarang > $jadwalHariIni->jam_selesai) {
-                $sudahTutup = true;
-            }
+            $jamMulai = Carbon::today()->setTimeFromTimeString($jadwalHariIni->jam_mulai);
+            $jamSelesai = Carbon::today()->setTimeFromTimeString($jadwalHariIni->jam_selesai);
+
+            $sudahMulai = $jamSekarang->greaterThanOrEqualTo($jamMulai);
+            $sudahTutup = $jamSekarang->greaterThan($jamSelesai);
         }
 
         // CEK LIBUR
@@ -74,7 +76,9 @@ class AbsenController extends Controller
             'isComplete',
             'adaJadwal',
             'isLibur',
-            'sudahTutup'
+            'sudahMulai',
+            'sudahTutup',
+            'jadwalHariIni'
         ));
     }
 
@@ -99,10 +103,25 @@ class AbsenController extends Controller
         }
 
         // CEK APAKAH ABSENSI SUDAH DITUTUP
-        $jamSekarang = Carbon::now()->format('H:i:s');
+        $jamSekarang = Carbon::now();
 
-        if ($jamSekarang > $jadwalHariIni->jam_selesai) {
-            return back()->with('error', 'Absensi sudah ditutup karena jadwal latihan telah selesai!');
+        $jamMulai = Carbon::today()->setTimeFromTimeString($jadwalHariIni->jam_mulai);
+        $jamSelesai = Carbon::today()->setTimeFromTimeString($jadwalHariIni->jam_selesai);
+
+        if ($jamSekarang->lt($jamMulai)) {
+            return back()->with(
+                'error',
+                'Absensi belum dibuka. Mulai pukul ' .
+                Carbon::parse($jadwalHariIni->jam_mulai)->format('H:i') .
+                ' WIB.'
+            );
+        }
+
+        if ($jamSekarang->gt($jamSelesai)) {
+            return back()->with(
+                'error',
+                'Absensi sudah ditutup karena jadwal latihan telah selesai.'
+            );
         }
 
         // CEK LIBUR

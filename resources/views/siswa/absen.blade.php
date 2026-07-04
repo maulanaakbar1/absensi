@@ -51,7 +51,9 @@
                     <div id="controls" class="px-0 sm:px-2">
                         <div id="live-buttons">
                             <button type="button" onclick="captureImage()" id="btn-capture" 
-                                @if(!$isComplete || $absenHariIni || !$adaJadwal || $isLibur || $sudahTutup) disabled @endif
+                                @if(!$isComplete || $absenHariIni || !$adaJadwal || $isLibur || !$sudahMulai || $sudahTutup)
+                                    disabled
+                                @endif
                                 class="w-full py-4 sm:py-5 bg-slate-800 text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:bg-slate-900 hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 transition-all duration-300 shadow-xl shadow-slate-200 flex items-center justify-center gap-3">
                                 
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,6 +67,8 @@
                                     Tidak Ada Jadwal Hari Ini
                                 @elseif($isLibur)
                                     Hari Libur
+                                @elseif(!$sudahMulai)
+                                    Belum Waktu Mulai
                                 @elseif($sudahTutup)
                                     Absensi Ditutup
                                 @else
@@ -141,6 +145,19 @@
                                 <div class="p-4 bg-amber-100 text-amber-700 rounded-xl border border-amber-200 mb-4 text-sm">
                                     Hari ini adalah hari libur latihan.
                                 </div>
+                            @endif
+                            @if($adaJadwal && !$sudahMulai && !$isLibur)
+                            <div class="p-4 bg-blue-100 text-blue-700 rounded-xl border border-blue-200 mb-4">
+                                <div class="font-bold">
+                                    Absensi Belum Dibuka
+                                </div>
+
+                                <div class="text-sm mt-1">
+                                    Absensi baru dapat dilakukan mulai pukul
+                                    <b>{{ \Carbon\Carbon::parse($jadwalHariIni->jam_mulai)->format('H:i') }} WIB</b>.
+                                </div>
+                                <div id="countdown" class="mt-2 font-bold text-blue-800"></div>
+                            </div>
                             @endif
                             @if($sudahTutup)
                                 <div class="p-4 bg-red-100 text-red-700 rounded-xl border border-red-200 mb-4 text-sm">
@@ -243,6 +260,7 @@
     const isComplete = {{ $isComplete ? 'true' : 'false' }};
     const adaJadwal = {{ $adaJadwal ? 'true' : 'false' }};
     const isLibur = {{ $isLibur ? 'true' : 'false' }};
+    const sudahMulai = {{ $sudahMulai ? 'true' : 'false' }};
     const sudahAbsen = {{ $absenHariIni ? 'true' : 'false' }};
     const sudahTutup = {{ $sudahTutup ? 'true' : 'false' }};
 
@@ -259,7 +277,7 @@
             locationBox.classList.add('border-blue-200', 'bg-blue-50/50');
 
             // HANYA aktifkan tombol jika lokasi OK DAN biodata LENGKAP
-            if (isComplete && adaJadwal && !isLibur && !sudahAbsen && !sudahTutup) {
+            if (isComplete && adaJadwal && sudahMulai && !isLibur && !sudahAbsen && !sudahTutup) {
                 btnCapture.disabled = false;
             } else {
                 btnCapture.disabled = true;
@@ -372,5 +390,29 @@
             alertBox.classList.add('hidden');
         }, 500);
     }
+
+    @if($adaJadwal && !$sudahMulai && !$isLibur)
+    const mulai = new Date("{{ now()->format('Y-m-d') }}T{{ $jadwalHariIni->jam_mulai }}");
+
+    setInterval(() => {
+
+        const sekarang = new Date();
+
+        let selisih = mulai - sekarang;
+
+        if (selisih <= 0) {
+            location.reload();
+            return;
+        }
+
+        const jam = Math.floor(selisih / 3600000);
+        const menit = Math.floor((selisih % 3600000) / 60000);
+        const detik = Math.floor((selisih % 60000) / 1000);
+
+        document.getElementById('countdown').innerHTML =
+            `Sisa waktu: ${String(jam).padStart(2,'0')}:${String(menit).padStart(2,'0')}:${String(detik).padStart(2,'0')}`;
+
+    },1000);
+    @endif
 </script>
 @endsection
