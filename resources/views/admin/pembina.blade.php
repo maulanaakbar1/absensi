@@ -288,8 +288,7 @@
                                 name="password"
                                 x-model="password"
                                 minlength="6"
-                                placeholder="Password (Minimal 6 Karakter)"
-                                required
+                                placeholder="Kosongkan jika tidak ingin mengubah password"
                                 :class="{
                                     'border-red-400': password.length > 0 && password.length < 6,
                                     'border-emerald-400': password.length >= 6
@@ -308,7 +307,14 @@
                                 x-show="password.length >= 6"
                                 class="mt-1 text-xs text-emerald-500"
                             >
-                                ✓ Password sudah valid
+                                ✓ Password baru sudah valid
+                            </p>
+
+                            <p
+                                x-show="password.length == 0"
+                                class="mt-1 text-xs text-slate-400"
+                            >
+                                Kosongkan jika tidak ingin mengubah password.
                             </p>
 
                             @error('password')

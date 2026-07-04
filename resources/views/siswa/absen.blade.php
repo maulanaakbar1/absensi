@@ -159,13 +159,13 @@
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Catatan / Keterangan</label>
-                                    <textarea 
+                                    <textarea
                                         id="keterangan"
                                         name="keterangan"
-                                        rows="2" 
+                                        rows="2"
                                         required
-                                        placeholder="Contoh: Hadir tepat waktu di sekolah" 
-                                        class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none text-slate-600">
+                                        placeholder="Contoh: Hadir tepat waktu di sekolah"
+                                        class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none text-slate-600">{{ old('keterangan') }}
                                     </textarea>
                                 </div>
                             </div>
