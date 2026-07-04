@@ -181,8 +181,8 @@
                                         name="keterangan"
                                         rows="2"
                                         required
-                                        placeholder="Contoh: Hadir tepat waktu di sekolah"
-                                        class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none text-slate-600">{{ old('keterangan') }}
+                                        placeholder="Contoh: Hadir tepat waktu di sekolah" 
+                                        class="w-full mt-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none text-slate-600">
                                     </textarea>
                                 </div>
                             </div>
