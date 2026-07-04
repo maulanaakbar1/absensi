@@ -64,7 +64,7 @@
                         {{-- HARI / TANGGAL --}}
                         <td class="p-3 font-medium">
                             @if($j->tipe == 'dadakan')
-                                {{ \Carbon\Carbon::parse($j->tanggal)->translatedFormat('d F Y') }}
+                                {{ \Carbon\Carbon::parse($j->tanggal)->locale('id')->isoFormat('DD MMMM YYYY') }}
                             @else
                                 Setiap {{ $j->hari }}
                             @endif
@@ -137,7 +137,7 @@
                         {{-- TANGGAL / HARI --}}
                         <td class="p-3 font-medium">
                             @if($l->tipe == 'dadakan')
-                                {{ \Carbon\Carbon::parse($l->tanggal)->translatedFormat('d F Y') }}
+                                {{ \Carbon\Carbon::parse($j->tanggal)->locale('id')->isoFormat('DD MMMM YYYY') }}
                             @else
                                 Setiap {{ $l->hari }}
                             @endif
