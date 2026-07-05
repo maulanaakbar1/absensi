@@ -215,25 +215,47 @@ class RekapAbsensiController extends Controller
         $hariEnglish = Carbon::parse($request->tanggal)->format('l');
         $hariIndo = $hariMap[$hariEnglish];
 
+        $tanggal = Carbon::parse($request->tanggal)->toDateString();
+
         $cekJadwal = \App\Models\Jadwal::where('ekstrakurikuler_id', $ekskulId)
-            ->where('hari', $hariIndo)
+            ->where(function ($q) use ($hariIndo, $tanggal) {
+
+                $q->where(function ($rutin) use ($hariIndo) {
+                    $rutin->where('tipe', 'rutin')
+                        ->where('hari', $hariIndo);
+                });
+
+                $q->orWhere(function ($dadakan) use ($tanggal) {
+                    $dadakan->where('tipe', 'dadakan')
+                            ->whereDate('tanggal', $tanggal);
+                });
+
+            })
             ->exists();
 
         if (!$cekJadwal) {
 
             return back()->with(
                 'error',
-                "Tidak ada jadwal latihan pada hari $hariIndo (" .
-                    date('d/m/Y', strtotime($request->tanggal)) . ")"
+                'Tidak ada jadwal latihan pada tanggal tersebut.'
             );
+
         }
 
-        $cekLibur = \App\Models\HariLibur::where(
-            'ekstrakurikuler_id',
-            $ekskulId
-        )
-            ->whereDate('tanggal', $request->tanggal)
-            ->orWhere('hari', $hariIndo)
+        $cekLibur = \App\Models\HariLibur::where('ekstrakurikuler_id', $ekskulId)
+            ->where(function ($q) use ($request, $hariIndo) {
+
+                $q->where(function ($rutin) use ($hariIndo) {
+                    $rutin->where('tipe', 'rutin')
+                        ->where('hari', $hariIndo);
+                });
+
+                $q->orWhere(function ($dadakan) use ($request) {
+                    $dadakan->where('tipe', 'dadakan')
+                            ->whereDate('tanggal', $request->tanggal);
+                });
+
+            })
             ->exists();
 
         if ($cekLibur) {

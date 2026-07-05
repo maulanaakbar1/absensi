@@ -13,8 +13,24 @@
             'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
         ];
         $hariIni = $hariMap[date('l', strtotime($tanggal))];
-        $isJadwal = \App\Models\Jadwal::where('ekstrakurikuler_id', auth()->user()->pembina->ekstrakurikuler_id)
-                    ->where('hari', $hariIni)->exists();
+        $isJadwal = \App\Models\Jadwal::where(
+            'ekstrakurikuler_id',
+            auth()->user()->pembina->ekstrakurikuler_id
+        )
+        ->where(function ($q) use ($hariIni, $tanggal) {
+
+            $q->where(function ($rutin) use ($hariIni) {
+                $rutin->where('tipe', 'rutin')
+                    ->where('hari', $hariIni);
+            });
+
+            $q->orWhere(function ($dadakan) use ($tanggal) {
+                $dadakan->where('tipe', 'dadakan')
+                        ->whereDate('tanggal', $tanggal);
+            });
+
+        })
+        ->exists();
     @endphp
 
     <div class="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm mb-6">
