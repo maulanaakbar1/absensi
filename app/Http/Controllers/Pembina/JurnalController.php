@@ -335,10 +335,15 @@ class JurnalController extends Controller
 
         $events = $events->sortBy('tanggal')->values();
 
+        $pembina = auth()->user()->pembina;
+
+        $ekstrakurikuler = $pembina->ekstrakurikuler;
+
         $pdf = Pdf::loadView('pembina.jurnal_pdf', [
             'events' => $events,
             'bulan' => $bulan,
-            'tahunAjaran' => $tahunAjaran
+            'tahunAjaran' => $tahunAjaran,
+            'ekstrakurikuler' => $ekstrakurikuler,
         ]);
 
         $namaBulan = Carbon::create()->month($bulan)->translatedFormat('F');

@@ -16,15 +16,26 @@
     Jurnal Pembina - {{ \Carbon\Carbon::create()->month($bulan)->translatedFormat('F') }}
 </h2>
 
-<p>
-    Tahun Ajaran: {{ $tahunAjaran }}
-</p>
+<table style="border:0; border-collapse:collapse; margin-bottom:15px;">
+    <tbody>
+        <tr>
+            <td style="border:0; width:120px; padding:2px 0;"><strong>Tahun Ajaran</strong></td>
+            <td style="border:0; width:15px; text-align:center;">:</td>
+            <td style="border:0;">{{ $tahunAjaran }}</td>
+        </tr>
+        <tr>
+            <td style="border:0; padding:2px 0;"><strong>Ekstrakurikuler</strong></td>
+            <td style="border:0; text-align:center;">:</td>
+            <td style="border:0;">{{ $ekstrakurikuler->nama ?? '-' }}</td>
+        </tr>
+    </tbody>
+</table>
 
 <table>
     <thead>
         <tr>
             <th>No</th>
-            <th>Tanggal</th>
+            <th>Hari / Tanggal</th>
             <th>Jadwal</th>
             <th>Jam</th>
             <th>Lokasi</th>
@@ -39,7 +50,7 @@
             <td>{{ $i+1 }}</td>
 
             <td>
-                {{ $event['tanggal']->translatedFormat('d F Y') }}
+                {{ $event['tanggal']->translatedFormat('l, d F Y') }}
             </td>
 
             <td>
