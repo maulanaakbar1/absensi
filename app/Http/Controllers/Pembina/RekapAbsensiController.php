@@ -735,20 +735,17 @@ class RekapAbsensiController extends Controller
         $user = auth()->user();
         $ekskulId = $user->pembina->ekstrakurikuler_id;
 
-        $selectedTahun = $request->get(
-            'tahun_ajaran',
-            $this->getCurrentTahunAjaran()
-        );
-
+        $selectedTahun = $request->get('tahun_ajaran', $this->getCurrentTahunAjaran());
         $selectedKelas = $request->get('kelas');
+
+        $currentStart = $this->parseTahunAjaranStart($this->getCurrentTahunAjaran());
 
         $selectedTahunStart = $selectedTahun !== 'semua'
             ? $this->parseTahunAjaranStart($selectedTahun)
-            : now()->year;
+            : null;
 
-        $tahun = ((int) $bulan >= 7)
-            ? $selectedTahunStart
-            : $selectedTahunStart + 1;
+        $tahunDasar = $selectedTahunStart ?? $currentStart;
+        $tahun = ((int) $bulan >= 7) ? $tahunDasar : $tahunDasar + 1;
 
         $jumlahHari = Carbon::createFromDate(
             $tahun,
@@ -782,23 +779,10 @@ class RekapAbsensiController extends Controller
 
         $siswas = $query->get();
 
-        $siswas->transform(function ($siswa) use ($selectedTahunStart) {
-
-            $tahunDisplay = $selectedTahunStart;
-
-            $tingkat = $this->getTingkat(
-                $siswa,
-                $tahunDisplay
-            );
-
-            $kelasDisplay = $this->getKelasDisplay(
-                $siswa,
-                $tahunDisplay
-            );
-
-            $siswa->kelas_display = $kelasDisplay;
-            $siswa->tingkat_display = $tingkat;
-
+        $siswas->transform(function ($siswa) use ($selectedTahunStart, $currentStart) {
+            $tahunDisplay = $selectedTahunStart ?? $currentStart;
+            $siswa->kelas_display   = $this->getKelasDisplay($siswa, $tahunDisplay);
+            $siswa->tingkat_display = $this->getTingkat($siswa, $tahunDisplay);
             return $siswa;
         });
 
