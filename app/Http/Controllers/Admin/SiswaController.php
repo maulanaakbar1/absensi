@@ -417,7 +417,7 @@ class SiswaController extends Controller
         return Excel::download(
             new SiswaExport(
                 $request->ekskul,
-                $request->tahun_ajaran, 
+                $request->get('tahun_ajaran', $this->getCurrentTahunAjaran()),
                 $request->kelas,
                 $request->jurusan,
                 $request->search

@@ -218,10 +218,7 @@
             </form>
 
             {{-- EXPORT --}}
-            <a
-                href="{{ route('pembina.anggota.export') }}"
-                class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-1"
-            >
+           <a href="{{ route('pembina.anggota.export', request()->query()) }}" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700 transition flex items-center gap-1">
 
                 <svg xmlns="http://www.w3.org/2000/svg"
                     class="h-3.5 w-3.5"

@@ -294,12 +294,18 @@ class AnggotaController extends Controller
         return back()->with('success', 'Anggota berhasil dihapus!');
     }
 
-    public function export()
+    public function export(Request $request)
     {
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
 
         return Excel::download(
-            new SiswaExport($pembina->ekstrakurikuler_id),
+            new SiswaExport(
+                $pembina->ekstrakurikuler_id,
+                $request->get('tahun_ajaran', $this->getCurrentTahunAjaran()),
+                $request->kelas,
+                $request->jurusan,
+                $request->search
+            ),
             'anggota-ekskul.xlsx'
         );
     }
