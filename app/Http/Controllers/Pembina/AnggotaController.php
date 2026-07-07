@@ -315,8 +315,10 @@ class AnggotaController extends Controller
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv'
         ]);
+        // dd($request->file('file'));
 
         $pembina = Pembina::where('user_id', Auth::id())->firstOrFail();
+        // dd($pembina);
 
         Excel::import(
             new SiswaImport($pembina->ekstrakurikuler_id),

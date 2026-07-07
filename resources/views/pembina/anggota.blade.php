@@ -181,8 +181,9 @@
             {{-- IMPORT --}}
             <form 
                 id="filterForm"
-                action="{{ route('pembina.anggota.index') }}"
-                method="GET"
+                action="{{ route('pembina.anggota.import') }}"
+                method="POST"
+                enctype="multipart/form-data"
                 class="flex flex-col md:flex-row gap-4 items-end">
                 @csrf
 
