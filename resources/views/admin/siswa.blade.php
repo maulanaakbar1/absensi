@@ -862,20 +862,15 @@
                                     Jenis Kelamin
                                 </label>
 
-                                <select name="jenis_kelamin"
-                                    class="w-full rounded-xl border border-slate-300 px-4 py-3" required>
+                                <select
+                                    name="jenis_kelamin"
+                                    x-model="currentData.jk"
+                                    class="w-full rounded-xl border border-slate-300 px-4 py-3"
+                                    required>
 
-                                    <option value="" selected disabled>Pilih Jenis Kelamin</option>
-
-                                    <option value="L"
-                                        {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>
-                                        Laki-laki
-                                    </option>
-
-                                    <option value="P"
-                                        {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>
-                                        Perempuan
-                                    </option>
+                                    <option value="" disabled>Pilih Jenis Kelamin</option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
 
                                 </select>
                             </div>
