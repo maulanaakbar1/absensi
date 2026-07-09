@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Absensi SMKN 1 Talaga</title>
+    <title>Login | Absensi Mts Pui Cikijing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -85,13 +85,13 @@
 
             <div class="mt-10 text-center pt-6 border-t border-slate-100">
                 <p class="text-xs text-slate-400 font-medium uppercase tracking-widest">
-                    SMKN 1 TALAGA
+                    Mts Pui Cikijing
                 </p>
             </div>
         </div>
         
         <p class="text-center text-slate-400 text-xs mt-8">
-            Butuh bantuan? Hubungi <a href="#" class="text-blue-500 hover:underline font-semibold">Tim IT SMKN 1 Talaga</a>
+            Butuh bantuan? Hubungi <a href="#" class="text-blue-500 hover:underline font-semibold">Tim IT Mts Pui Cikijing</a>
         </p>
     </div>
 
@@ -108,7 +108,7 @@
                     timer: 2000,
                     timerProgressBar: true,
                     customClass: {
-                        popup: 'rounded-[2.5rem]', // Samakan dengan bunderan card login lu
+                        popup: 'rounded-[2.5rem]',
                     }
                 });
             });
